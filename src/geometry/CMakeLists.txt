@@ -5,6 +5,7 @@ SET(sources
     SO3.cpp
     SE3.cpp
     SE3cov.cpp
+    SE3vel.cpp
 )
 
 # extra header files
@@ -12,6 +13,7 @@ SET(headers
     mrob/SO3.hpp
     mrob/SE3.hpp
     mrob/SE3cov.hpp
+    mrob/SE3vel.hpp
 )
 
 # create library
