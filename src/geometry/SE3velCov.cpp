@@ -53,7 +53,7 @@ void SE3velCov::compound_4th_order(const SE3vel &pose_increment, const Mat9 &Q, 
 
 Mat9 SE3velCov::get_S_4th(const Mat9 &Q) const
 {
-    Mat9 S_4th(Mat9::Zero());
+    Mat9 S_4th(Mat9::Zero( ));
 
     Mat9 A_sigma(Mat9::Zero());
 
