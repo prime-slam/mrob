@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ FGraph::~FGraph()
 
 factor_id_t FGraph::add_factor(std::shared_ptr<Factor> &factor)
 {
-	factor->set_id(factors_.size());
-	factors_.emplace_back(factor);
+    factor->set_id(factors_.size());
+    factors_.emplace_back(factor);
     obsDim_ += factor->get_dim();
     return factor->get_id();
 }
@@ -58,7 +58,18 @@ factor_id_t FGraph::add_node(std::shared_ptr<Node> &node)
 {
 	node->set_id(nodes_.size());
 	nodes_.emplace_back(node);
-	stateDim_ += node->get_dim();
+	switch(node->get_node_mode())
+	{
+	    case Node::nodeMode::STANDARD:
+	        active_nodes_.push_back(node);
+	        stateDim_ += node->get_dim();
+	        break;
+	    case Node::nodeMode::ANCHOR:
+	        break;
+	    case Node::nodeMode::SCHUR_MARGI:
+	        assert(0 && "add_node::SCHUR_MARGI: Functionality not programmed yey");
+	        break;
+	}
 	return node->get_id();
 }
 

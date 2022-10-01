@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace mrob{
         /**
          * For initialization, requires an initial estimation of the state.
          */
-        explicit NodePose2d(const Mat31 &initial_x);
+        explicit NodePose2d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
         virtual ~NodePose2d()  override = default;
 
         virtual void update(VectRefConst &dx);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 
 using namespace mrob;
 
-NodePose2d::NodePose2d(const Mat31 &initial_x) : Node(3), state_(initial_x), auxiliaryState_(initial_x)
+NodePose2d::NodePose2d(const Mat31 &initial_x, Node::nodeMode mode) : Node(3, mode), state_(initial_x), auxiliaryState_(initial_x)
 {
     assert(initial_x.rows() == 3 && "NodePose2d:: Incorrect dimension on initial state rows");
     assert(initial_x.cols() == 1 && "NodePose2d:: Incorrect dimension on initial state cols");

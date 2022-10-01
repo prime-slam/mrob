@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,9 @@ using namespace mrob;
 
 
 void init_geometry(py::module &m) {
-    py::class_<SE3>(m, "SE3")
-		.def(py::init<>(),
+    py::class_<SE3> se3(m, "SE3");
+
+    se3.def(py::init<>(),
 				"The Default constructor creates the identity transformation",
 				py::return_value_policy::copy)
         .def(py::init<const Mat4 &>(),

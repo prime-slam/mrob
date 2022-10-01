@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class NodeLandmark3d : public Node
     /**
      * For initialization, requires an initial estimation of the state.
      */
-    NodeLandmark3d(const Mat31 &initial_x);
+    NodeLandmark3d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
     //NodePose3d(const SE3 &initial_T);
     virtual ~NodeLandmark3d()  override = default;
 

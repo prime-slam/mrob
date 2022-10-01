@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class NodeLandmark2d : public Node
     /**
      * For initialization, requires an initial estimation of the state.
      */
-    NodeLandmark2d(const Mat21 &initial_x);
+    NodeLandmark2d(const Mat21 &initial_x, Node::nodeMode mode = STANDARD);
     virtual ~NodeLandmark2d()  override = default;
 
     void update(VectRefConst &dx) override;

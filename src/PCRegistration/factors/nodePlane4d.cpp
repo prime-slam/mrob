@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@
 
 using namespace mrob;
 
-NodePlane4d::NodePlane4d(const Mat41 &initial_x):
-    Node(4), state_(initial_x), auxiliaryState_(initial_x)
+NodePlane4d::NodePlane4d(const Mat41 &initial_x, Node::nodeMode mode):
+    Node(4,mode), state_(initial_x), auxiliaryState_(initial_x)
 {
     assert(initial_x.rows() == 4 && "NodePlane4d:: Incorrect dimension on initial state rows" );
     assert(initial_x.cols() == 1 && "NodePlane4d:: Incorrect dimension on initial state cols" );

@@ -13,35 +13,30 @@
  * limitations under the License.
  *
  *
- * node.cpp
+ * example_solve_1_poses.cpp
  *
- *  Created on: Feb 27, 2018
+ *  Created on: Oct 23, 2019
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
- *              Mobile Robotics Lab, Skoltech 
+ *              Mobile Robotics Lab.
  */
 
-#include "mrob/node.hpp"
+
+/** This code is a toy example to show how to use the basics for plane alignment.
+ *  For a more realistic example take a look at the python example
+ */
+
+
+#include "mrob/factor_graph_ef.hpp"
+
 
 using namespace mrob;
 
-Node::Node(uint_t dim, nodeMode mode):
-		 id_(0), dim_(dim), node_mode_(mode), isConnected2EF_(false)
+// This examples show how to optimize 1 pose of a stream of planes
+
+int main()
 {
-}
-
-Node::~Node()
-{
-}
-
-
-// support function for 2D poses
-double mrob::wrap_angle(double angle)
-{
-    double pi2 = 2 * M_PI;
-
-    while (angle < -M_PI) angle += pi2;
-    while (angle >= M_PI) angle -= pi2;
-
-    return angle;
+    // 1) create mock scene with some planes and GT poses
+    // 2) Add information to the EF Fgraph structure. For now only planes
+    // 3) Optimize, Measure distance to GT
 }

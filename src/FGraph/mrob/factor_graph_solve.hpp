@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -233,8 +233,8 @@ protected:
     // Indexes of nodes in the information matrix. NOTE: it requires all nodes (not a subset)
     std::vector<uint_t> indNodesMatrix_;
 
-    uint_t N_; // total number of state variables
-    uint_t M_; // total number of observation variables
+    factor_id_t N_; // total number of state variables
+    factor_id_t M_; // total number of observation variables
 
     SMatRow A_; //Adjacency matrix, as a Row sparse matrix. The reason is for filling in row-fashion for each factor
     SMatRow W_; //A block diagonal information matrix. For types Adjacency it calculates its block transposed squared root

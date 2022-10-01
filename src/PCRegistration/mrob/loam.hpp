@@ -13,35 +13,23 @@
  * limitations under the License.
  *
  *
- * node.cpp
+ * loam.hpp
  *
- *  Created on: Feb 27, 2018
+ *  Created on: Feb 1, 2019
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
- *              Mobile Robotics Lab, Skoltech 
+ *              Mobile Robotics Lab, Skoltech
  */
 
-#include "mrob/node.hpp"
-
-using namespace mrob;
-
-Node::Node(uint_t dim, nodeMode mode):
-		 id_(0), dim_(dim), node_mode_(mode), isConnected2EF_(false)
-{
-}
-
-Node::~Node()
-{
-}
+#ifndef SRC_PCREGISTRATION_MROB_LOAM_HPP_
+#define SRC_PCREGISTRATION_MROB_LOAM_HPP_
 
 
-// support function for 2D poses
-double mrob::wrap_angle(double angle)
-{
-    double pi2 = 2 * M_PI;
+/**
+ * This is an implementation of the LOAM work
+ * to benchmark with our plane smoother factor
+ *
+ */
 
-    while (angle < -M_PI) angle += pi2;
-    while (angle >= M_PI) angle -= pi2;
 
-    return angle;
-}
+#endif /* SRC_PCREGISTRATION_MROB_LOAM_HPP_ */

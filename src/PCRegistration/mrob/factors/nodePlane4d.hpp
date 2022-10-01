@@ -1,4 +1,4 @@
-/* Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+/* Copyright (c) 2022, Gonzalo Ferrer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class NodePlane4d : public Node
      * althought we know that the normal lies in S^2, so that shrinks the
      * DOF to 3 in total.
      */
-    NodePlane4d(const Mat41 &initial_x);
+    NodePlane4d(const Mat41 &initial_x, Node::nodeMode mode = STANDARD);
     virtual ~NodePlane4d()  override = default;
     /**
      * Update of 4d is simply addition and a clamping process to guarantee unit normal

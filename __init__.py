@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+#  Copyright (c) 2022, Gonzalo Ferrer
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,17 +20,30 @@
 #               miloslubov@gmail.com
 #
 
-from mrob import mrob
+try:
+    from . import mrob
 
-FGraph = mrob.FGraph
-GN = mrob.GN
-LEVENBERG_MARQUARDT_ELLIP = mrob.LEVENBERG_MARQUARDT_ELLIP
-LEVENBERG_MARQUARDT_SPHER = mrob.LEVENBERG_MARQUARDT_SPHER 
-LM = mrob.LM
-NEWTON_RAPHSON = mrob.NEWTON_RAPHSON
-geometry = mrob.geometry
-optimMethod = mrob.optimMethod 
-ostream_redirect = mrob.ostream_redirect
-registration = mrob.registration
+    from pkg_resources import get_distribution
 
-del(mrob)
+    __version__ = get_distribution('mrob').version
+
+    for module in dir(mrob):
+        n = len(module) - 1
+        if not (module[:2] == '__' and module[n:n-2:-1] == '__') and module.count('.') == 0:
+            globals()[module] = getattr(mrob, module)
+
+    del mrob
+except ImportError:
+    import platform
+    
+    if platform.system() == "Windows":
+        import sys
+        
+        sys.tracebacklimit = 0
+        raise ImportError(
+            "Maybe you don't have Microsoft Visual C++ Redistributable package installed. " + 
+            "Please follow the link and install redistributable " +
+            "package: https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160" +
+            "#visual-studio-2015-2017-2019-and-2022") from None
+    
+    raise

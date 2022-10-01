@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Skolkovo Institute of Science and Technology (Skoltech)
+#  Copyright (c) 2022, Gonzalo Ferrer
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import setuptools
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-    import platform, os
+    import platform, os, ctypes
 
     class bdist_wheel(_bdist_wheel):
 
@@ -45,13 +45,21 @@ try:
                 arch = plat
                 version = os.getenv('MACOSX_DEPLOYMENT_TARGET').replace('.', '_')
                 plat = name + "_" + version + "_" + arch
+            elif platform.system() == "Windows":
+                if ctypes.sizeof(ctypes.c_voidp) * 8 > 32:
+                    plat = "win_" + platform.machine().lower()
+                else:
+                    plat = "win32"
             return python, abi, plat
 
 except ImportError:
     bdist_wheel = None
 
-
 setuptools.setup(
-    version_config=True,
+    version_config={
+        "dev_template": "{tag}.{branch}.post{ccount}+git.{sha}",
+        "dirty_template": "{tag}.{branch}.post{ccount}+git.{sha}.dirty",
+    },
+    setup_requires=['setuptools-git-versioning'],
     cmdclass={'bdist_wheel': bdist_wheel}
 )
