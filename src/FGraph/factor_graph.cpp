@@ -33,9 +33,6 @@ FGraph::FGraph() :
 }
 FGraph::~FGraph()
 {
-    // clear every node's list of neigbours factors
-    for (auto &&n: nodes_)
-        n->clear();
     factors_.clear();
     nodes_.clear();
     eigen_factors_.clear();
@@ -43,27 +40,16 @@ FGraph::~FGraph()
 
 factor_id_t FGraph::add_factor(std::shared_ptr<Factor> &factor)
 {
-	factor->set_id(factors_.size());
-	factors_.push_back(factor);
-    auto *list = factor->get_neighbour_nodes();
-    for( auto &&n: *list)
-    {
-        n->add_factor(factor);
-    }
+    factor->set_id(factors_.size());
+    factors_.emplace_back(factor);
     obsDim_ += factor->get_dim();
     return factor->get_id();
 }
 
-factor_id_t FGraph::add_eigen_factor(std::shared_ptr<Factor> &factor)
+factor_id_t FGraph::add_eigen_factor(std::shared_ptr<EigenFactor> &factor)
 {
     factor->set_id(eigen_factors_.size());
-    eigen_factors_.push_back(factor);
-    auto *list = factor->get_neighbour_nodes();
-    for( auto &&n: *list)
-    {
-        n->add_factor(factor);
-    }
-    obsDim_ += factor->get_dim();
+    eigen_factors_.emplace_back(factor);
     return factor->get_id();
 }
 
@@ -71,7 +57,7 @@ factor_id_t FGraph::add_eigen_factor(std::shared_ptr<Factor> &factor)
 factor_id_t FGraph::add_node(std::shared_ptr<Node> &node)
 {
 	node->set_id(nodes_.size());
-	nodes_.push_back(node);
+	nodes_.emplace_back(node);
 	switch(node->get_node_mode())
 	{
 	    case Node::nodeMode::STANDARD:
@@ -89,30 +75,37 @@ factor_id_t FGraph::add_node(std::shared_ptr<Node> &node)
 
 std::shared_ptr<Node>& FGraph::get_node(factor_id_t key)
 {
-    // TODO key on a set or map?
     assert(key < nodes_.size() && "FGraph::get_node: incorrect key");
-    return nodes_[key];// XXX test key  again
+    return nodes_[key];
 }
 
 std::shared_ptr<Factor>& FGraph::get_factor(factor_id_t key)
 {
     // TODO key on a set or map?
-    assert(key < factors_.size() && "FGraph::get_node: incorrect key");
+    assert(key < factors_.size() && "FGraph::get_factor: incorrect key");
     return factors_[key];
 }
 
+std::shared_ptr<EigenFactor>& FGraph::get_eigen_factor(factor_id_t key)
+{
+    assert(key < eigen_factors_.size() && "FGraph::get_eigen_factor: incorrect key");
+    return eigen_factors_[key];
+}
 
 void FGraph::print(bool completePrint) const
 {
     std::cout << "Status of graph: " <<
-            nodes_.size()  << "Nodes and " <<
-            factors_.size() << "Factors." << std::endl;
+            " Nodes = " << nodes_.size()  <<
+            ", Factors = " << factors_.size() <<
+            ", Eigen Factors = " << eigen_factors_.size() << std::endl;
 
     if(completePrint)
     {
         for (auto &&n : nodes_)
             n->print();
         for (auto &&f : factors_)
+            f->print();
+        for (auto &&f : eigen_factors_)
             f->print();
     }
 }

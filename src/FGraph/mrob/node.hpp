@@ -33,15 +33,15 @@
 
 namespace mrob{
 
-class Factor;
 
 /**
  * Node class is an abstract class for creating future nodes. Pure
  * abstract methods on get and set dimension
  * is just a reminder that this is an Abstract class
  *
- * Node class keeps track of all the neighbouring factors.
- * Destructor takes care of the neighbour factors included.
+ * Node does not track the factors associated to it, it just contains
+ * the state variables and allows to update its value.
+ * (whereas before we kept track of factors in an unnecessary complex solution).
  *
  * States are indicated as references to MatX matrices, since
  * it can be either a block vector or a matrix (transformation matrix)
@@ -73,54 +73,45 @@ class Node{
      * a fixed block matrix, and this virtual function will handle
      * it nicely.
      */
-    virtual void update(const Eigen::Ref<const MatX1> &dx) = 0;
+    virtual void update(VectRefConst &dx) = 0;
     /**
      * Updates *FROM* the auxiliary state the principal state.
      */
-    virtual void update_from_auxiliary(const Eigen::Ref<const MatX1> &dx) = 0;
+    virtual void update_from_auxiliary(VectRefConst &dx) = 0;
     /**
      * At run time sets the new value of the estate and auxiliary to be x
      *
      */
-    virtual void set_state(const Eigen::Ref<const MatX> &x) = 0;
+    virtual void set_state(MatRefConst &x) = 0;
     /**
      * New auxiliary state set
      */
-    virtual void set_auxiliary_state(const Eigen::Ref<const MatX> &x) = 0;
+    virtual void set_auxiliary_state(MatRefConst &x) = 0;
     /**
      * Declared as a dynamic matrix reference to allow any size to be returned.
      * At run time returns a Reference to a fixed size matrix and provide
      * it as an argument for the getState function, no need to be dynamic,
      * as long as the dimension is correctly set
      */
-    virtual const Eigen::Ref<const MatX> get_state() const = 0;
-    /**
-     * returns the state Transformation, equivalent to state
-     * but direcly the matrix representing the rotation or RBT
-     TODO to remove, states could be considered matrices with new api
-     */
-    //virtual const Eigen::Ref<const MatX> get_stateT() const = 0;
+    virtual const MatRefConst get_state() const = 0;
     /**
      * Returns a matrix to the last auxiliary state. This data structure is for the incre-
      * metal implementation, or for error evaluation
      */
-    virtual const Eigen::Ref<const MatX> get_auxiliary_state() const = 0;
+    virtual MatRefConst get_auxiliary_state() const = 0;
     virtual void print() const {}
     factor_id_t get_id() const {return id_;}
     void set_id(factor_id_t id) {id_ = id;}
     factor_id_t get_dim(void) const {return dim_;}
+
     /**
-     * Adds a factor to the list of factors connected to this node.
+     * Methods for interacting with Eigen factors, a special kind of factors.
+     * This bool variable and its associated methods will make easier the
+     * construction of the matrix
+     * TODO not used right now, but it could to improve efficiency.
      */
-    virtual bool add_factor(std::shared_ptr<Factor> &factor);
-    /**
-     * This function is very inefficient: it is an exhaustive search
-     * so use only when necessary.
-     */
-    virtual bool rm_factor(std::shared_ptr<Factor> &factor);
-    void clear() {neighbourFactors_.clear();}
-    const std::vector<std::shared_ptr<Factor> >*
-            get_neighbour_factors(void) const {return &neighbourFactors_;}
+     bool is_connected_to_EF() const {return isConnected2EF_;}
+     void set_connected_to_EF(bool state = true) {isConnected2EF_ = state;}
 
 
     void set_node_mode(nodeMode mode){node_mode_ = mode;}
@@ -128,8 +119,6 @@ class Node{
 
 
   protected:
-    // no oder needed here
-    std::vector<std::shared_ptr<Factor> > neighbourFactors_;
     factor_id_t id_;
     uint_t dim_;
     nodeMode node_mode_;
@@ -143,6 +132,9 @@ class Node{
      *      Mat61 x_;
      * or   SE3 T_; (for transformations)
      */
+     // This variable is to know if there is an Eigen Factor connected to this node. The alternative
+     // is a list of factors connected, but removed this option since it was not really necessary.
+     bool isConnected2EF_;
 };
 
 /**

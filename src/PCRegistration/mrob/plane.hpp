@@ -145,11 +145,12 @@ class Plane{
     std::shared_ptr<const std::vector<SE3>> trajectory_;
 
     // gradient calculation Q
-    std::vector<Mat4> matrixS_, matrixQ_;
+    // This container is aligned since we use cpp17 (o.w. it would not be)
+    std::vector<Mat4, Eigen::aligned_allocator<Mat4> > matrixS_, matrixQ_;
     Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
     // Store last gradients calculated (for Hessian)
-    std::vector<Mat4> gradQ_, lieGenerativeMatrices_;//TODO move this to a common library utility, replicating this every time is terrible.
+    std::vector<Mat4, Eigen::aligned_allocator<Mat4> > gradQ_, lieGenerativeMatrices_;
 
   public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW

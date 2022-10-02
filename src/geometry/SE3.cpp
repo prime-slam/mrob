@@ -43,13 +43,13 @@ SE3::SE3(const Mat61 &xi) : T_(Mat4::Identity())
 SE3::SE3(const SE3 &T): T_(T.T())
 {
 }
-SE3::SE3(const SO3 &R, const Mat31 t)
+SE3::SE3(const SO3 &R, const Mat31 &t)
 {
     T_  << R.R(), t,
            0,0,0,1;
 }
 
-SE3::SE3(const Mat3 &R, const Mat31 t)
+SE3::SE3(const Mat3 &R, const Mat31 &t)
 {
     T_  << R, t,
            0,0,0,1;
@@ -287,7 +287,7 @@ void SE3::regenerate()
     this->exp(xi_hat);
 }
 
-bool mrob::isSE3(Mat4 T)
+bool mrob::isSE3(const Mat4 &T)
 {
     if (!isSO3(T.topLeftCorner<3,3>()) )
         return false;
@@ -297,3 +297,49 @@ bool mrob::isSE3(Mat4 T)
         return false;
     return true;
 }
+
+// Here we deine a global variable inside the file of this class, to be copied
+const std::vector<Mat4> LieGenerative{
+
+};
+
+
+// DEPRECATED?
+Mat4 mrob::SE3GenerativeMatrix(uint_t coordinate)
+{
+    Mat4 G = Mat4::Zero();
+    switch(coordinate)
+    {
+    case 0: //theta1
+        G(1,2) = -1.0;
+        G(2,1) = 1.0;
+        break;
+    case 1: // theta 2
+        G(0,2) = 1.0;
+        G(2,0) = -1.0;
+        break;
+    case 2: // theta 3
+        G(0,1) = -1.0;
+        G(1,0) = 1.0;
+        break;
+    case 3: // rho 1
+        G(0,3) = 1.0;
+        break;
+    case 4: // rho 2
+        G(1,3) = 1.0;
+        break;
+    case 5: // rho 3
+        G(2,3) = 1.0;
+        break;
+    }
+    return G;
+}
+
+
+
+
+
+
+
+
+

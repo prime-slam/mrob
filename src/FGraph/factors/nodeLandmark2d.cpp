@@ -37,22 +37,22 @@ NodeLandmark2d::NodeLandmark2d(const Mat21 &initial_x, Node::nodeMode mode) :
 }
 
 
-void NodeLandmark2d::update(const Eigen::Ref<const MatX1> &dx)
+void NodeLandmark2d::update(VectRefConst &dx)
 {
     state_ += dx;
 }
 
-void NodeLandmark2d::update_from_auxiliary(const Eigen::Ref<const MatX1> &dx)
+void NodeLandmark2d::update_from_auxiliary(VectRefConst &dx)
 {
     state_ = auxiliaryState_ + dx;
 }
 
-void NodeLandmark2d::set_state(const Eigen::Ref<const MatX> &x)
+void NodeLandmark2d::set_state(MatRefConst &x)
 {
     state_ = x;
 }
 
-void NodeLandmark2d::set_auxiliary_state(const Eigen::Ref<const MatX> &x)
+void NodeLandmark2d::set_auxiliary_state(MatRefConst &x)
 {
     auxiliaryState_ = x;
 }
@@ -61,6 +61,4 @@ void NodeLandmark2d::print() const
 {
     std::cout << "Printing NodeLandmark2d: " << id_
         << ", state = \n" << state_;
-    std::cout  <<  "\nand neighbour factors " << neighbourFactors_.size()
-        << std::endl;
 }

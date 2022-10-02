@@ -61,6 +61,7 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
     lambda_ = lambda;
     solutionTolerance_ = solutionTolerance;
     time_profiles_.reset();
+    optimMethod_ = method;
 
     assert(stateDim_ > 0 && "FGraphSolve::solve: empty node state");
 
@@ -72,6 +73,7 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
         this->update_nodes();
         break;
       case LM:
+      case LM_ELLIPS:
         this->optimize_levenberg_marquardt(maxIters);
         break;
       default:
@@ -80,8 +82,8 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
 
 
 
-
-    if (0)
+    // TODO add variable verbose to output times
+    if (1)
         time_profiles_.print();
 }
 
@@ -93,6 +95,13 @@ void FGraphSolve::build_problem(bool useLambda)
     time_profiles_.start();
     this->build_adjacency();
     time_profiles_.stop("Adjacency");
+
+    if (eigen_factors_.size()>0)
+    {
+        time_profiles_.start();
+        this->build_info_EF();
+        time_profiles_.stop("EFs Jacobian and Hessian");
+    }
 
     // 1.2) builds specifically the information
     switch(matrixMethod_)
@@ -106,6 +115,8 @@ void FGraphSolve::build_problem(bool useLambda)
       default:
         assert(0 && "FGraphSolve: method not implemented");
     }
+
+    // 1.3) (Optional) Eigen Factors
 
     // Structure for LM and dampening GN-based methods
     if (useLambda)
@@ -126,8 +137,12 @@ void FGraphSolve::optimize_gauss_newton(bool useLambda)
     if (useLambda)
     {
         for (uint_t n = 0 ; n < N_; ++n)
-            L_.coeffRef(n,n) = lambda_ + diagL_(n);//Circunference =>  diagL_(n) + lambda_
-            //L_.coeffRef(n,n) = (1.0 + lambda_)*diagL_(n);//Elipsoid, for circunference =>  diagL_(n) + lambda.
+        {
+            if (optimMethod_ == LM)
+                L_.coeffRef(n,n) = lambda_ + diagL_(n);//Spherical
+            else
+                L_.coeffRef(n,n) = (1.0 + lambda_)*diagL_(n);//Elipsoid
+        }
     }
     cholesky.compute(L_);
     time_profiles_.stop("Gauss Newton create Cholesky");
@@ -212,10 +227,14 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
 
 void FGraphSolve::build_adjacency()
 {
-    assert(obsDim_ > 0 && "FGraphSolve::build_adjacency: empty observations vector");
+    // Check for consistency. With 0 observations the problem cannot be built.
+    assert(obsDim_ >0 && "FGraphSolve::build_adjacency: Zeros observations, at least add one anchor factor");
+    if (obsDim_ == 0)
+        return;
+
     // 1) resize properly matrices (if needed)
     r_.resize(obsDim_,1);//dense vector TODO is it better to reserve and push_back??
-    A_.resize(obsDim_, stateDim_);//Sparse matrix clear data
+    A_.resize(obsDim_, stateDim_);//Sparse matrix clears data, but keeps the prev reserved space
     W_.resize(obsDim_, obsDim_);//TODO should we reinitialize this all the time? an incremental should be fairly easy
 
 
@@ -226,6 +245,8 @@ void FGraphSolve::build_adjacency()
     std::unordered_map<factor_id_t, factor_id_t > indNodesMatrix;
     //indNodesMatrix.reserve(nodes->size());
 
+    // XXX: this structure ONLY works because we use all nodes. If we were using a subset of them (l227)
+    // Then this ordered approach for ids {0,..,N} would not work!
     N_ = 0;
     for (size_t i = 0; i < active_nodes_.size(); ++i)
     {
@@ -234,7 +255,6 @@ void FGraphSolve::build_adjacency()
         factor_id_t id = active_nodes_[i]->get_id();
         indNodesMatrix.emplace(id,N_);
         N_ += dim;
-
     }
     assert(N_ == stateDim_ && "FGraphSolve::buildAdjacency: State Dimensions are not coincident\n");
 
@@ -310,7 +330,7 @@ void FGraphSolve::build_adjacency()
 
 
         // 5) Get information matrix for every factor
-        // TODO for robust factors, here is where the robust weights should be applied
+        // For robust factors, here is where the robust weights should be applied
         matData_t robust_weight = 1.0;
         for (uint_t l = 0; l < f->get_dim(); ++l)
         {
@@ -340,6 +360,58 @@ void FGraphSolve::build_info_adjacency()
      */
     L_ = (A_.transpose() * W_.selfadjointView<Eigen::Upper>() * A_);
     b_ = A_.transpose() * W_.selfadjointView<Eigen::Upper>() * r_;
+
+    // If any EF, we should combine both solutions
+    if (eigen_factors_.size() > 0 )
+    {
+        L_ += hessianEF_.selfadjointView<Eigen::Upper>();
+        b_ += gradientEF_;
+    }
+}
+
+
+void FGraphSolve::build_info_EF()
+{
+    gradientEF_.resize(stateDim_,1);
+    gradientEF_.setZero();
+    std::vector<Triplet> hessianData;
+    // XXX if EF ever connected a node that is not 6D, then this will not hold.
+    hessianData.reserve(eigen_factors_.size()*21);//For each EF we reserve the uppder triangular view => 6+5+..+1  = 21
+    // It assumes L_ has been created, and requires at least 1 observation (achnor)
+    for (size_t id = 0; id < eigen_factors_.size(); ++id)
+    {
+        auto f = eigen_factors_[id];
+        f->evaluate_residuals();
+        f->evaluate_jacobians();//and Hessian
+        f->evaluate_chi2();
+        auto neighNodes = f->get_neighbour_nodes();
+        for (auto node : *neighNodes)
+        {
+            uint_t indNode = node->get_id();
+            // Updating Jacobian, b should has been previously calculated
+            Mat61 J = f->get_jacobian(indNode);
+            gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
+            //std::cout << "Jacobian = " << J.transpose() << std::endl;
+
+            // Updating the Hessian
+            Mat6 H = f->get_hessian(indNode);
+            //std::cout << "Hessian = " << H << std::endl;
+            uint_t startingIndex = indNodesMatrix_[indNode];//XXX this should be change (someday) to a proper table for any ordering
+            // XXX if EF ever connected a node that is not 6D, then this will not hold.
+            for (uint_t i = 0; i < 6; i++)
+            {
+                for (uint_t j = i; j<6; j++)
+                {
+                    // convert the hessian to triplets
+                    hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex+ j, H(i,j)));
+                }
+            }
+        }
+    }
+
+    // create a Upper-view sparse matrix from the triplets:
+    hessianEF_.resize(stateDim_,stateDim_);
+    hessianEF_.setFromTriplets(hessianData.begin(), hessianData.end());
 }
 
 matData_t FGraphSolve::chi2(bool evaluateResidualsFlag)
@@ -354,6 +426,16 @@ matData_t FGraphSolve::chi2(bool evaluateResidualsFlag)
             f->evaluate_chi2();
         }
         totalChi2 += f->get_chi2();
+    }
+
+    for (auto &ef : eigen_factors_)
+    {
+        if (evaluateResidualsFlag)
+        {
+            ef->evaluate_residuals();
+            ef->evaluate_chi2();
+        }
+        totalChi2 += ef->get_chi2();
     }
     return totalChi2;
 }

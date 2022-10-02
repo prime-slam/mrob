@@ -20,8 +20,8 @@
  *              Mobile Robotics Lab.
  */
 
-#ifndef FACTORS_FACTOR1POSEPOINT2POINT_HPP_
-#define FACTORS_FACTOR1POSEPOINT2POINT_HPP_
+#ifndef FACTOR1POSEPOINT2POINT_HPP_
+#define FACTOR1POSEPOINT2POINT_HPP_
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp" //requires including and linking SE3 library
@@ -53,8 +53,8 @@ class Factor1PosePoint2Point : public Factor
 {
   public:
     Factor1PosePoint2Point(const Mat31 &z_point_x, const Mat31 &z_point_y,  std::shared_ptr<Node> &node,
-            const Mat1 &obsInf, Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1PosePoint2Point();
+            const Mat3 &obsInf, Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~Factor1PosePoint2Point() override = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -68,10 +68,10 @@ class Factor1PosePoint2Point : public Factor
 
     virtual void print() const;
 
-    virtual const Eigen::Ref<const MatX> get_obs() const {return r_;};
-    virtual const Eigen::Ref<const MatX1> get_residual() const {return r_;};
-    virtual const Eigen::Ref<const MatX> get_information_matrix() const {return W_;};
-    virtual const Eigen::Ref<const MatX> get_jacobian() const {return J_;};
+    MatRefConst get_obs() const override {return r_;};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override{return W_;};
+    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
 
   protected:
     Mat31 z_point_x_, z_point_y_, Tx_;
@@ -84,4 +84,4 @@ class Factor1PosePoint2Point : public Factor
 
 
 
-#endif /* FACTORS_FACTOR1POSEPOINT2POINT_HPP_ */
+#endif /* FACTOR1POSEPOINT2POINT_HPP_ */

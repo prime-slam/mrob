@@ -50,17 +50,17 @@ class Factor1Pose1Plane4d : public Factor
      */
     virtual void evaluate_residuals() override;
     /**
-     * Evaluates residuals and Jacobians
+     * Evaluates the Jacobians
      */
     virtual void evaluate_jacobians() override;
     virtual void evaluate_chi2() override;
 
     virtual void print() const;
 
-    virtual const Eigen::Ref<const MatX> get_obs() const override {return obs_;};
-    virtual const Eigen::Ref<const MatX1> get_residual() const override {return r_;};
-    virtual const Eigen::Ref<const MatX> get_information_matrix() const override {return W_;};
-    virtual const Eigen::Ref<const MatX> get_jacobian() const override {return J_;};
+    MatRefConst get_obs() const override {return obs_;};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override {return W_;};
+    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
 
 
   private:

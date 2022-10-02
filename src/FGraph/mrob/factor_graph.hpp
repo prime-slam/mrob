@@ -78,7 +78,7 @@ public:
      * and therefore it requires a different processing, apart from the
      * standard residual factors from above.
      */
-    factor_id_t add_eigen_factor(std::shared_ptr<Factor> &factor);
+    factor_id_t add_eigen_factor(std::shared_ptr<EigenFactor> &factor);
     /**
       * Adds a node if it was not already on the set.
       */
@@ -93,6 +93,10 @@ public:
      * get_node returns the node given the node id key, now a position on the data structure
      */
     std::shared_ptr<Factor>& get_factor(factor_id_t key);
+    /**
+    * get_node returns the Eigen factor given the node id key, now a position on the data structure
+    */
+    std::shared_ptr<EigenFactor>& get_eigen_factor(factor_id_t key);
     void print(bool complete = false) const;
 
 
@@ -104,7 +108,7 @@ public:
     uint_t get_dimension_state() {return stateDim_;};
     uint_t get_dimension_obs() {return obsDim_;};
 
-    //TODO #46
+    //TODO serialization
     void save_graph() const;
     void load_graph();
 
@@ -127,8 +131,8 @@ protected:
     //std::unordered_set<std::shared_ptr<Factor> > factors_;
     std::deque<std::shared_ptr<Factor> > factors_; // no specific order needed
 
-    // This requires a special list for the factors. Ids will duplicate for standard factors
-    std::deque<std::shared_ptr<Factor> > eigen_factors_;
+    // This requires a special list for the factors
+    std::deque<std::shared_ptr<EigenFactor> > eigen_factors_;
 
     /**
      * Total accumulated dimensions on both the state (nodes)

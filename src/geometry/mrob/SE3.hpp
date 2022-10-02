@@ -66,11 +66,11 @@ public:
     /**
      * Constructor, requires the Rotation in SO3 and translation
      */
-    SE3(const SO3 &R, const Mat31 t);
+    SE3(const SO3 &R, const Mat31 &t);
     /**
      * Constructor, requires the Rotation as a 3x3 matrix and translation
      */
-    SE3(const Mat3 &R, const Mat31 t);
+    SE3(const Mat3 &R, const Mat31 &t);
     /**
      * This constructor allows to construct from Eigen expressions
      * Eigen suggestion: TopicCustomizingEigen.html
@@ -207,7 +207,40 @@ Mat4 hat6(const Mat61 &xi);
  */
 Mat61 vee6(const Mat4 &xi_hat);
 
-bool isSE3(Mat4 T);
+bool isSE3(const Mat4 &T);
+
+/**
+ * Returns the generative matrix given the coordinate,
+ * considering xi(0..5) = [theta(0..2), rho(3..5)]
+ */
+Mat4 SE3GenerativeMatrix(uint_t coordinate);
+/**
+ * Returns the double generative matrix given the coordinates (i,j),
+ * considering xi(0..5) = [theta(0..2), rho(3..5)]
+ * This corresponds to the differential form:
+ *
+ * d Exp / d xi = 0.5 (Gi *Gj + Gj*Gi)
+ */
+//Mat4 SE3DoubleGenerativeMatrix(uint_t i, uint_t j);
+
+/**
+ * Global variables declared here, defined once in the cpp.
+ *
+ * These are common data to access, so we make it accessible the fastest way.
+ *  generative matrix given the coordinate,
+ *  considering xi(0..5) = [theta(0..2), rho(3..5)]
+ */
+extern const std::vector<Mat4> LieGenerative;
+/**
+ * Global variables declared here, defined once in the cpp.
+ * These are common data to access, so we make it accessible the fastest way.
+ * Returns the double generative matrix given the coordinates (i,j),
+ * considering xi(0..5) = [theta(0..2), rho(3..5)]
+ * This corresponds to the differential form:
+ *
+ * d Exp / d xi = 0.5 (Gi *Gj + Gj*Gi)
+ */
+extern const std::vector< Mat4> LieDoubleGenerative;
 
 }// end namespace
 #endif /* SE3_HPP_ */
