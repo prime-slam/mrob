@@ -30,7 +30,7 @@
 #include <Eigen/SparseLU>
 #include <Eigen/SparseCholesky>
 #include <Eigen/SparseQR>
-#include <unordered_map>
+
 
 using namespace mrob;
 using namespace std;
@@ -38,8 +38,8 @@ using namespace Eigen;
 
 
 FGraphSolve::FGraphSolve(matrixMethod method):
-	FGraph(), matrixMethod_(method), N_(0), M_(0),
-	lambda_(1e-6), solutionTolerance_(1e-2)
+	FGraph(), matrixMethod_(method), optimMethod_(GN), N_(0), M_(0),
+	lambda_(1e-6), solutionTolerance_(1e-2), buildAdjacencyFlag_(false)
 {
 
 }
@@ -83,7 +83,7 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
 
 
     // TODO add variable verbose to output times
-    if (1)
+    if (0)
         time_profiles_.print();
 }
 
@@ -140,7 +140,7 @@ void FGraphSolve::optimize_gauss_newton(bool useLambda)
         {
             if (optimMethod_ == LM)
                 L_.coeffRef(n,n) = lambda_ + diagL_(n);//Spherical
-            else
+            if (optimMethod_ == LM_ELLIPS)
                 L_.coeffRef(n,n) = (1.0 + lambda_)*diagL_(n);//Elipsoid
         }
     }
@@ -225,38 +225,41 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
 
 }
 
-void FGraphSolve::build_adjacency()
+void FGraphSolve::build_index_nodes_matrix()
 {
-    // Check for consistency. With 0 observations the problem cannot be built.
-    assert(obsDim_ >0 && "FGraphSolve::build_adjacency: Zeros observations, at least add one anchor factor");
-    if (obsDim_ == 0)
-        return;
-
-    // 1) resize properly matrices (if needed)
-    r_.resize(obsDim_,1);//dense vector TODO is it better to reserve and push_back??
-    A_.resize(obsDim_, stateDim_);//Sparse matrix clears data, but keeps the prev reserved space
-    W_.resize(obsDim_, obsDim_);//TODO should we reinitialize this all the time? an incremental should be fairly easy
-
-
-    // 2) vector structure to bookkeep the starting Nodes indices inside A
-
-    // 2.2) Node indexes bookeept. We use a map to ensure the index from nodes to the current active_node
-    //std::vector<uint_t> indNodesMatrix;
-    std::unordered_map<factor_id_t, factor_id_t > indNodesMatrix;
-    //indNodesMatrix.reserve(nodes->size());
-
-    // XXX: this structure ONLY works because we use all nodes. If we were using a subset of them (l227)
-    // Then this ordered approach for ids {0,..,N} would not work!
     N_ = 0;
     for (size_t i = 0; i < active_nodes_.size(); ++i)
     {
         // calculate the indices to access
         uint_t dim = active_nodes_[i]->get_dim();
         factor_id_t id = active_nodes_[i]->get_id();
-        indNodesMatrix.emplace(id,N_);
+        indNodesMatrix_.emplace(id,N_);
         N_ += dim;
     }
+}
+
+void FGraphSolve::build_adjacency()
+{
+    // 1) Node indexes bookkept. We use a map to ensure the index from nodes to the current active_node
+    indNodesMatrix_.clear();
+    this->build_index_nodes_matrix();
     assert(N_ == stateDim_ && "FGraphSolve::buildAdjacency: State Dimensions are not coincident\n");
+
+
+    // 2.1) Check for consistency. With 0 observations the problem does not need to be build, EF may still build it
+    if (obsDim_ == 0)
+    {
+        buildAdjacencyFlag_ = false;
+        return;
+    }
+    buildAdjacencyFlag_ = true;
+
+    // 2) resize properly matrices (if needed)
+    r_.resize(obsDim_,1);//dense vector TODO is it better to reserve and push_back??
+    A_.resize(obsDim_, stateDim_);//Sparse matrix clears data, but keeps the prev reserved space
+    W_.resize(obsDim_, obsDim_);//TODO should we reinitialize this all the time? an incremental should be fairly easy
+
+
 
     // 3) Evaluate every factor given the current state and bookeeping of Factor indices
     std::vector<uint_t> reservationA;
@@ -320,7 +323,7 @@ void FGraphSolve::build_adjacency()
                     // order according to the permutation vector
                     uint_t iRow = indFactorsMatrix[i] + l;
                     // In release mode, indexes outside will not trigger an exception
-                    uint_t iCol = indNodesMatrix[id] + k;
+                    uint_t iCol = indNodesMatrix_[id] + k;
                     // This is an ordered insertion
                     A_.insert(iRow,iCol) = f->get_jacobian()(l, k + totalK);
                 }
@@ -358,14 +361,27 @@ void FGraphSolve::build_info_adjacency()
      * Eigen stores a temporary object and then copy only the upper part.
      *
      */
-    L_ = (A_.transpose() * W_.selfadjointView<Eigen::Upper>() * A_);
-    b_ = A_.transpose() * W_.selfadjointView<Eigen::Upper>() * r_;
+    // check for a problem built
+    if (buildAdjacencyFlag_)
+    {
+        L_ = (A_.transpose() * W_.selfadjointView<Eigen::Upper>() * A_);
+        b_ = A_.transpose() * W_.selfadjointView<Eigen::Upper>() * r_;
+    }
 
     // If any EF, we should combine both solutions
     if (eigen_factors_.size() > 0 )
     {
-        L_ += hessianEF_.selfadjointView<Eigen::Upper>();
-        b_ += gradientEF_;
+        if (buildAdjacencyFlag_)
+        {
+            L_ += hessianEF_.selfadjointView<Eigen::Upper>();
+            b_ += gradientEF_;
+        }
+        // case when there are pure EF and no other factor
+        else
+        {
+            L_ = hessianEF_.selfadjointView<Eigen::Upper>();
+            b_ = gradientEF_;
+        }
     }
 }
 
@@ -375,9 +391,9 @@ void FGraphSolve::build_info_EF()
     gradientEF_.resize(stateDim_,1);
     gradientEF_.setZero();
     std::vector<Triplet> hessianData;
-    // XXX if EF ever connected a node that is not 6D, then this will not hold.
+    // TODO if EF ever connected a node that is not 6D, then this will not hold.
     hessianData.reserve(eigen_factors_.size()*21);//For each EF we reserve the uppder triangular view => 6+5+..+1  = 21
-    // It assumes L_ has been created, and requires at least 1 observation (achnor)
+
     for (size_t id = 0; id < eigen_factors_.size(); ++id)
     {
         auto f = eigen_factors_[id];
@@ -388,16 +404,19 @@ void FGraphSolve::build_info_EF()
         for (auto node : *neighNodes)
         {
             uint_t indNode = node->get_id();
+            if ( node->get_node_mode() == Node::nodeMode::ANCHOR)
+            {
+                continue;
+            }
             // Updating Jacobian, b should has been previously calculated
             Mat61 J = f->get_jacobian(indNode);
+            // It requires previous calculation of indNodesMatrix (in build adjacency)
             gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
-            //std::cout << "Jacobian = " << J.transpose() << std::endl;
 
             // Updating the Hessian
             Mat6 H = f->get_hessian(indNode);
-            //std::cout << "Hessian = " << H << std::endl;
-            uint_t startingIndex = indNodesMatrix_[indNode];//XXX this should be change (someday) to a proper table for any ordering
-            // XXX if EF ever connected a node that is not 6D, then this will not hold.
+            uint_t startingIndex = indNodesMatrix_[indNode];
+            // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
             for (uint_t i = 0; i < 6; i++)
             {
                 for (uint_t j = i; j<6; j++)

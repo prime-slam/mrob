@@ -27,6 +27,7 @@
 
 #include "mrob/factor_graph.hpp"
 #include "mrob/time_profiling.hpp"
+#include <unordered_map>
 
 namespace mrob {
 
@@ -59,9 +60,8 @@ namespace mrob {
  * will not work properly.
  *
  * Different options are provided:
- * 	- Adjacency matrix (plus indirect construction of Information)
- * 	- TODO Information matrix (direct)
- * 	- TODO Diagonal and information for Schur complement
+ * 	- ADJ: Adjacency matrix (plus indirect construction of Information)
+ * 	- SCHUR (TODO): Diagonal and information from Schur complement
  *
  * Routines provide different optimization methods:
  *  - Gauss-Newton (GN) using Cholesky LDLT with minimum degree ordering
@@ -69,9 +69,7 @@ namespace mrob {
  *                     trust region alg. (Nocedal 4.1) to estimate a "good" lambda.
  *                     Bertsekas p.105 proposes a similar heuristic approach for the trust
  *                     region, which we convert to lambda estimation (we follow Bertsekas' notation in code).
- *  - TODO Gradient 1st order based with preconditioning
- *  - TODO Dogleg (DL) (Nocedal 4.3)
- *  - TODO Conjugate gradient method (Nocedal 7.2)
+ *  - LM_Ellipsoid implementation. Slightly different than LM-Spherical on how to condition the information matrix.
  */
 class FGraphSolve: public FGraph
 {
@@ -226,21 +224,30 @@ protected:
      */
     void synchronize_nodes_auxiliary_state();
 
+    /**
+     * This function build the node index that will be used for creating the
+     * adjacency matrix and the information matrix.
+     *
+     * It maps the node Id to the column index in the matrix, such that
+     * non-consecutive nodes can be bookkeep for a fast access
+     */
+    void build_index_nodes_matrix();
+
     // Variables for solving the FGraph
     matrixMethod matrixMethod_;
     optimMethod optimMethod_;
 
-    // Indexes of nodes in the information matrix. NOTE: it requires all nodes (not a subset)
-    std::vector<uint_t> indNodesMatrix_;
 
     factor_id_t N_; // total number of state variables
     factor_id_t M_; // total number of observation variables
+
+    std::unordered_map<factor_id_t, factor_id_t > indNodesMatrix_;
 
     SMatRow A_; //Adjacency matrix, as a Row sparse matrix. The reason is for filling in row-fashion for each factor
     SMatRow W_; //A block diagonal information matrix. For types Adjacency it calculates its block transposed squared root
     MatX1 r_; // Residuals as given by the factors
 
-    SMatCol L_; //Information matrix. For Eigen Cholesky AMD Ordering it is necessary Col convetion for compilation.
+    SMatCol L_; //Information matrix. For Eigen Cholesky AMD Ordering it is necessary Col convention for compilation.
     MatX1 b_; // Post-processed residuals, A'*W*r
 
     // Correction deltas
@@ -255,6 +262,7 @@ protected:
     // Methods for handling Eigen factors. If not used, no problem
     SMatCol hessianEF_;
     MatX1 gradientEF_;
+    bool buildAdjacencyFlag_;
 
     // time profiling
     TimeProfiling time_profiles_;

@@ -56,12 +56,11 @@ for t in range(N_poses):
 print('Initial error = ', graph.chi2(True))
 # Does it require a better initialization?? with median?
 graph.solve(mrob.LM_ELLIPS,10)
-if 0:
+if 1:
     import matplotlib.pyplot as plt
     L = graph.get_information_matrix()
     plt.spy(L, marker='o', markersize=5)
     plt.title('Information matrix $\Lambda$')
-    print(L)
     plt.show()
 draw_planes(synthetic, graph.get_estimated_state())
 #graph.print(True)
