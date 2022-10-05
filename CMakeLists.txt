@@ -56,6 +56,9 @@ ADD_SUBDIRECTORY(./src/FGraph)
 INCLUDE_DIRECTORIES(./src/PCRegistration)
 ADD_SUBDIRECTORY(./src/PCRegistration)
 
+INCLUDE_DIRECTORIES(./src/plane-surfaces)
+ADD_SUBDIRECTORY(./src/plane-surfaces)
+
 
 
 # ===================================================================
