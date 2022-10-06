@@ -1,0 +1,5 @@
+ADD_EXECUTABLE(example_synthetic_plane_traj  example_synthetic_plane_traj.cpp)
+TARGET_LINK_LIBRARIES(example_synthetic_plane_traj plane-surfaces)
+
+ADD_EXECUTABLE(test_EF_Hessian  test_EF_Hessian.cpp)
+TARGET_LINK_LIBRARIES(test_EF_Hessian SE3)

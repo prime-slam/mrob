@@ -1,11 +1,6 @@
 ADD_EXECUTABLE(example_align_mth  example_align_mth.cpp)
 TARGET_LINK_LIBRARIES(example_align_mth PCRegistration)
 
-ADD_EXECUTABLE(example_synthetic_plane_traj  example_synthetic_plane_traj.cpp)
-TARGET_LINK_LIBRARIES(example_synthetic_plane_traj PCRegistration)
 
 ADD_EXECUTABLE(example_fgraph_align  example_fgraph_align.cpp)
 TARGET_LINK_LIBRARIES(example_fgraph_align FGraph PCRegistration)
-
-ADD_EXECUTABLE(test_EF_Hessian  test_EF_Hessian.cpp)
-TARGET_LINK_LIBRARIES(test_EF_Hessian SE3)
