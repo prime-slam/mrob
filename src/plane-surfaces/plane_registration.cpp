@@ -308,7 +308,7 @@ double PlaneRegistration::get_current_error() const
 {
     double  currentError = 0.0;
     for (auto it = planes_.cbegin();  it != planes_.cend(); ++it)
-        currentError += it->second->estimate_plane();
+        currentError += it->second->estimate_plane();//XXX this error is scaled by the unit vector pi, but it should not be
     return currentError;
 }
 
