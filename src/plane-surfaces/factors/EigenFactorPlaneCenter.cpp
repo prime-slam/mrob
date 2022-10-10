@@ -30,22 +30,22 @@
 
 using namespace mrob;
 
-EigenFactorPlane::EigenFactorPlane(Factor::robustFactorType robust_type):
+EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
         EigenFactor(robust_type),
+        Tcenter_(Mat4::Identity()),
         planeEstimation_{Mat41::Zero()},
         planeEstimationUnit_{Mat41::Zero()},
-        Tcenter_(Mat4::Identity()),
         planeError_{0.0},
         numberPoints_{0}
 {
 }
 
-void EigenFactorPlane::evaluate_residuals()
+void EigenFactorPlaneCenter::evaluate_residuals()
 {
     this->estimate_plane();
 }
 
-void EigenFactorPlane::evaluate_jacobians()
+void EigenFactorPlaneCenter::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
     J_.clear();
@@ -82,12 +82,12 @@ void EigenFactorPlane::evaluate_jacobians()
     }
 }
 
-void EigenFactorPlane::evaluate_chi2()
+void EigenFactorPlaneCenter::evaluate_chi2()
 {
     chi2_ = planeError_;//XXX this is not the exact plane error, but requires chi2 = 1/2 pi' Q pi
 }
 
-void EigenFactorPlane::add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W)
+void EigenFactorPlaneCenter::add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W)
 {
     // Pose has been observed, data has been initialized and we simply add point
     auto id = node->get_id();
@@ -116,7 +116,7 @@ void EigenFactorPlane::add_point(const Mat31& p, std::shared_ptr<Node> &node, ma
 }
 
 
-double EigenFactorPlane::estimate_plane()
+double EigenFactorPlaneCenter::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
@@ -128,18 +128,20 @@ double EigenFactorPlane::estimate_plane()
 
     // Center the plane requires a transformation (translation) such that
     // pi_centered = [n, 0] so, T * pi, where T = [I, -n d].
-    // and n d = - E{p} from the centered calculation of a plane
-    Tcenter_.topRightCorner<3,1>() =  accumulatedQ_.topRightCorner<3,1>();
+    // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
+    Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
     std::cout << "T center = " << Tcenter_ <<  std::endl;
+
+    std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
 
     accumulatedCenterQ_ = Tcenter_ * accumulatedQ_ * Tcenter_.transpose();
 
-    std::cout << "new function Q= " << accumulatedCenterQ_ <<  std::endl;
+    std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedCenterQ_);
     planeEstimationUnit_ = es.eigenvectors().col(0);
-    std::cout << es.eigenvectors() << "\n and solution \n" << planeEstimationUnit_ <<  std::endl;
+    std::cout << "Eigenvectors: \n" << es.eigenvectors() << "\n and solution \n" << planeEstimationUnit_ <<  std::endl;
     planeError_ = es.eigenvalues()(0);
     std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
 
@@ -148,7 +150,7 @@ double EigenFactorPlane::estimate_plane()
     return planeError_;
 }
 
-void EigenFactorPlane::calculate_all_matrices_S(bool reset)
+void EigenFactorPlaneCenter::calculate_all_matrices_S(bool reset)
 {
     if (reset)
         S_.clear();
@@ -168,7 +170,7 @@ void EigenFactorPlane::calculate_all_matrices_S(bool reset)
     }
 }
 
-void EigenFactorPlane::calculate_all_matrices_Q()
+void EigenFactorPlaneCenter::calculate_all_matrices_Q()
 {
     Q_.clear();
     uint_t nodeIdLocal = 0;
@@ -183,14 +185,14 @@ void EigenFactorPlane::calculate_all_matrices_Q()
     }
 }
 
-Mat31 EigenFactorPlane::get_mean_point(factor_id_t id)
+Mat31 EigenFactorPlaneCenter::get_mean_point(factor_id_t id)
 {
-    assert(!S_.empty() && "EigenFactorPlane::get_mean_point: S matrix empty");
+    assert(!S_.empty() && "EigenFactorPlaneCenter::get_mean_point: S matrix empty");
     auto localId = reverseNodeIds_.at(id);
     return S_[localId].topRightCorner<3,1>()/S_[localId](3,3);
 }
 
-void EigenFactorPlane::print() const
+void EigenFactorPlaneCenter::print() const
 {
     std::cout << "Plane Eigen Factor " <<  this->get_id()
               << " current plane estimated: " << planeEstimationUnit_.transpose() << std::endl;
@@ -212,16 +214,16 @@ void EigenFactorPlane::print() const
 }
 
 
-MatRefConst EigenFactorPlane::get_jacobian(mrob::factor_id_t id) const
+MatRefConst EigenFactorPlaneCenter::get_jacobian(mrob::factor_id_t id) const
 {
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlane::get_jacobian: element not found");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneCenter::get_jacobian: element not found");
     uint_t localId = reverseNodeIds_.at(id);
     return J_.at(localId);
 }
 
-MatRefConst EigenFactorPlane::get_hessian(mrob::factor_id_t id) const
+MatRefConst EigenFactorPlaneCenter::get_hessian(mrob::factor_id_t id) const
 {
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlane::get_hessian: element not found");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneCenter::get_hessian: element not found");
     uint_t localId = reverseNodeIds_.at(id);
     return H_.at(localId);
 }

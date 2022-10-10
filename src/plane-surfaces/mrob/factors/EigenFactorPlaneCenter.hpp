@@ -35,6 +35,7 @@
 namespace mrob{
 
 /**
+ * This is a copy of EF Plane for comparison
  * Eigen factor Plane is a vertex that complies with the Fgraph standards
  * and inherits from base EigenFactor.hpp
  *
@@ -52,14 +53,14 @@ namespace mrob{
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
  * XXX should we store all points?
  */
-class EigenFactorPlane: public EigenFactor{
+class EigenFactorPlaneCenter: public EigenFactor{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlane(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlane() override = default;
+    EigenFactorPlaneCenter(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneCenter() override = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation

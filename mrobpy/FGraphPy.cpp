@@ -44,6 +44,7 @@
 #include "mrob/factors/factor1PosePoint2Point.hpp"
 
 #include "mrob/factors/EigenFactorPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneCenter.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -170,26 +171,6 @@ public:
         return f->get_id();
     }
 
-    // Planes in 4d, i.e. pi = [nx.ny,nz,d] \in P^3
-    // There is a problem with scaling of long distances (d->inf n->0), but well, this
-    // is not a minimal representation. For finite distances should be fine.
-    // ------------------------------------------------------------------------------------
-    factor_id_t add_node_plane_4d(const py::EigenDRef<const Mat41> x, mrob::Node::nodeMode mode)
-    {
-        std::shared_ptr<mrob::Node> n(new mrob::NodePlane4d(x, mode));
-        this->add_node(n);
-        return n->get_id();
-    }
-    factor_id_t add_factor_1pose_1plane_4d(const py::EigenDRef<const Mat41> obs, uint_t nodePoseId,
-                uint_t nodeLandmarkId, const py::EigenDRef<const Mat4> obsInvCov)
-    {
-        auto n1 = this->get_node(nodePoseId);
-        auto n2 = this->get_node(nodeLandmarkId);
-        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Pose1Plane4d(obs,n1,n2,obsInvCov, robust_type_));
-        this->add_factor(f);
-        return f->get_id();
-    }
-
     // point to plane iterative optimizations. Variants of weighted ICP using Fgraph
     // ----------------------------------------------------
     // point to Plane factor
@@ -213,6 +194,26 @@ public:
         return f->get_id();
     }
 
+    // Planes in 4d, i.e. pi = [nx.ny,nz,d] \in P^3
+    // There is a problem with scaling of long distances (d->inf n->0), but well, this
+    // is not a minimal representation. For finite distances should be fine.
+    // ------------------------------------------------------------------------------------
+    factor_id_t add_node_plane_4d(const py::EigenDRef<const Mat41> x, mrob::Node::nodeMode mode)
+    {
+        std::shared_ptr<mrob::Node> n(new mrob::NodePlane4d(x, mode));
+        this->add_node(n);
+        return n->get_id();
+    }
+    factor_id_t add_factor_1pose_1plane_4d(const py::EigenDRef<const Mat41> obs, uint_t nodePoseId,
+                uint_t nodeLandmarkId, const py::EigenDRef<const Mat4> obsInvCov)
+    {
+        auto n1 = this->get_node(nodePoseId);
+        auto n2 = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Pose1Plane4d(obs,n1,n2,obsInvCov, robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
 
     // Eigen factors
     // --------------------------------------------------
@@ -231,6 +232,16 @@ public:
         auto n = this->get_node(nodePoseId);//XXX should check if this is a 3D pose node...
         ef->add_point(point, n, W);
     }
+
+    // Eigen factor plane Center, it requires adding an empty structure and then each point will increase
+    // the set of points, at the given pose.
+    factor_id_t add_eigen_factor_plane_center()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCenter(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
 
 private:
     mrob::Factor::robustFactorType robust_type_;
@@ -404,6 +415,7 @@ void init_FGraph(py::module &m)
                     py::arg("nodePoseId"),
                     py::arg("point"),
                     py::arg("W"))
+            .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
             ;
 
 }
