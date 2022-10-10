@@ -71,7 +71,7 @@ for t in range(N_poses):
                                    W = 1.0)
 
 print('\n\n\n\nInitial error EF plane= ', graph.chi2(True))
-graph.solve(mrob.LM_ELLIPS,10)
+prtin('solve iters = ', graph.solve(mrob.LM_ELLIPS,10))
 print('Chi2 = ', graph.chi2())
 draw_planes(synthetic, graph.get_estimated_state())
 

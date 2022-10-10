@@ -142,10 +142,17 @@ double EigenFactorPlaneCenter::estimate_plane()
     Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedCenterQ_);
     planeEstimationUnit_ = es.eigenvectors().col(0);
     std::cout << "Eigenvectors: \n" << es.eigenvectors() << "\n and solution \n" << planeEstimationUnit_ <<  std::endl;
-    planeError_ = es.eigenvalues()(0);
     std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
 
+    // calcualte non-centered plane:
+    planeEstimation_ = planeEstimationUnit_;
+    planeEstimation_ = Tcenter_.transpose() * planeEstimation_;
+    planeError_ = planeEstimation_.dot(accumulatedQ_*planeEstimation_);
     std::cout << "plane estimation error method 2 = " << planeError_ <<  std::endl;
+    
+    planeEstimation_.normalize();
+    planeError_ = planeEstimation_.dot(accumulatedQ_*planeEstimation_);
+    std::cout << "plane estimation error method 3 = " << planeError_ <<  std::endl;
 
     return planeError_;
 }

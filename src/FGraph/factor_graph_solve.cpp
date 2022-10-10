@@ -47,7 +47,7 @@ FGraphSolve::FGraphSolve(matrixMethod method):
 FGraphSolve::~FGraphSolve() = default;
 
 
-void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, matData_t solutionTolerance)
+uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, matData_t solutionTolerance)
 {
     /**
      * 2800 2D nodes on M3500
@@ -65,16 +65,19 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
 
     assert(stateDim_ > 0 && "FGraphSolve::solve: empty node state");
 
+    uint_t iters(0);
+
     // Optimization
     switch(method)
     {
       case GN:
         this->optimize_gauss_newton();// false => lambda = 0
         this->update_nodes();
+        iters = 1;
         break;
       case LM:
       case LM_ELLIPS:
-        this->optimize_levenberg_marquardt(maxIters);
+        iters = this->optimize_levenberg_marquardt(maxIters);
         break;
       default:
         assert(0 && "FGraphSolve:: optimization method unknown");
@@ -85,6 +88,8 @@ void FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, m
     // TODO add variable verbose to output times
     if (0)
         time_profiles_.print();
+        
+    return iters; 
 }
 
 void FGraphSolve::build_problem(bool useLambda)
@@ -221,7 +226,7 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
               << iter << " iterations and error " << currentChi2
               << ", and delta = " << deltaChi2
               << std::endl;
-    return 0; //
+    return 0; //Failed to converge is indicated with 0 iterations
 
 }
 
