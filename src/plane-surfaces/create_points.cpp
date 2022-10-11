@@ -140,6 +140,10 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
     {
         // TODO check for det of this base: for few planes this could be a problem
         planePoses_.push_back(samplePlanes_.samplePose());
+        // TODO: later the plane parameters in global coordinates should be pushed to some structure
+        Mat41 planz;
+        planz << 0,0,1,0;
+        //std::cout << "Plane = \n" << planePoses_.back().inv().T().transpose() * planz << std::endl;
 
         // generates data structure for planes
         std::shared_ptr<Plane> plane(new Plane(numberPoses_));

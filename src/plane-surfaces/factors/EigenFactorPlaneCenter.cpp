@@ -130,29 +130,27 @@ double EigenFactorPlaneCenter::estimate_plane()
     // pi_centered = [n, 0] so, T * pi, where T = [I, -n d].
     // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
     Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
-    std::cout << "T center = " << Tcenter_ <<  std::endl;
+    //std::cout << "T center = " << Tcenter_ <<  std::endl;
 
-    std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
+    //std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
 
     accumulatedCenterQ_ = Tcenter_ * accumulatedQ_ * Tcenter_.transpose();
 
-    std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
+    //std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
+
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
-    Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedCenterQ_);
-    planeEstimationUnit_ = es.eigenvectors().col(0);
-    std::cout << "Eigenvectors: \n" << es.eigenvectors() << "\n and solution \n" << planeEstimationUnit_ <<  std::endl;
-    std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
+    Eigen::SelfAdjointEigenSolver<Mat3> es;
+    es.computeDirect(accumulatedCenterQ_.topLeftCorner<3,3>());
+    planeEstimationUnit_.head<3>() = es.eigenvectors().col(0);
+    planeEstimationUnit_(3) = 0.0;
 
-    // calcualte non-centered plane:
-    planeEstimation_ = planeEstimationUnit_;
-    planeEstimation_ = Tcenter_.transpose() * planeEstimation_;
-    planeError_ = planeEstimation_.dot(accumulatedQ_*planeEstimation_);
-    std::cout << "plane estimation error method 2 = " << planeError_ <<  std::endl;
-    
-    planeEstimation_.normalize();
-    planeError_ = planeEstimation_.dot(accumulatedQ_*planeEstimation_);
-    std::cout << "plane estimation error method 3 = " << planeError_ <<  std::endl;
+    //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
+    //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
+
+    //planeError_ = planeEstimation_.dot(accumulatedQ_*planeEstimation_);
+    planeError_ = es.eigenvalues()(0);
+    //std::cout << "plane estimation error method 3 = " << planeError_ << ", plane = " << planeEstimation_ << std::endl;
 
     return planeError_;
 }

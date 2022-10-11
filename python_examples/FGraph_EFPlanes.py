@@ -71,9 +71,10 @@ for t in range(N_poses):
                                    W = 1.0)
 
 print('\n\n\n\nInitial error EF plane= ', graph.chi2(True))
-prtin('solve iters = ', graph.solve(mrob.LM_ELLIPS,10))
+print('solve iters = ', graph.solve(mrob.LM_ELLIPS,10))
 print('Chi2 = ', graph.chi2())
-draw_planes(synthetic, graph.get_estimated_state())
+traj1 = graph.get_estimated_state()
+#draw_planes(synthetic, graph.get_estimated_state())
 
 # Solution 2: Old plane aligment routing optimization. It is not in the form of factors (EFs)
 # -----------------------------------------------------------------------------------
@@ -84,7 +85,7 @@ print('\n\n\n\nOld EF joint Optm error INI= ', problem.get_error())
 #problem.solve(mrob.registration.LM_ELLIP)
 problem.solve(mrob.registration.LM_SPHER)
 print('Chi2 Lm Sphere= ', problem.get_error())
-#draw_planes(problem, problem.get_trajectory())
+draw_planes(problem, problem.get_trajectory())
 print(problem.print_evaluate())
 
 
@@ -124,7 +125,13 @@ print('\n\n\n\nInitial error EF plane Center= ', graph.chi2(True))
 graph.solve(mrob.LM_ELLIPS,10)
 print('Chi2 = ', graph.chi2())
 draw_planes(synthetic, graph.get_estimated_state())
+traj2 = graph.get_estimated_state()
 
+
+# Eval two trajectoryes:
+for i,T in enumerate(traj1):
+    print(T)
+    print(traj2[i])
 
 
 # Showing the Information Matrix

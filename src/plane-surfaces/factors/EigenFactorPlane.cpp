@@ -124,7 +124,7 @@ double EigenFactorPlane::estimate_plane()
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedQ_);
     planeEstimation_ = es.eigenvectors().col(0);
-    //std::cout << es.eigenvectors() << "\n and solution \n" << planeEstimation_ <<  std::endl;
+    //std::cout << "\n and solution plane = \n" << planeEstimation_ <<  std::endl;
     //std::cout << "plane estimation error: " << es.eigenvalues() <<  std::endl;
     planeError_ = es.eigenvalues()(0);
 
