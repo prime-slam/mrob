@@ -86,7 +86,9 @@ public:
     /**
      * Creates a class
      */
-    CreatePoints(uint_t N = 10, uint_t numberPlanes = 4, uint_t numberPoses = 2, double noisePerPoint = 0.01, double noiseBias = 0.1);
+    CreatePoints(uint_t N = 10, uint_t numberPlanes = 4, uint_t numberPoses = 2,
+            double noisePerPoint = 0.01, double noiseBias = 0.1,
+            const SE3 &initial_pose = SE3());
     ~CreatePoints();
 
     /**
@@ -139,6 +141,9 @@ protected:
     // Generation of planes
     std::vector<SE3> planePoses_;
     std::vector<std::pair<uint_t, std::shared_ptr<Plane> >> planes_;//TODO this should be removed...
+
+    // Initial Pose. This is to translatate the problem to any starting postion and test planes params
+    SE3 initial_pose_;
 
 };
 

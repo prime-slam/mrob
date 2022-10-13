@@ -298,6 +298,11 @@ bool mrob::isSE3(const Mat4 &T)
     return true;
 }
 
+Mat41 SE3::transform_plane(const Mat41 &pi)
+{
+    return this->inv().T().transpose() * pi;
+}
+
 // Here we deine a global variable inside the file of this class, to be copied
 const std::vector<Mat4> LieGenerative{
 

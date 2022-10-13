@@ -103,7 +103,7 @@ Mat31 SamplePlanarSurface::samplePoint()
 }
 
 CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numberPoses,
-                           double noisePerPointStd, double noiseBias):
+                           double noisePerPointStd, double noiseBias, const SE3 &initial_pose):
         numberPoints_(numberPoints),
         numberPlanes_(numberPlanes),
         noisePerPoint_(noisePerPointStd),
@@ -118,7 +118,8 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
         // Trajectory parameters
         xRange_(10.0),
         yRange_(10.0),
-        numberPoses_(numberPoses)
+        numberPoses_(numberPoses),
+        initial_pose_(initial_pose)
 {
     std::cout << "samples bias = " << noiseBias_ << "\n and point noise = " << noisePerPoint_ <<  std::endl;
     // 0) initialize vectors and variables
@@ -138,12 +139,12 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
     // 1) generate planes
     for (uint_t i = 0; i < numberPlanes_ ; ++i)
     {
-        // TODO check for det of this base: for few planes this could be a problem
-        planePoses_.push_back(samplePlanes_.samplePose());
+        planePoses_.push_back(samplePlanes_.samplePose() * initial_pose_);
         // TODO: later the plane parameters in global coordinates should be pushed to some structure
         Mat41 planz;
         planz << 0,0,1,0;
-        //std::cout << "Plane = \n" << planePoses_.back().inv().T().transpose() * planz << std::endl;
+        planz = planePoses_.back().transform_plane(planz);
+        // TODO push somewhere
 
         // generates data structure for planes
         std::shared_ptr<Plane> plane(new Plane(numberPoses_));

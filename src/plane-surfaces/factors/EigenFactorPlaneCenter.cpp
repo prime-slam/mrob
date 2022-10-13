@@ -127,7 +127,8 @@ double EigenFactorPlaneCenter::estimate_plane()
     }
 
     // Center the plane requires a transformation (translation) such that
-    // pi_centered = [n, 0] so, T * pi, where T = [I, -n d].
+    // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
+    // This only hold for when T^{-\top} = [I, -n d].
     // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
     Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
     //std::cout << "T center = " << Tcenter_ <<  std::endl;

@@ -61,12 +61,13 @@ void init_PCPlanes(py::module &m)
         ;
 	// This class creates a synthetic testing
     py::class_<CreatePoints>(m,"CreatePoints")
-            .def(py::init<uint_t, uint_t, uint_t, double, double>(),
+            .def(py::init<uint_t, uint_t, uint_t, double, double, const SE3&>(),
                  py::arg("N") = 10,
                  py::arg("numerbPlanes") = 4,
                  py::arg("numberPoses") = 2,
                  py::arg("noisePerPoint") = 0.01,
-                 py::arg("noiseBias") = 0.1)
+                 py::arg("noiseBias") = 0.1,
+                 py::arg("initial_pose") = SE3())
             .def("get_point_cloud", &CreatePoints::get_point_cloud,
             		"Input time index and outputs all points at that instant in time")
             .def("get_point_plane_ids", &CreatePoints::get_point_plane_ids,
