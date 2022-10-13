@@ -93,8 +93,11 @@ public:
      * Solve call the corresponding routine on the class parameters or
      * ultimately on the function input,
      * by default optim method is Gauss Newton
+     *
+     * Return: number of iterations
+     *         Failed to converge = 0 iterations
      */
-    void solve(optimMethod method = GN, uint_t maxIters = 20, matData_t lambda = 1e-6, matData_t solutionTolerance = 1e-2);
+    uint_t solve(optimMethod method = GN, uint_t maxIters = 20, matData_t lambda = 1e-6, matData_t solutionTolerance = 1e-2);
     /**
      * Evaluates the current solution chi2.
      *
