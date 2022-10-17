@@ -118,8 +118,8 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
         // Trajectory parameters
         xRange_(10.0),
         yRange_(10.0),
-        numberPoses_(numberPoses),
-        initial_pose_(initial_pose)
+        initialPose_(initial_pose),
+        numberPoses_(numberPoses)
 {
     std::cout << "samples bias = " << noiseBias_ << "\n and point noise = " << noisePerPoint_ <<  std::endl;
     // 0) initialize vectors and variables
@@ -127,6 +127,7 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
     pointId_.reserve(numberPoses_);
     goundTruthTrajectory_.reserve(numberPoses_);
     planePoses_.reserve(numberPlanes_);
+    plane_states_.reserve(numberPlanes_);
     planes_.reserve(numberPlanes_);
     for (uint_t i = 0; i < numberPoses_; ++i)
     {
@@ -139,12 +140,13 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
     // 1) generate planes
     for (uint_t i = 0; i < numberPlanes_ ; ++i)
     {
-        planePoses_.push_back(samplePlanes_.samplePose() * initial_pose_);
+        // The plane sampled pose at the origin is then transformed by a common initial pose
+        planePoses_.push_back(initialPose_ * samplePlanes_.samplePose());
         // TODO: later the plane parameters in global coordinates should be pushed to some structure
         Mat41 planz;
         planz << 0,0,1,0;
         planz = planePoses_.back().transform_plane(planz);
-        // TODO push somewhere
+        plane_states_.push_back(planz);//The XY plane, transformed, is pushed to the list of planes
 
         // generates data structure for planes
         std::shared_ptr<Plane> plane(new Plane(numberPoses_));
@@ -152,12 +154,8 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
         planes_.push_back(pairElement);
     }
 
-    // 2) generate initial and final pose, TODO We could add more intermediate points
-    initialPose_ = SE3(); // the initial pose is a relative pose for the following poses
-    SE3 initialPoseInv = initialPose_.inv();
-    //Mat61 xi; xi << 0.3,1,-0.1,1,0,0;
-    finalPose_ = samplePoses_.samplePose();
-    SE3 dx =  finalPose_ * initialPoseInv;
+    // 2) generate initial and displacement
+    SE3 dx =  samplePoses_.samplePose(); // relative displacement from init to the final. It depends on the statistics
     Mat61 dxi = dx.ln_vee();
 
     // 2.1 generate trajectory
@@ -171,7 +169,8 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
         if (numberPoses_ == 1)
             k = 0.0;
         Mat61 tdx =  k * dxi;
-        SE3 pose = SE3( tdx ) * initialPose_;
+        // This order frist creates a "local traj" and then transforms the whole problem
+        SE3 pose = initialPose_ * SE3( tdx );
         goundTruthTrajectory_.push_back(pose);
     }
 

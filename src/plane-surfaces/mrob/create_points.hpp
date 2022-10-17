@@ -113,6 +113,8 @@ public:
     std::vector<SE3>& get_plane_poses() {return planePoses_;};
     std::vector<std::pair<uint_t, std::shared_ptr<Plane> >>& get_all_planes() {return planes_;}
 
+    std::vector<Mat41>& get_plane_states() {return plane_states_;};
+
     void print() const;
 
 
@@ -134,16 +136,15 @@ protected:
 
     // Trajectory parameters
     double xRange_, yRange_; // dimension of the workspace
-    SE3 initialPose_, finalPose_;
+    SE3 initialPose_;
     std::vector<SE3> goundTruthTrajectory_;// ground truth trajectory
     uint_t numberPoses_;
 
     // Generation of planes
     std::vector<SE3> planePoses_;
+    std::vector<Mat41> plane_states_;
     std::vector<std::pair<uint_t, std::shared_ptr<Plane> >> planes_;//TODO this should be removed...
 
-    // Initial Pose. This is to translatate the problem to any starting postion and test planes params
-    SE3 initial_pose_;
 
 };
 

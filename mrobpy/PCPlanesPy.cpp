@@ -77,6 +77,7 @@ void init_PCPlanes(py::module &m)
             .def("get_ground_truth_last_pose", &CreatePoints::get_ground_truth_last_pose,
                     "return SE3 of the last pose")
             .def("get_trajectory", &CreatePoints::get_ground_truth_trajectory)
+            .def("get_plane_states", &CreatePoints::get_plane_states)
             .def("get_number_poses", &CreatePoints::get_number_poses)
             .def("get_number_planes", &CreatePoints::get_number_planes)
             ;

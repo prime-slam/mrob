@@ -24,10 +24,13 @@ N_planes = 4
 N_poses = 2
 
 # Generate the problem
-T = mrob.geometry.SE3(np.random.randn(6)) # Test this
+T = mrob.geometry.SE3(np.random.randn(6)*1000) # Test this
 synthetic = mrob.registration.CreatePoints(N_points,N_planes,N_poses, 0.05, 0.1, T) #point noise, bias noise
 T_gt = synthetic.get_ground_truth_last_pose()
-T_gt.print()
+#T_gt.print()
+gt_traj = synthetic.get_trajectory()
+for T in gt_traj:
+    T.print()
 draw_planes(synthetic)
 
 
