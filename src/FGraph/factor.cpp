@@ -78,3 +78,11 @@ EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
     //Dimension zero since this is a non-parametric factor.
     //Also we don't known how many nodes will connect, so we set the second param to 0 (not-used)
 }
+
+void EigenFactor::add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W)
+{
+    assert(P.cols() == 3 && "Nx3 input is required");
+    const auto N = P.rows();
+    for (uint_t i = 0; i < N; ++i)
+        add_point(P.row(i), node, W);
+}
