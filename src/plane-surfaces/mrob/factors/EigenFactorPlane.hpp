@@ -110,9 +110,17 @@ public:
      *
      * The alternative is adding directly S, but this offers less
      * flexibility.
-     * XXX adding one by one might be inefficient
      */
     void add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W) override;
+    /**
+     * Add point array: uses internally add_point in a block operation
+     */
+    void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
+    /**
+     * Add point S matrix: directly stores S matrices as S = sum p_i'*p_i the homogenoues outer product sum
+     * This is done when you dont want to store all points, but process them outside
+     */
+    void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
     /**
      * get mean point calculates the mean of the pointcloud observed at pose node id,
      * given that S = sum p * p' =  sum ([x2 xy xz x
