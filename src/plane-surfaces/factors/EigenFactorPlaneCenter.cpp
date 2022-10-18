@@ -31,12 +31,9 @@
 using namespace mrob;
 
 EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
-        EigenFactor(robust_type),
+        EigenFactorPlane(robust_type),
         Tcenter_(Mat4::Identity()),
-        planeEstimation_{Mat41::Zero()},
-        planeEstimationUnit_{Mat41::Zero()},
-        planeError_{0.0},
-        numberPoints_{0}
+        planeEstimationUnit_{Mat41::Zero()}
 {
 }
 
@@ -87,34 +84,6 @@ void EigenFactorPlaneCenter::evaluate_chi2()
     chi2_ = planeError_;//XXX this is not the exact plane error, but requires chi2 = 1/2 pi' Q pi
 }
 
-void EigenFactorPlaneCenter::add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W)
-{
-    // Pose has been observed, data has been initialized and we simply add point
-    auto id = node->get_id();
-    if (reverseNodeIds_.count(id) > 0)
-    {
-        uint_t localId = reverseNodeIds_[id];
-        allPlanePoints_.at(localId).push_back(p);
-        allPointsInformation_.at(localId).push_back(W);
-    }
-    // If EF has not observed point from the current Node, it creates:
-    else
-    {
-        allPlanePoints_.emplace_back(std::deque<Mat31, Eigen::aligned_allocator<Mat31>>());
-        allPointsInformation_.emplace_back(std::deque<matData_t>());
-        neighbourNodes_.push_back(node);
-        node->set_connected_to_EF(true);//This function is required to properly build the L matrix
-        nodeIds_.push_back(id);
-        uint_t localId = allPlanePoints_.size()-1;
-        reverseNodeIds_.emplace(id, localId);
-        allPlanePoints_.at(localId).push_back(p);
-        allPointsInformation_.at(localId).push_back(W);
-        // S and Q are built later, no need to create an element.
-    }
-    numberPoints_++;
-
-}
-
 
 double EigenFactorPlaneCenter::estimate_plane()
 {
@@ -156,81 +125,6 @@ double EigenFactorPlaneCenter::estimate_plane()
     return planeError_;
 }
 
-void EigenFactorPlaneCenter::calculate_all_matrices_S(bool reset)
-{
-    if (reset)
-        S_.clear();
-    if (S_.empty())
-    {
-        for (auto &vectorPoints: allPlanePoints_)
-        {
-            Mat4 S = Mat4::Zero();
-            for (Mat31 &p : vectorPoints)
-            {
-                Mat41 pHomog;
-                pHomog << p , 1.0;
-                S += pHomog * pHomog.transpose();//TODO robust: add coeficient W here...
-            }
-            S_.push_back(S);
-        }
-    }
-}
-
-void EigenFactorPlaneCenter::calculate_all_matrices_Q()
-{
-    Q_.clear();
-    uint_t nodeIdLocal = 0;
-    for (auto &S : S_)
-    {
-        Mat4 T = this->neighbourNodes_[nodeIdLocal]->get_state();
-        // Use the corresponding matrix S
-        Mat4 Q;
-        Q.noalias() =  T * S * T.transpose();
-        Q_.push_back(Q);
-        nodeIdLocal++;
-    }
-}
-
-Mat31 EigenFactorPlaneCenter::get_mean_point(factor_id_t id)
-{
-    assert(!S_.empty() && "EigenFactorPlaneCenter::get_mean_point: S matrix empty");
-    auto localId = reverseNodeIds_.at(id);
-    return S_[localId].topRightCorner<3,1>()/S_[localId](3,3);
-}
-
-void EigenFactorPlaneCenter::print() const
-{
-    std::cout << "Plane Eigen Factor " <<  this->get_id()
-              << " current plane estimated: " << planeEstimationUnit_.transpose() << std::endl;
-    for(auto id : nodeIds_)
-        std::cout << "Node ids = "  << id << ", and its reverse in EF = "
-                  << reverseNodeIds_.at(id) << std::endl;
-    /*for(auto &pc: allPlanePoints_ )
-    {
-        std::cout << "new pose: \n";
-        for (auto &p : pc)
-            std::cout << "point = " << p.transpose() <<std::endl;
-    }*/
-    std::cout << "Plotting S \n";
-    for(auto &S: S_)
-        std::cout << S << std::endl;
-    std::cout << "Plotting Jacobians \n";
-    for(auto &J: J_)
-        std::cout << J.transpose() << std::endl;
-}
 
 
-MatRefConst EigenFactorPlaneCenter::get_jacobian(mrob::factor_id_t id) const
-{
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneCenter::get_jacobian: element not found");
-    uint_t localId = reverseNodeIds_.at(id);
-    return J_.at(localId);
-}
-
-MatRefConst EigenFactorPlaneCenter::get_hessian(mrob::factor_id_t id) const
-{
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneCenter::get_hessian: element not found");
-    uint_t localId = reverseNodeIds_.at(id);
-    return H_.at(localId);
-}
 

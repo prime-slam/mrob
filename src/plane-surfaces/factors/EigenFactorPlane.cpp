@@ -111,6 +111,20 @@ void EigenFactorPlane::add_point(const Mat31& p, std::shared_ptr<Node> &node, ma
 }
 
 
+void EigenFactorPlane::add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W)
+{
+    assert(P.cols() == 3 && "EigenFactorPlane::add_points_array: Nx3 input is required");
+    const auto N = P.rows();
+    for (uint_t i = 0; i < N; ++i)
+        add_point(P.row(i), node, W);
+}
+
+void EigenFactorPlane::add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W)
+{
+    assert(0 && "EigenFactorPlane::add_points_S_matrix: method not implemented");
+    // TODO
+}
+
 double EigenFactorPlane::estimate_plane()
 {
     calculate_all_matrices_S();

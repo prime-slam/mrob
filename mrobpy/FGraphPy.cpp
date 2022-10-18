@@ -233,6 +233,13 @@ public:
         ef->add_point(point, n, W);
     }
 
+    void eigen_factor_plane_add_points_array(factor_id_t planeEigenId, factor_id_t nodePoseId, const py::EigenDRef<const MatX> pointsArray, matData_t &W)
+    {
+        auto ef = this->get_eigen_factor(planeEigenId);
+        auto n = this->get_node(nodePoseId);
+        ef->add_points_array(pointsArray, n, W);
+    }
+
     // Eigen factor plane Center, it requires adding an empty structure and then each point will increase
     // the set of points, at the given pose.
     factor_id_t add_eigen_factor_plane_center()
@@ -414,6 +421,12 @@ void init_FGraph(py::module &m)
                     py::arg("planeEigenId"),
                     py::arg("nodePoseId"),
                     py::arg("point"),
+                    py::arg("W"))
+            .def("eigen_factor_plane_add_points_array", &FGraphPy::eigen_factor_plane_add_points_array,
+                    "Adds array of points given a node id and the EF them belongs to.",
+                    py::arg("planeEigenId"),
+                    py::arg("nodePoseId"),
+                    py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
             ;
