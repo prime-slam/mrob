@@ -56,10 +56,6 @@ except ImportError:
     bdist_wheel = None
 
 setuptools.setup(
-    version_config={
-        "dev_template": "{tag}.{branch}.post{ccount}+git.{sha}",
-        "dirty_template": "{tag}.{branch}.post{ccount}+git.{sha}.dirty",
-    },
     setup_requires=['setuptools-git-versioning'],
     cmdclass={'bdist_wheel': bdist_wheel}
 )
