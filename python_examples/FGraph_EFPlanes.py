@@ -37,7 +37,7 @@ draw_planes(synthetic)
 # create the problem in old optim structure
 problem = mrob.registration.PlaneRegistration() #empty creator
 synthetic.create_plane_registration(problem)
-problem.solve(mrob.registration.INITIALIZE)
+#problem.solve(mrob.registration.INITIALIZE)
 
 
 # Solution 1: FG pushing all information to the structure
@@ -47,18 +47,18 @@ graph = mrob.FGraph()
 
 # Adding all empty EF planes
 for t in range(N_planes):
-    ef1 = graph.add_eigen_factor_plane()
+    ef1 = graph.add_eigen_factor_point()
     # It is an ordered progression 0:N-1, no need for dict
     print('EFactor id = ', ef1)
 
 # Initializing the trajectories. It requires an initial solution
 ini_traj = problem.get_trajectory()
-n1 = graph.add_node_pose_3d(ini_traj[0], mrob.NODE_ANCHOR)
+n1 = graph.add_node_pose_3d(T, mrob.NODE_ANCHOR)
 print('Initial Pose node id = ', n1)
 
 
 for t in range(1,N_poses):
-    n1 = graph.add_node_pose_3d(ini_traj[t])
+    n1 = graph.add_node_pose_3d(ini_traj[t]) #Note this starts alsmot at 0, while T is at ||t||=1e3
     # It is an ordered progression 0:N-1, no need for dict
     print('Pose node id = ', n1)
 
@@ -75,10 +75,10 @@ for t in range(N_poses):
                                    W = 1.0)
 
 print('\n\n\n\nInitial error EF plane= ', graph.chi2(True))
-print('solve iters = ', graph.solve(mrob.LM_ELLIPS,10))
+print('solve iters = ', graph.solve(mrob.LM_ELLIPS,100))# nees too many iterations
 print('Chi2 = ', graph.chi2())
 traj1 = graph.get_estimated_state()
-#draw_planes(synthetic, graph.get_estimated_state())
+draw_planes(synthetic, graph.get_estimated_state())
 
 # Solution 2: Old plane aligment routing optimization. It is not in the form of factors (EFs)
 # -----------------------------------------------------------------------------------

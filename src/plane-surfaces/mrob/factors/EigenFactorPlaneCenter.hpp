@@ -22,8 +22,8 @@
  */
 
 // XXX this duplicate should disappear
-#ifndef EIGENFACTORPLANE2_HPP_
-#define EIGENFACTORPLANE2_HPP_
+#ifndef EIGENFACTORPLANECENTER_HPP_
+#define EIGENFACTORPLANECENTER_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -96,4 +96,4 @@ protected:
 };
 
 }
-#endif /* EigenFactorPlane_HPP_ */
+#endif /* EigenFactorPlaneCenter_HPP_ */
