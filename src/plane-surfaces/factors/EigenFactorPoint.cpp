@@ -26,7 +26,7 @@
 
 #include <iostream>
 #include <Eigen/Eigenvalues>
-#include "mrob/SE3.hpp"
+
 
 using namespace mrob;
 
@@ -42,23 +42,26 @@ void EigenFactorPoint::evaluate_residuals()
     this->calculate_all_matrices_Q();
 
     // 2) Calculate the residual, same structure as in EigenFactorPlane::calculate_matrices_Q()
-    //    r = T * mu(Qi) - mu(allQ)
+    //    r = To^{-1}T * mu(Qi) - mu(Q0)
     r_.clear();
     transformed_mu_.clear();
     uint_t nodeIdLocal = 0;
-    Mat31 global_mean_point;
-    global_mean_point = accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);// TODO we should do a method for this
+    Mat4 initial_transform = this->neighbourNodes_[nodeIdLocal]->get_state();
+    T_ini_inv_ = SE3(initial_transform).inv();
+    Mat31 initial_mean_point;
+    initial_mean_point = S_[0].topRightCorner<3,1>()/S_[0](3,3);// TODO we should do a method for this
     for (auto &S : S_)
     {
         // 3) get current transformation. Here we follow the same scheme as in Factor1PosePoint2Point
         Mat4 Tnode = this->neighbourNodes_[nodeIdLocal]->get_state();
         SE3 T(Tnode);
-        Mat31 local_mean_point = S.topRightCorner<3,1>()/S(3,3);;
+        Mat31 local_mean_point = S.topRightCorner<3,1>()/S(3,3);
         Mat31 Tmu = T.transform(local_mean_point);
-        Mat31 residual = Tmu - global_mean_point;
+        transformed_mu_.emplace_back(Tmu);
+        // wwe need to sttopre T_t * mu, and then transform the full sequence T0^{-1}*T_t * mu
+        Mat31 residual = T_ini_inv_.transform(Tmu) - initial_mean_point;
         residual *= std::sqrt(S(3,3));// This is a weighting factor, equivalent to the information L = N
         r_.emplace_back(residual);
-        transformed_mu_.emplace_back(Tmu);
         nodeIdLocal++;
     }
 }
@@ -76,6 +79,7 @@ void EigenFactorPoint::evaluate_jacobians()
         Mat61 jacobian = Mat61::Zero();
         Mat<3,6> dr;
         dr << -hat3(Tx_t) , Mat3::Identity();
+        dr = T_ini_inv_.R() * dr;
         jacobian = dr.transpose() * rt;
         J_.push_back(jacobian);
         // Hessian = dr/dxi_t' * dr/dxi_t

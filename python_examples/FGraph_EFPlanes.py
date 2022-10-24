@@ -20,17 +20,17 @@ def draw_planes(synthetic,traj=[]):
     open3d.visualization.draw_geometries(pcds)
 
 N_points = 500
-N_planes = 4
+N_planes = 5
 N_poses = 2
 
 # Generate the problem
-T = mrob.geometry.SE3(np.random.randn(6)*1000) # Test this
-synthetic = mrob.registration.CreatePoints(N_points,N_planes,N_poses, 0.05, 0.1, T) #point noise, bias noise
+T0 = mrob.geometry.SE3(np.random.randn(6)*1000) # Test this
+synthetic = mrob.registration.CreatePoints(N_points,N_planes,N_poses, 0.05, 0.1, T0) #point noise, bias noise
 T_gt = synthetic.get_ground_truth_last_pose()
 #T_gt.print()
 gt_traj = synthetic.get_trajectory()
-for T in gt_traj:
-    T.print()
+for Ti in gt_traj:
+    Ti.print()
 draw_planes(synthetic)
 
 
@@ -53,7 +53,7 @@ for t in range(N_planes):
 
 # Initializing the trajectories. It requires an initial solution
 ini_traj = problem.get_trajectory()
-n1 = graph.add_node_pose_3d(T, mrob.NODE_ANCHOR)
+n1 = graph.add_node_pose_3d(T0, mrob.NODE_ANCHOR)
 print('Initial Pose node id = ', n1)
 
 

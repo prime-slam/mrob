@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <deque>
 #include <Eigen/StdVector>
+#include "mrob/SE3.hpp"
 
 
 namespace mrob{
@@ -41,9 +42,9 @@ namespace mrob{
  * This particualr examples solve the point to point aligments between the centroids of
  * the plane in the current frame vs the overall centroid of the plane:
  *
- * r = W*(T_i mu_i - mu(Q)),
+ * r = W*(T0^{-1}*T_i mu_i - mu(Q_0)),
  * where i is the current pose,
- * x_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
+ * mu_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
  *
  *
  */
@@ -73,6 +74,7 @@ public:
 protected:
     //vector of residuals, and T*mu_i follows the same indexing than Jacobian and Hessian
     std::deque<Mat31, Eigen::aligned_allocator<Mat31>> r_,transformed_mu_;
+    SE3 T_ini_inv_;
 
 };
 
