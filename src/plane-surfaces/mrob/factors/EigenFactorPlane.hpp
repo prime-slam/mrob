@@ -137,7 +137,7 @@ protected:
      * Estimates the plane parameters: v = [n', d]'_{4x1}, where v is unit, (due to the Eigen solution)
      * although for standard plane estimation we could enforce unit on the normal vector n.
      */
-    double estimate_plane();
+    virtual void estimate_plane();
     /**
      * Calculates the matrix S = sum(p*p'), where p = [x,y,z,1]
      * for all planes, as an aggregation of the outer product of all
@@ -185,14 +185,17 @@ protected:
     std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
     Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
-    Mat41 planeEstimation_;
-    matData_t planeError_; //this is chi2 scaled by the covariance of point measurement.
+    Mat41 planeEstimationUnit_, planeEstimation_;
+    //matData_t planeError_; //this is chi2 scaled by the covariance of point measurement.
 
     // subset of pointcloud for the given plane
     //std::unordered_map<factor_id_t, std::vector<Mat31> > allPlanePoints_;
     std::deque<std::deque<Mat31, Eigen::aligned_allocator<Mat31>> > allPlanePoints_;
     std::deque<std::deque<matData_t> > allPointsInformation_;
     uint_t numberPoints_;
+
+
+    matData_t planeError_;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

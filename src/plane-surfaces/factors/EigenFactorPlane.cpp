@@ -32,9 +32,10 @@ using namespace mrob;
 
 EigenFactorPlane::EigenFactorPlane(Factor::robustFactorType robust_type):
         EigenFactor(robust_type),
+        planeEstimationUnit_{Mat41::Zero()},
         planeEstimation_{Mat41::Zero()},
-        planeError_{0.0},
-        numberPoints_{0}
+        numberPoints_{0},
+        planeError_{0.0}
 {
 }
 
@@ -56,7 +57,7 @@ void EigenFactorPlane::evaluate_jacobians()
         for (uint_t i = 0 ; i < 6; i++)
         {
             dQ = SE3GenerativeMatrix(i)*Qt + Qt*SE3GenerativeMatrix(i).transpose();
-            jacobian(i) = planeEstimation_.dot(dQ*planeEstimation_);
+            jacobian(i) = planeEstimationUnit_.dot(dQ*planeEstimationUnit_);
 
             //now calculate Hessian here. Upper triangular view
             Mat4 ddQ; // second derivative of the Q matrix
@@ -68,7 +69,7 @@ void EigenFactorPlane::evaluate_jacobians()
                 ddQ *= 0.5 * Qt;
                 ddQ += SE3GenerativeMatrix(j) * dQ;//here indices should be different, later Hessian is symmetric.
                 ddQ += ddQ.transpose().eval();
-                hessian(i,j) = planeEstimation_.dot(ddQ*planeEstimation_);
+                hessian(i,j) = planeEstimationUnit_.dot(ddQ*planeEstimationUnit_);
             }
         }
         J_.push_back(jacobian);
@@ -79,6 +80,8 @@ void EigenFactorPlane::evaluate_jacobians()
 
 void EigenFactorPlane::evaluate_chi2()
 {
+    // Point 2 plane exact error requires chi2 = pi' Q pi, it is the same as eig
+    //chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
     chi2_ = planeError_;
 }
 
@@ -125,19 +128,21 @@ void EigenFactorPlane::add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> 
     // TODO
 }
 
-double EigenFactorPlane::estimate_plane()
+void EigenFactorPlane::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedQ_);
-    planeEstimation_ = es.eigenvectors().col(0);
+    planeEstimationUnit_ = es.eigenvectors().col(0);
+    matData_t scale = planeEstimationUnit_.head(3).norm();
+    planeEstimation_ = planeEstimationUnit_ / scale;
+    //std::cout << "\n and solution plane unit = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "\n and solution plane = \n" << planeEstimation_ <<  std::endl;
     //std::cout << "plane estimation error: " << es.eigenvalues() <<  std::endl;
-    planeError_ = es.eigenvalues()(0);
+    planeError_ = es.eigenvalues()(0);// this error is not point2plane error, but scaled
 
-    return planeError_;
 }
 
 void EigenFactorPlane::calculate_all_matrices_S(bool reset)
