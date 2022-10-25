@@ -129,11 +129,6 @@ double EigenFactorPlane::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
-    accumulatedQ_ = Mat4::Zero();
-    for (auto &Qt: Q_)
-    {
-        accumulatedQ_ += Qt;
-    }
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat4> es(accumulatedQ_);
@@ -169,6 +164,7 @@ void EigenFactorPlane::calculate_all_matrices_Q()
 {
     Q_.clear();
     uint_t nodeIdLocal = 0;
+    accumulatedQ_ = Mat4::Zero();
     for (auto &S : S_)
     {
         Mat4 T = this->neighbourNodes_[nodeIdLocal]->get_state();
@@ -176,6 +172,7 @@ void EigenFactorPlane::calculate_all_matrices_Q()
         Mat4 Q;
         Q.noalias() =  T * S * T.transpose();
         Q_.push_back(Q);
+        accumulatedQ_ += Q;
         nodeIdLocal++;
     }
 }

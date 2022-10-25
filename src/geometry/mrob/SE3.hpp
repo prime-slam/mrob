@@ -183,6 +183,8 @@ public:
      */
     void regenerate();
 
+    Mat41 transform_plane(const Mat41 &pi);
+
 
     void print(void) const;
     void print_lie(void) const;

@@ -45,6 +45,7 @@
 
 #include "mrob/factors/EigenFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
+#include "mrob/factors/EigenFactorPoint.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -249,6 +250,13 @@ public:
         return f->get_id();
     }
 
+    // Eigen factor point. Centroids observed usualy for initial guess
+    factor_id_t add_eigen_factor_point()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPoint(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
 
 private:
     mrob::Factor::robustFactorType robust_type_;
@@ -429,6 +437,7 @@ void init_FGraph(py::module &m)
                     py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
+            .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             ;
 
 }
