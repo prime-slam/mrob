@@ -426,7 +426,8 @@ void FGraphSolve::build_info_EF()
             {
                 for (uint_t j = i; j<6; j++)
                 {
-                    // convert the hessian to triplets
+                    // convert the hessian to triplets, duplicated ones will be summed
+                    // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0
                     hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex+ j, H(i,j)));
                 }
             }

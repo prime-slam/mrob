@@ -42,9 +42,14 @@ namespace mrob{
  * This particualr examples solve the point to point aligments between the centroids of
  * the plane in the current frame vs the overall centroid of the plane:
  *
- * r = W*(T0^{-1}*T_i mu_i - mu(Q_0)),
- * where i is the current pose,
- * mu_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
+ * r = W_I*(T0^{-1}*T_i mu_i - mu(Q_0)), where
+ *  - i is the current pose,
+ *  - mu_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
+ *  - W_i is the weighting (information) which corresponds to the number of points.
+ *
+ * This leads to a weighted LSQ
+ *
+ * The Chi2 is of a different kind than the EFplane, since this is point2point
  *
  *
  */

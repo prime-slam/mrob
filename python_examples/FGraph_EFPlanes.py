@@ -40,7 +40,7 @@ synthetic.create_plane_registration(problem)
 #problem.solve(mrob.registration.INITIALIZE)
 
 
-# Solution 1: FG pushing all information to the structure
+# Solution 1: FG point, gives an initial solution. The error can NOT be compared with others
 # -----------------------------------------------------------------------------------
 
 graph = mrob.FGraph()
@@ -52,16 +52,16 @@ for t in range(N_planes):
     print('EFactor id = ', ef1)
 
 # Initializing the trajectories. It requires an initial solution
-ini_traj = problem.get_trajectory()
 n1 = graph.add_node_pose_3d(T0, mrob.NODE_ANCHOR)
 print('Initial Pose node id = ', n1)
 
 
 for t in range(1,N_poses):
-    n1 = graph.add_node_pose_3d(ini_traj[t]) #Note this starts alsmot at 0, while T is at ||t||=1e3
+    #NOTE this starts alsmot at 0, while T is at ||t||=1e3
+    # if the initialization was better, then the solution will be faster to converge
+    n1 = graph.add_node_pose_3d(mrob.geometry.SE3())
     # It is an ordered progression 0:N-1, no need for dict
     print('Pose node id = ', n1)
-
 
 for t in range(N_poses):
     print('Processing pose ', t)
@@ -102,14 +102,12 @@ for t in range(N_planes):
     ef1 = graph.add_eigen_factor_plane_center()
 
 # Initializing the trajectories. It requires an initial solution
-problem.reset_solution()
-problem.solve(mrob.registration.INITIALIZE)
-ini_traj = problem.get_trajectory()
-n1 = graph.add_node_pose_3d(ini_traj[0], mrob.NODE_ANCHOR)
+n1 = graph.add_node_pose_3d(T0, mrob.NODE_ANCHOR)
 
 
+# The previous solution from EF point should be used in here
 for t in range(1,N_poses):
-    n1 = graph.add_node_pose_3d(ini_traj[t])
+    n1 = graph.add_node_pose_3d(mrob.geometry.SE3(traj1[t]))
     # It is an ordered progression 0:N-1, no need for dict
     print('Pose node id = ', n1)
 

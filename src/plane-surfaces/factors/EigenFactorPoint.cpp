@@ -58,9 +58,8 @@ void EigenFactorPoint::evaluate_residuals()
         Mat31 local_mean_point = S.topRightCorner<3,1>()/S(3,3);
         Mat31 Tmu = T.transform(local_mean_point);
         transformed_mu_.emplace_back(Tmu);
-        // wwe need to sttopre T_t * mu, and then transform the full sequence T0^{-1}*T_t * mu
+        // we need to store T_t * mu, and then transform the full sequence T0^{-1}*T_t * mu
         Mat31 residual = T_ini_inv_.transform(Tmu) - initial_mean_point;
-        residual *= std::sqrt(S(3,3));// This is a weighting factor, equivalent to the information L = N
         r_.emplace_back(residual);
         nodeIdLocal++;
     }
@@ -74,17 +73,18 @@ void EigenFactorPoint::evaluate_jacobians()
     uint_t nodeIdLocal = 0;
     for (auto &rt: r_)
     {
-        // Jacobian = dr/dxi_t' * r_t
+        // Jacobian = dr/dxi_t' *W_t *  r_t
+        matData_t W =  S_[nodeIdLocal](3,3); // Information is simply the number of points, weighted solution
         Mat31 Tx_t = transformed_mu_.at(nodeIdLocal);
         Mat61 jacobian = Mat61::Zero();
         Mat<3,6> dr;
         dr << -hat3(Tx_t) , Mat3::Identity();
         dr = T_ini_inv_.R() * dr;
-        jacobian = dr.transpose() * rt;
+        jacobian = W * dr.transpose() * rt;
         J_.push_back(jacobian);
-        // Hessian = dr/dxi_t' * dr/dxi_t
+        // Hessian = dr/dxi_t' * W_t * dr/dxi_t
         Mat6 hessian = Mat6::Zero();
-        hessian = dr.transpose() * dr;
+        hessian = W* dr.transpose() * dr;
         H_.push_back(hessian);
         nodeIdLocal++;
     }
@@ -93,9 +93,11 @@ void EigenFactorPoint::evaluate_jacobians()
 void EigenFactorPoint::evaluate_chi2()
 {
     chi2_ = 0.0;
+    uint_t nodeIdLocal = 0;
     for (auto &rt: r_)
     {
-        chi2_ += rt.dot(rt);
+        chi2_ += S_[nodeIdLocal](3,3) * rt.dot(rt);
+        nodeIdLocal++;
     }
     chi2_ *= 0.5;
 }
