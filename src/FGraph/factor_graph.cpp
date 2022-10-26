@@ -42,7 +42,7 @@ factor_id_t FGraph::add_factor(std::shared_ptr<Factor> &factor)
 {
     factor->set_id(factors_.size());
     factors_.emplace_back(factor);
-    obsDim_ += factor->get_dim();
+    obsDim_ += factor->get_dim_obs();
     return factor->get_id();
 }
 

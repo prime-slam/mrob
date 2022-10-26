@@ -46,6 +46,7 @@
 #include "mrob/factors/EigenFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
+#include "mrob/factors/PiFactorPlane.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -255,6 +256,17 @@ public:
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPoint(robust_type_));
         this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
+    // Pi Fator from Zhou icra 2021
+    factor_id_t add_pi_factor_plane(uint_t nodeLandmarkId)
+    {
+        // requires standard factors, but the number of nodes connected will grow with nodes
+        // TODO: increase dimensionality every time a new node is added
+        auto n = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::PiFactorPlane(n,robust_type_));
+        this->add_factor(f);
         return f->get_id();
     }
 

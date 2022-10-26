@@ -282,7 +282,7 @@ void FGraphSolve::build_adjacency()
         f->evaluate_chi2();
 
         // calculate dimensions for reservation and bookeping vector
-        uint_t dim = f->get_dim();
+        uint_t dim = f->get_dim_obs();
         uint_t allDim = f->get_all_nodes_dim();
         for (uint_t j = 0; j < dim; ++j)
         {
@@ -303,13 +303,13 @@ void FGraphSolve::build_adjacency()
         auto f = factors_[i];
 
         // 4) Get the calculated residual
-        r_.block(indFactorsMatrix[i], 0, f->get_dim(), 1) <<  f->get_residual();
+        r_.block(indFactorsMatrix[i], 0, f->get_dim_obs(), 1) <<  f->get_residual();
 
         // 5) build Adjacency matrix as a composition of rows
         // 5.1) Get the number of nodes involved. It is a vector of nodes
         auto neighNodes = f->get_neighbour_nodes();
         // Iterates over the Jacobian row
-        for (uint_t l=0; l < f->get_dim() ; ++l)
+        for (uint_t l=0; l < f->get_dim_obs() ; ++l)
         {
             uint_t totalK = 0;
             // Iterates over the number of neighbour Nodes (ordered by construction)
@@ -340,10 +340,10 @@ void FGraphSolve::build_adjacency()
         // 5) Get information matrix for every factor
         // For robust factors, here is where the robust weights should be applied
         matData_t robust_weight = 1.0;
-        for (uint_t l = 0; l < f->get_dim(); ++l)
+        for (uint_t l = 0; l < f->get_dim_obs(); ++l)
         {
             // only iterates over the upper triangular part
-            for (uint_t k = l; k < f->get_dim(); ++k)
+            for (uint_t k = l; k < f->get_dim_obs(); ++k)
             {
                 uint_t iRow = indFactorsMatrix[i] + l;
                 uint_t iCol = indFactorsMatrix[i] + k;

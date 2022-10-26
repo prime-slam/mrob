@@ -140,8 +140,10 @@ public:
 
     factor_id_t get_id() const {return id_;}
     void set_id(factor_id_t id) {id_ = id;}
-    uint_t get_dim() const {return dim_;}
-    uint_t get_all_nodes_dim(){ return allNodesDim_;}
+    uint_t get_dim_obs() const {return dim_;}
+    void set_dim_obs(uint_t dim) {dim_ = dim;}
+    uint_t get_all_nodes_dim() const{ return allNodesDim_;}
+    void set_all_nodes_dim(uint_t dim) {allNodesDim_ = dim;}
     const std::vector<std::shared_ptr<Node> >*
             get_neighbour_nodes(void) const {return &neighbourNodes_;}
 
