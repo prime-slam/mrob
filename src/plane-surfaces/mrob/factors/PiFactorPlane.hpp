@@ -35,15 +35,14 @@
 namespace mrob{
 
 /**
- * Reimplmentation of pi-factor from Zhou et al ICRA 2021
- * This factor is mostly based on the EF, using the a squared root form of the S matrix
- * and connects two nodes, the pose and the plane ladmark
+ * Reimplementation of pi-factor from Zhou et al ICRA 2021
+ * This factor is mostly based on the EF, using the squared root form of the S matrix
+ * and connects two nodes, the pose and the plane landmark
  *
- * sum ||pi' T p_i||^2 = || pi' T \sqrt(S)||^2
+ * sum ||pi' T p_i||^2 = || \sqrt(S)' T' pi||^2
  *
- * We will use the EF structure, since it already calculates S matrices
- * and change it slightly to run on Fgraph
- *
+ * the two nodes connected at T (pose) and pi (plane 4d)
+ * The observation is the sqrt(S), which in clude all points observed
  */
 class PiFactorPlane: public EigenFactorPlane{
 public:
@@ -72,15 +71,12 @@ public:
 
 
 protected:
-    /**
-     * Estimates the plane parameters: v = [n', d]'_{4x1}, where v is unit, (due to the Eigen solution)
-     * although for standard plane estimation we could enforce unit on the normal vector n.
-     */
-    void estimate_plane() override;
-
+    void calculate_squared_all_matrices_S();
     // Since we dont know a priori the dimensions, we grow as more nodes are added
     MatX Jacobian_;
     MatX1 residual_;
+
+    std::deque<Mat4, Eigen::aligned_allocator<Mat4>> sqrtTransposeS_;
 
 };
 

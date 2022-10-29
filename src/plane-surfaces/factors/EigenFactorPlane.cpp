@@ -158,10 +158,12 @@ void EigenFactorPlane::calculate_all_matrices_S(bool reset)
             {
                 Mat41 pHomog;
                 pHomog << p , 1.0;
-                S += pHomog * pHomog.transpose();//TODO robust: add coeficient W here...
+                S += pHomog * pHomog.transpose();
             }
-            S_.push_back(S);
+            S_.emplace_back(S);
         }
+        // XXX at this point, we could remove all the points stored, since they will not be used again.
+        // Let's keep them for now in case we re-evaluate things or filter, it's just memory.
     }
 }
 

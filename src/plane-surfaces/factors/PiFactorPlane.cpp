@@ -25,7 +25,7 @@
 #include "mrob/factors/PiFactorPlane.hpp"
 
 #include <iostream>
-#include <Eigen/Eigenvalues>
+#include <Eigen/Cholesky>
 #include "mrob/SE3.hpp"
 
 using namespace mrob;
@@ -34,103 +34,52 @@ PiFactorPlane::PiFactorPlane(std::shared_ptr<Node> &nodePlane,Factor::robustFact
         EigenFactorPlane(robust_type)
 {
     this->set_dim_obs(4);// This is as we observe N homogenous points, but contracted to a vector
+    // add plane
+    neighbourNodes_.push_back(nodePlane);// This interferes with the poses later on the ordering?
 }
 
 void PiFactorPlane::evaluate_residuals()
 {
-    this->estimate_plane();
+    // First calculates the matrices
+    calculate_all_matrices_S();
+    calculate_squared_all_matrices_S();
+
+    // the residual is a vector of dimension 4xN(number of poses)
+    uint_t N = get_all_nodes_dim() - 4;//remove node plane -> dim =4
+    residual_.clear();
+
+    // Iterate over poses, strict order appearing in here
 }
 
 void PiFactorPlane::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
-    J_.clear();
-    for (auto &Qt: Q_)
-    {
-        Mat61 jacobian = Mat61::Zero();
-        Mat6 hessian = Mat6::Zero();
-        Mat4 dQ = Mat4::Zero();
-        for (uint_t i = 0 ; i < 6; i++)
-        {
-            dQ = SE3GenerativeMatrix(i)*Qt + Qt*SE3GenerativeMatrix(i).transpose();
-            Mat4 dQcenter = Tcenter_ * dQ * Tcenter_.transpose();
-            jacobian(i) = planeEstimationUnit_.dot(dQcenter*planeEstimationUnit_);
+    Jacobian_.clear();
 
-            //now calculate Hessian here. Upper triangular view
-            Mat4 ddQ; // second derivative of the Q matrix
-            for (uint_t j = i ; j< 6 ; ++j)
-            {
-                ddQ.setZero();
-                ddQ = SE3GenerativeMatrix(i)*SE3GenerativeMatrix(j) + SE3GenerativeMatrix(j)*SE3GenerativeMatrix(i);
-                //compound operator *= as in a*=b (this multiplies on the right: a*=b is equivalent to a = a*b)
-                ddQ *= 0.5 * Qt;
-                ddQ += SE3GenerativeMatrix(j) * dQ;//here indices should be different, later Hessian is symmetric.
-                ddQ += ddQ.transpose().eval();
-                // Transformation, translation for center the matrix derivative is applied here
-                ddQ = Tcenter_ * ddQ * Tcenter_.transpose();
-                hessian(i,j) = planeEstimationUnit_.dot(ddQ*planeEstimationUnit_);
-            }
-        }
-        J_.push_back(jacobian);
-        H_.push_back(hessian);
+    // dr/dxi = sqrt(S)'* T' * G' * pi = sqrt(S)'* T' * [normal^ | 0 0 0  ]
+    //                                                   0 0 0   | normal']
 
-    }
+    //dr/dpi = sqrt(S)'* T'
 }
 
 void PiFactorPlane::evaluate_chi2()
 {
-    // error = lambda from eig
-    chi2_ =  planeError_;
-    // Point 2 plane exact error requires chi2 = pi' Q pi
-    //chi2_ = planeEstimationUnit_.dot( accumulatedCenterQ_ * planeEstimationUnit_ );
-
-    // A second alternative is getting back to the homogeneous plane and calcualte error
-    // This solution is similar to EF, but has some minor differences in second decimal
-    //planeEstimation_ = SE3(Tcenter_).inv().transform_plane(planeEstimationUnit_);
-    //planeEstimation_.normalize();
-    //chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
-    //std::cout << ", error lambda = " << planeError_ << ", error rotated back = " << chi2_ << std::endl;
+    chi2_ = 0.5 * residual_.dot(residual_);// wieghting already included in the residual by sqrt(S)'
 }
 
-
-void PiFactorPlane::estimate_plane()
+void PiFactorPlane::calculate_squared_all_matrices_S()
 {
-    calculate_all_matrices_S();
-    calculate_all_matrices_Q();
-    accumulatedQ_ = Mat4::Zero();
-    for (auto &Qt: Q_)
+    if (sqrtTransposeS_.empty())
     {
-        accumulatedQ_ += Qt;
+        Mat4 sqrtS = Mat4::Zero();
+        for (auto &S : S_)
+        {
+            sqrtS = S.llt().matrixL().transpose();
+            sqrtTransposeS_.emplace_back();
+        }
+
     }
-
-    // Center the plane requires a transformation (translation) such that
-    // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
-    // This only hold for when T^{-\top} = [I, -n d].
-    // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
-    Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
-    //std::cout << "T center = " << Tcenter_ <<  std::endl;
-
-    //std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
-
-    accumulatedCenterQ_ = Tcenter_ * accumulatedQ_ * Tcenter_.transpose();
-
-    //std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
-
-
-    // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
-    Eigen::SelfAdjointEigenSolver<Mat3> es;
-    es.computeDirect(accumulatedCenterQ_.topLeftCorner<3,3>());
-    planeEstimationUnit_.head<3>() = es.eigenvectors().col(0);
-    planeEstimationUnit_(3) = 0.0;
-
-    //planeEstimation_ = SE3(Tcenter_).transform_plane(planeEstimationUnit_);
-
-    //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
-    //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
-
-    planeError_ = es.eigenvalues()(0);
 }
-
 
 
 
