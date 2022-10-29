@@ -25,11 +25,8 @@
 #define PIFACTORPLABE_HPP_
 
 
+#include "mrob/matrix_base.hpp"
 #include "mrob/factor.hpp"
-#include "mrob/factors/EigenFactorPlane.hpp"
-#include <unordered_map>
-#include <deque>
-#include <Eigen/StdVector>
 
 
 namespace mrob{
@@ -44,39 +41,46 @@ namespace mrob{
  * the two nodes connected at T (pose) and pi (plane 4d)
  * The observation is the sqrt(S), which in clude all points observed
  */
-class PiFactorPlane: public EigenFactorPlane{
+class PiFactorPlane: public Factor{
 public:
     /**
      * Creates the Pi factor.
      *
-     * As in EF, observations are points, included later, but it requires a node plane 4d to be added
      */
-    PiFactorPlane(std::shared_ptr<Node> &nodePlane,
+    PiFactorPlane(const Mat4 &Sobservation, std::shared_ptr<Node> &nodePose,
+            std::shared_ptr<Node> &nodePlane,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
     ~PiFactorPlane() override = default;
     /**
-     * Jacobians are not evaluated, just the residuals.
-     * This function is calculating the current plane estimation
+     * Jacobians are not evaluated, just the residuals
      */
-    void evaluate_residuals() override;
+    virtual void evaluate_residuals() override;
     /**
-     * Evaluates Jacobians, given the residual evaluated
-     * It also evaluated the Hessians
+     * Evaluates the Jacobians
      */
-    void evaluate_jacobians() override;
-    /**
-     * Chi2 is a scaling of the plane error from lambda_min
-     */
-    void evaluate_chi2() override;
+    virtual void evaluate_jacobians() override;
+    virtual void evaluate_chi2() override;
+
+    virtual void print() const;
+
+    MatRefConst get_obs() const override {return Sobs_;};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override {return W_;};
+    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
 
 
-protected:
-    void calculate_squared_all_matrices_S();
-    // Since we dont know a priori the dimensions, we grow as more nodes are added
-    MatX Jacobian_;
-    MatX1 residual_;
 
-    std::deque<Mat4, Eigen::aligned_allocator<Mat4>> sqrtTransposeS_;
+private:
+    Mat41 r_; //residuals
+    Mat<4,10> J_;//Jacobians dimensions obs x [plane(4) + pose(6)]
+    Mat4 W_;//inverse of observation covariance (information matrix)
+    bool reversedNodeOrder_;
+    // intermediate variables to keep
+    Mat41 plane_;
+    Mat4 Sobs_, S_mul_T_transp_;// we store this bariable for later calcuating the Jacobian faster
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 };
 

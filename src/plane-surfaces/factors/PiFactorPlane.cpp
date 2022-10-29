@@ -30,56 +30,82 @@
 
 using namespace mrob;
 
-PiFactorPlane::PiFactorPlane(std::shared_ptr<Node> &nodePlane,Factor::robustFactorType robust_type):
-        EigenFactorPlane(robust_type)
+PiFactorPlane::PiFactorPlane(const Mat4 &Sobservation, std::shared_ptr<Node> &nodePose,
+            std::shared_ptr<Node> &nodePlane,
+            Factor::robustFactorType robust_type):
+                        Factor(4,10, robust_type), W_(Mat4::Identity()), reversedNodeOrder_(false)
 {
-    this->set_dim_obs(4);// This is as we observe N homogenous points, but contracted to a vector
-    // add plane
-    neighbourNodes_.push_back(nodePlane);// This interferes with the poses later on the ordering?
+    // To preserve the order when building the Adjacency matrix
+    if (nodePose->get_id() < nodePlane->get_id())
+    {
+        neighbourNodes_.push_back(nodePose);
+        neighbourNodes_.push_back(nodePlane);
+    }
+    else
+    {
+        neighbourNodes_.push_back(nodePlane);
+        neighbourNodes_.push_back(nodePose);
+        // set reverse mode
+        reversedNodeOrder_ = true;
+    }
+
+    // calculate observation as sqrt(S)'
+    Sobs_ = Sobservation.llt().matrixL().transpose();
+    std::cout << "obs = \n" << Sobs_ << std::endl;
 }
 
 void PiFactorPlane::evaluate_residuals()
 {
-    // First calculates the matrices
-    calculate_all_matrices_S();
-    calculate_squared_all_matrices_S();
-
-    // the residual is a vector of dimension 4xN(number of poses)
-    uint_t N = get_all_nodes_dim() - 4;//remove node plane -> dim =4
-    residual_.clear();
-
-    // Iterate over poses, strict order appearing in here
+    uint_t poseIndex = 0;
+    uint_t landmarkIndex = 1;
+    if (reversedNodeOrder_)
+    {
+        landmarkIndex = 0;
+        poseIndex = 1;
+    }
+    // r = srqt(S)' * T' * pi
+    Mat4 Tx = get_neighbour_nodes()->at(poseIndex)->get_state();
+    S_mul_T_transp_ = Sobs_ * Tx.transpose();
+    plane_ = get_neighbour_nodes()->at(landmarkIndex)->get_state();
+    // orientation of the plane here does not matter, which is a great improvement over classical factor node 4d
+    r_ = S_mul_T_transp_ * plane_;
 }
 
 void PiFactorPlane::evaluate_jacobians()
 {
-    // Assumes residuals evaluated beforehand
-    Jacobian_.clear();
-
     // dr/dxi = sqrt(S)'* T' * G' * pi = sqrt(S)'* T' * [normal^ | 0 0 0  ]
     //                                                   0 0 0   | normal']
-
     //dr/dpi = sqrt(S)'* T'
+    Mat<4,6> Jx = Mat<4,6>::Zero();
+    Mat31 normal = plane_.head(3);
+    Jx.topLeftCorner<3,3>() = hat3(normal);
+    Jx.bottomRightCorner<1,3>() =  normal;
+    if (!reversedNodeOrder_)
+    {
+        J_.topLeftCorner<4,6>() = S_mul_T_transp_ * Jx;
+        J_.topRightCorner<4,4>() = S_mul_T_transp_;
+    }
+    else
+    {
+        J_.topLeftCorner<4,4>() = S_mul_T_transp_;
+        J_.topRightCorner<4,6>() = S_mul_T_transp_ * Jx;
+    }
+
 }
 
 void PiFactorPlane::evaluate_chi2()
 {
-    chi2_ = 0.5 * residual_.dot(residual_);// wieghting already included in the residual by sqrt(S)'
+    chi2_ = 0.5 * r_.dot(r_);// wieghting already included in the residual by sqrt(S)'
 }
 
-void PiFactorPlane::calculate_squared_all_matrices_S()
+void PiFactorPlane::print() const
 {
-    if (sqrtTransposeS_.empty())
-    {
-        Mat4 sqrtS = Mat4::Zero();
-        for (auto &S : S_)
-        {
-            sqrtS = S.llt().matrixL().transpose();
-            sqrtTransposeS_.emplace_back();
-        }
-
-    }
+    std::cout << "Printing pi Factor Plane: " << id_ << ", sqrt(S)'(obs)= \n" << Sobs_
+               << "\n Residuals= \n" << r_
+               << "\n Calculated Jacobian = \n" << J_
+               << "\n Chi2 error = " << chi2_
+               << " and neighbour Nodes " << neighbourNodes_.size()
+               << std::endl;
 }
-
 
 
