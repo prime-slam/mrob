@@ -35,17 +35,30 @@ namespace py = pybind11;
 #include "mrob/plane.hpp"
 #include "mrob/create_points.hpp"
 #include "mrob/plane_registration.hpp"
+#include "mrob/estimate_plane.hpp"
 
 
 using namespace mrob;
 
-/*PlaneRegistration CreatePoints::create_synthetic_plane_registration()
+Mat41 estimate_plane_py(const py::EigenDRef<const MatX> X, bool flagCentered = true)
 {
-	PlaneRegistration data;
+    Mat41 plane = estimate_plane(X,flagCentered);
+    return plane;
+}
 
-	return data;
-}*/
-
+Mat4 estimate_matrix_S(const py::EigenDRef<const MatX> pointsArray)
+{
+    assert(pointsArray.cols() == 3 && "estimate_matrix_S: Nx3 input is required");
+    Mat4 S = Mat4::Zero();
+    const auto N = pointsArray.rows();
+    Mat41 pHomog = Mat41::Ones();
+    for (uint_t i = 0; i < N; ++i)
+    {
+        pHomog.head<3>() = pointsArray.row(i);
+        S += pHomog * pHomog.transpose();
+    }
+    return S;
+}
 
 void init_PCPlanes(py::module &m)
 {
@@ -59,7 +72,7 @@ void init_PCPlanes(py::module &m)
         .value("LM_ELLIP", PlaneRegistration::SolveMode::LM_ELLIP)
         .export_values()
         ;
-	// This class creates a synthetic testing
+    // This class creates a synthetic testing
     py::class_<CreatePoints>(m,"CreatePoints")
             .def(py::init<uint_t, uint_t, uint_t, double, double, const SE3&>(),
                  py::arg("N") = 10,
@@ -115,4 +128,9 @@ void init_PCPlanes(py::module &m)
             .def("initialize_last_pose_solution", &PlaneRegistration::set_last_pose,
                     "initializes the solution for some final input plane id (any integer and plane data structure")
             ;
+        m.def("estimate_plane", &estimate_plane_py, py::arg("pointsArray"), py::arg("flagCentered") = true);
+        m.def("estimate_normal", &estimate_normal);
+        m.def("estimate_centroid", &estimate_centroid);
+        m.def("estimate_matrix_S", &estimate_matrix_S,
+                "This method inputs an array of Nx3 3d points and outputs the summation of the outer product of homogenous points 4x4");
 }

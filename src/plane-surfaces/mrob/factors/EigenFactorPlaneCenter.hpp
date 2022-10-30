@@ -73,7 +73,7 @@ public:
      */
     void evaluate_jacobians() override;
     /**
-     * Chi2 is a scaling of the plane error
+     * Chi2 is a scaling of the plane error from lambda_min
      */
     void evaluate_chi2() override;
 
@@ -83,12 +83,10 @@ protected:
      * Estimates the plane parameters: v = [n', d]'_{4x1}, where v is unit, (due to the Eigen solution)
      * although for standard plane estimation we could enforce unit on the normal vector n.
      */
-    double estimate_plane();
+    void estimate_plane() override;
 
     Mat4 accumulatedCenterQ_;//Q matrix of accumulated values for the incremental update of the error.
     Mat4 Tcenter_;
-
-    Mat41 planeEstimationUnit_;// XXX: is this really used?
 
     // subset of pointcloud for the given plane
     //std::unordered_map<factor_id_t, std::vector<Mat31> > allPlanePoints_;

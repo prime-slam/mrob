@@ -12,6 +12,7 @@ SET(sources
     factors/EigenFactorPlane.cpp
     factors/EigenFactorPlaneCenter.cpp
     factors/EigenFactorPoint.cpp
+    factors/PiFactorPlane.cpp
 )
 
 # extra header files
@@ -24,7 +25,8 @@ SET(headers
     mrob/factors/factor1Pose1plane4d.hpp
     mrob/factors/EigenFactorPlane.hpp
     mrob/factors/EigenFactorPlaneCenter.hpp
-    factors/EigenFactorPoint.hpp
+    mrob/factors/EigenFactorPoint.hpp
+    mrob/factors/PiFactorPlane.hpp
 )
 
 # create the shared library

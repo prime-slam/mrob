@@ -47,6 +47,7 @@
 #include "mrob/factors/EigenFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
+#include "mrob/factors/PiFactorPlane.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -269,6 +270,18 @@ public:
         return f->get_id();
     }
 
+    // Pi-Factor Plane from Zhou icra 2021, a variant of EF explicitly estimating pi, and using
+    // the matrix S of sum homog points.
+    factor_id_t add_pi_factor_plane_4d(const py::EigenDRef<const Mat4> Sobs, uint_t nodePoseId,
+                uint_t nodeLandmarkId)
+    {
+        auto n1 = this->get_node(nodePoseId);
+        auto n2 = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::PiFactorPlane(Sobs,n1,n2,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -411,18 +424,6 @@ void init_FGraph(py::module &m)
                             py::arg("nodeLandmarkId"),
                             py::arg("obsInvCov"),
                             py::arg("initializeLandmark") = false)
-            // -----------------------------------------------------------------------------
-            // Plane 4d Landmark to Pose 3D
-            .def("add_node_plane_4d", &FGraphPy::add_node_plane_4d,
-                    "Panes are points in P^3, in [nx,ny,nz, d]",
-                    py::arg("x"),
-                    py::arg("mode") = Node::nodeMode::STANDARD)
-            .def("add_factor_1pose_1plane_4d", &FGraphPy::add_factor_1pose_1plane_4d,
-                            "Factor observing a plane(landmark) from the current pose.",
-                            py::arg("obs"),
-                            py::arg("nodePoseId"),
-                            py::arg("nodeLandmarkId"),
-                            py::arg("obsInvCov"))
             // ------------------------------------------------------------------------------
             // point to plane registration
             .def("add_factor_1pose_point2plane", &FGraphPy::add_factor_1pose_point2plane,
@@ -439,6 +440,24 @@ void init_FGraph(py::module &m)
                  py::arg("z_point_y"),
                  py::arg("nodePoseId"),
                  py::arg("obsInf"))
+            // -----------------------------------------------------------------------------
+            // Plane 4d Landmark to Pose 3D
+            .def("add_node_plane_4d", &FGraphPy::add_node_plane_4d,
+                    "Panes are points in P^3, in [nx,ny,nz, d]",
+                    py::arg("x"),
+                    py::arg("mode") = Node::nodeMode::STANDARD)
+            .def("add_factor_1pose_1plane_4d", &FGraphPy::add_factor_1pose_1plane_4d,
+                            "Factor observing a plane(landmark) from the current pose.",
+                            py::arg("obs"),
+                            py::arg("nodePoseId"),
+                            py::arg("nodeLandmarkId"),
+                            py::arg("obsInvCov"))
+            // pi-factor, a variant of the EF estimating explicitly the plane 4d
+            .def("add_pi_factor_plane_4d", &FGraphPy::add_pi_factor_plane_4d,
+                            "Factor observing the accumulated points of a plane(matrix S) from the current pose.",
+                            py::arg("Sobs"),
+                            py::arg("nodePoseId"),
+                            py::arg("nodeLandmarkId"))
             // -----------------------------------------------------------
             // Eigen Factors
             .def("add_eigen_factor_plane", &FGraphPy::add_eigen_factor_plane)
