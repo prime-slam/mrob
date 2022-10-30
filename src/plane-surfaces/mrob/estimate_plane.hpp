@@ -34,10 +34,9 @@ namespace mrob{
  *    pi = [n,
  *          d] \in P^3
  *
- * For now this is a unique function, TODO: add more methods here
  */
 
-Mat41 estimate_plane(MatRefConst X);
+Mat41 estimate_plane(MatRefConst X, bool flagCentered = true);
 
 
 /**

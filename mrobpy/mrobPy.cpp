@@ -45,6 +45,7 @@ PYBIND11_MODULE(mrob, m) {
     // Later, in binding code:
     py::add_ostream_redirect(m, "ostream_redirect");
 
+    //TODO: deprecated. this enum are no longer used?
     py::enum_<mrob::Optimizer::optimMethod>(m, "optimMethod")
         .value("NEWTON_RAPHSON", mrob::Optimizer::optimMethod::NEWTON_RAPHSON)
         .value("LEVENBERG_MARQUARDT_SPHER", mrob::Optimizer::optimMethod::LEVENBERG_MARQUARDT_SPHER)
@@ -57,6 +58,7 @@ PYBIND11_MODULE(mrob, m) {
     init_geometry(m_geom);
 
     // deprecated have removed this namespace
+    // TODO Need the namespace for the enums, but the Gprah should not be on it, just directly visible
     //py::module m_fg = m.def_submodule("fgraph");
     init_FGraph(m);
 

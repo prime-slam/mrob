@@ -51,7 +51,6 @@ PiFactorPlane::PiFactorPlane(const Mat4 &Sobservation, std::shared_ptr<Node> &no
 
     // calculate observation as sqrt(S)'
     Sobs_ = Sobservation.llt().matrixL().transpose();
-    std::cout << "obs = \n" << Sobs_ << std::endl;
 }
 
 void PiFactorPlane::evaluate_residuals()
@@ -80,6 +79,7 @@ void PiFactorPlane::evaluate_jacobians()
     Mat31 normal = plane_.head(3);
     Jx.topLeftCorner<3,3>() = hat3(normal);
     Jx.bottomRightCorner<1,3>() =  normal;
+    //std::cout << "Jx \n" << Jx << std::endl;
     if (!reversedNodeOrder_)
     {
         J_.topLeftCorner<4,6>() = S_mul_T_transp_ * Jx;

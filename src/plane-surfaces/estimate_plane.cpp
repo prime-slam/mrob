@@ -30,15 +30,17 @@ using namespace mrob;
 Mat41 estimate_plane_centered(MatRefConst X);
 Mat41 estimate_plane_homogeneous(MatRefConst X);
 
-Mat41 mrob::estimate_plane(MatRefConst X)
+Mat41 mrob::estimate_plane(MatRefConst X, bool flagCentered)
 {
     // Initialization
     assert(X.cols() == 3  && "Estimate_plane: Incorrect sizing, we expect Nx3");
     assert(X.rows() >= 3  && "Estimate_plane: Incorrect sizing, we expect at least 3 correspondences (not aligned)");
 
     // Plane estimation, centered approach
-    estimate_plane_homogeneous(X);
-    return estimate_plane_centered(X);
+    if (flagCentered)
+        return estimate_plane_centered(X);
+    // Plance estimation, homogenous approach
+    return estimate_plane_homogeneous(X);
 }
 
 //local function, we also will test the homogeneous plane estimation
