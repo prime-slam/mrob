@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlane.hpp
+ * EigenFactorPlaneCenter.hpp
  *
  *  Created on: Oct 7 2022
  *      Author: Gonzalo Ferrer
