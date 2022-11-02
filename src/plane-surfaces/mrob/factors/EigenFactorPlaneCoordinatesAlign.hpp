@@ -23,7 +23,7 @@
 
 // XXX this duplicate should disappear
 #ifndef EIGENFACTORPLANECOORDINATEALIGN_HPP_
-#define EIGENFACTORPLANECENTER_HPP_
+#define EIGENFACTORPLANECOORDINATEALIGN_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -66,10 +66,16 @@ public:
 
 
 protected:
-    void estimate_plane() override;
-    std::deque<matData_t> r1_, r2_, r3_, points_;//residual veectors plus point/plane at k pose
-    matData_t lambda_1_,lambda_2_, lambda_3_;//eigen values where l1 > l2> l3, to follow their notation
-    Mat31 v1_, v2_, v3_;// three eigen vectors, same ordering
+    Mat31 get_estimate_normal() const;
+
+    Mat31 get_estimate_mean() const;
+
+    void estimate_planes_at_poses();
+
+    // These are the vectors of the eigenV for each pose of the plane, to be later used
+    std::deque<matData_t> lambda_1_,lambda_2_;//eigen values where l1 > l2> l3, to follow their notation
+    std::deque<matData_t> r1_, r2_, r3_, n_points_;//residual vectors plus point/plane at k pose
+    std::deque<Mat31, Eigen::aligned_allocator<Mat31>> v1_, v2_;// eigen vectors, same ordering
 
 
 };
