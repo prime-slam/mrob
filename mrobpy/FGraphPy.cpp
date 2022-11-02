@@ -48,6 +48,7 @@
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -282,6 +283,15 @@ public:
         return f->get_id();
     }
 
+
+    // This is an implementation of the Plane Coordinates Align (BA,multiPC) from Huang RAL2021
+    factor_id_t add_eigen_factor_plane_coords_align()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCoordinatesAlign(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -475,6 +485,7 @@ void init_FGraph(py::module &m)
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
+            .def("add_eigen_factor_plane_coords_align", &FGraphPy::add_eigen_factor_plane_coords_align)
             ;
 
 }
