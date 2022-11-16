@@ -13,16 +13,16 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlane.cpp
+ * EigenFactorPlaneRaw.cpp
  *
- *  Created on: Aug 16, 2019
+ *  Created on: Nov 16, 2022
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
 
-#include "mrob/factors/EigenFactorPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneRaw.hpp"
 
 #include <iostream>
 #include <Eigen/Eigenvalues>
@@ -30,7 +30,7 @@
 
 using namespace mrob;
 
-EigenFactorPlane::EigenFactorPlane(Factor::robustFactorType robust_type):
+EigenFactorPlaneRaw::EigenFactorPlaneRaw(Factor::robustFactorType robust_type):
         EigenFactor(robust_type),
         planeEstimationUnit_{Mat41::Zero()},
         planeEstimation_{Mat41::Zero()},
@@ -39,12 +39,12 @@ EigenFactorPlane::EigenFactorPlane(Factor::robustFactorType robust_type):
 {
 }
 
-void EigenFactorPlane::evaluate_residuals()
+void EigenFactorPlaneRaw::evaluate_residuals()
 {
     this->estimate_plane();
 }
 
-void EigenFactorPlane::evaluate_jacobians()
+void EigenFactorPlaneRaw::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
     J_.clear();
@@ -78,14 +78,14 @@ void EigenFactorPlane::evaluate_jacobians()
     }
 }
 
-void EigenFactorPlane::evaluate_chi2()
+void EigenFactorPlaneRaw::evaluate_chi2()
 {
     // Point 2 plane exact error requires chi2 = pi' Q pi
     chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
     //chi2_ = planeError_; // this is the scaled error
 }
 
-void EigenFactorPlane::add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W)
+void EigenFactorPlaneRaw::add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W)
 {
     // Pose has been observed, data has been initialized and we simply add point
     auto id = node->get_id();
@@ -114,21 +114,21 @@ void EigenFactorPlane::add_point(const Mat31& p, std::shared_ptr<Node> &node, ma
 }
 
 
-void EigenFactorPlane::add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W)
+void EigenFactorPlaneRaw::add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W)
 {
-    assert(P.cols() == 3 && "EigenFactorPlane::add_points_array: Nx3 input is required");
+    assert(P.cols() == 3 && "EigenFactorPlaneRaw::add_points_array: Nx3 input is required");
     const auto N = P.rows();
     for (uint_t i = 0; i < N; ++i)
         add_point(P.row(i), node, W);
 }
 
-void EigenFactorPlane::add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W)
+void EigenFactorPlaneRaw::add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W)
 {
-    assert(0 && "EigenFactorPlane::add_points_S_matrix: method not implemented");
+    assert(0 && "EigenFactorPlaneRaw::add_points_S_matrix: method not implemented");
     // TODO
 }
 
-void EigenFactorPlane::estimate_plane()
+void EigenFactorPlaneRaw::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
@@ -145,7 +145,7 @@ void EigenFactorPlane::estimate_plane()
 
 }
 
-void EigenFactorPlane::calculate_all_matrices_S(bool reset)
+void EigenFactorPlaneRaw::calculate_all_matrices_S(bool reset)
 {
     if (reset)
         S_.clear();
@@ -167,7 +167,7 @@ void EigenFactorPlane::calculate_all_matrices_S(bool reset)
     }
 }
 
-void EigenFactorPlane::calculate_all_matrices_Q()
+void EigenFactorPlaneRaw::calculate_all_matrices_Q()
 {
     Q_.clear();
     uint_t nodeIdLocal = 0;
@@ -184,14 +184,14 @@ void EigenFactorPlane::calculate_all_matrices_Q()
     }
 }
 
-Mat31 EigenFactorPlane::get_mean_point(factor_id_t id)
+Mat31 EigenFactorPlaneRaw::get_mean_point(factor_id_t id)
 {
-    assert(!S_.empty() && "EigenFactorPlane::get_mean_point: S matrix empty");
+    assert(!S_.empty() && "EigenFactorPlaneRaw::get_mean_point: S matrix empty");
     auto localId = reverseNodeIds_.at(id);
     return S_[localId].topRightCorner<3,1>()/S_[localId](3,3);
 }
 
-void EigenFactorPlane::print() const
+void EigenFactorPlaneRaw::print() const
 {
     std::cout << "Plane Eigen Factor " <<  this->get_id()
               << " current plane estimated: " << planeEstimation_.transpose() << std::endl;
@@ -213,16 +213,16 @@ void EigenFactorPlane::print() const
 }
 
 
-MatRefConst EigenFactorPlane::get_jacobian(mrob::factor_id_t id) const
+MatRefConst EigenFactorPlaneRaw::get_jacobian(mrob::factor_id_t id) const
 {
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlane::get_jacobian: element not found");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneRaw::get_jacobian: element not found");
     uint_t localId = reverseNodeIds_.at(id);
     return J_.at(localId);
 }
 
-MatRefConst EigenFactorPlane::get_hessian(mrob::factor_id_t id) const
+MatRefConst EigenFactorPlaneRaw::get_hessian(mrob::factor_id_t id) const
 {
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlane::get_hessian: element not found");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneRaw::get_hessian: element not found");
     uint_t localId = reverseNodeIds_.at(id);
     return H_.at(localId);
 }

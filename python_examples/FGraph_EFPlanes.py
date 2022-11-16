@@ -24,7 +24,7 @@ N_planes = 4
 N_poses = 5
 
 # Generate the problem
-T0 = mrob.geometry.SE3(np.random.randn(6)*1e-3) # Test this
+T0 = mrob.geometry.SE3(np.random.randn(6)*1e0) # Test this
 synthetic = mrob.registration.CreatePoints(N_points,N_planes,N_poses, 0.05, 0.1, T0) #point noise, bias noise
 T_gt = synthetic.get_ground_truth_last_pose()
 #T_gt.print()
@@ -124,7 +124,7 @@ for t in range(N_poses):
                                    W = 1.0)
 
 print('\n\n\n\nInitial error EF plane = ', graph.chi2(True))
-graph.solve(mrob.LM_ELLIPS,10)
+graph.solve(mrob.LM_ELLIPS,50)
 print('Chi2 = ', graph.chi2())
 draw_planes(synthetic, graph.get_estimated_state())
 traj2 = graph.get_estimated_state()
