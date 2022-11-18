@@ -32,6 +32,7 @@ using namespace mrob;
 
 EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
         EigenFactorPlane(robust_type),
+        planeEstimationUnit_{Mat41::Zero()},
         Tcenter_(Mat4::Identity())
 {
 }
