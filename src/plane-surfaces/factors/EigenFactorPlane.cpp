@@ -33,6 +33,7 @@ using namespace mrob;
 EigenFactorPlane::EigenFactorPlane(Factor::robustFactorType robust_type):
         EigenFactor(robust_type),
         planeEstimation_{Mat41::Zero()},
+        planeEstimationCenter_{Mat41::Zero()},
         numberPoints_{0},
         planeError_{0.0},
         Tcenter_{Mat4::Identity()}
@@ -53,12 +54,12 @@ void EigenFactorPlane::evaluate_jacobians()
     {
         Mat61 jacobian = Mat61::Zero();
         Mat6 hessian = Mat6::Zero();
-        Mat4 dQ = Mat4::Zero();
+        Mat4 dQ = Mat4::Zero(), dQ_center = Mat4::Zero();
         for (uint_t i = 0 ; i < 6; i++)
         {
-            dQ = SE3GenerativeMatrix(i)*Qt + Qt*SE3GenerativeMatrix(i).transpose();
-            dQ = Tcenter_ * dQ * Tcenter_.transpose();
-            jacobian(i) = planeEstimation_.dot(dQ*planeEstimation_);
+            dQ = SE3GenerativeMatrix(i)*Qt + Qt*SE3GenerativeMatrix(i).transpose();//this is used below without transf.
+            dQ_center = Tcenter_ * dQ * Tcenter_.transpose();
+            jacobian(i) = planeEstimationCenter_.dot(dQ_center*planeEstimationCenter_);
 
             //now calculate Hessian here. Upper triangular view
             Mat4 ddQ; // second derivative of the Q matrix
@@ -72,7 +73,7 @@ void EigenFactorPlane::evaluate_jacobians()
                 ddQ += ddQ.transpose().eval();
                  // Transformation, translation for center the matrix derivative is applied here
                 ddQ = Tcenter_ * ddQ * Tcenter_.transpose();
-                hessian(i,j) = planeEstimation_.dot(ddQ*planeEstimation_);
+                hessian(i,j) = planeEstimationCenter_.dot(ddQ*planeEstimationCenter_);
             }
         }
         J_.push_back(jacobian);
@@ -84,8 +85,7 @@ void EigenFactorPlane::evaluate_jacobians()
 void EigenFactorPlane::evaluate_chi2()
 {
     // Point 2 plane exact error requires chi2 = pi' Q pi
-    Mat41 plane_global = SE3(Tcenter_).inv().transform_plane(planeEstimation_);
-    chi2_ = plane_global.dot( accumulatedQ_ * plane_global );
+    chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
     //chi2_ = planeError_; // this is the scaled error
 }
 
@@ -139,17 +139,20 @@ void EigenFactorPlane::estimate_plane()
 
     // TODO from previous solution
     // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
-    Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
+    //Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
+    // n d from the last iterations provdes an approximate of the median point (it will not be zero) 
+    Tcenter_.topRightCorner<3,1>() =  planeEstimation_.head(3) * planeEstimation_(3);
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
-    Mat4 X = Tcenter_ * accumulatedQ_ * Tcenter_.transpose();
-    Eigen::SelfAdjointEigenSolver<Mat4> es(X);
-    planeEstimation_ = es.eigenvectors().col(0);
-    matData_t scale = planeEstimation_.head(3).norm();
-    planeEstimation_ = planeEstimation_ / scale;
-    //std::cout << "\n solution plane = \n" << planeEstimation_ <<  std::endl;
+    Eigen::SelfAdjointEigenSolver<Mat4> es(Tcenter_ * accumulatedQ_ * Tcenter_.transpose());
+    planeEstimationCenter_ = es.eigenvectors().col(0);
+    matData_t scale = planeEstimationCenter_.head(3).norm();
+    planeEstimationCenter_ = planeEstimationCenter_ / scale;
+    //std::cout << "\n solution plane = \n" << planeEstimationCenter_ <<  std::endl;
     //std::cout << "plane estimation error: " << es.eigenvalues() <<  std::endl;
     planeError_ = es.eigenvalues()(0);// this error is not point2plane error, but scaled
+
+    planeEstimation_ = Tcenter_.transpose() * planeEstimationCenter_;
 
 }
 
@@ -202,7 +205,7 @@ Mat31 EigenFactorPlane::get_mean_point(factor_id_t id)
 void EigenFactorPlane::print() const
 {
     std::cout << "Plane Eigen Factor " <<  this->get_id()
-              << " current plane estimated: " << planeEstimation_.transpose() << std::endl;
+              << " current plane estimated (global coord): " << planeEstimation_.transpose() << std::endl;
     for(auto id : nodeIds_)
         std::cout << "Node ids = "  << id << ", and its reverse in EF = "
                   << reverseNodeIds_.at(id) << std::endl;

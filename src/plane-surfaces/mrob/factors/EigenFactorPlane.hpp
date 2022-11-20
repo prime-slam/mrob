@@ -185,7 +185,7 @@ protected:
     std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
     Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
-    Mat41 planeEstimation_;
+    Mat41 planeEstimation_, planeEstimationCenter_;
     //matData_t planeError_; //this is chi2 scaled by the covariance of point measurement.
 
     // subset of pointcloud for the given plane
