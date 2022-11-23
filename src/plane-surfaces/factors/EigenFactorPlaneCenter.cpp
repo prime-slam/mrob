@@ -13,9 +13,9 @@
  * limitations under the License.
  *
  *
- * plane_factor.cpp
+ * EigenFactorPlanceCenter.cpp
  *
- *  Created on: Aug 16, 2019
+ *  Created on: Oct 7, 2022
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
