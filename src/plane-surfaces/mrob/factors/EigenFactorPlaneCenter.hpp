@@ -86,6 +86,7 @@ protected:
     void estimate_plane() override;
 
     Mat4 accumulatedCenterQ_;//Q matrix of accumulated values for the incremental update of the error.
+    Mat41 planeEstimationUnit_;
     Mat4 Tcenter_;
 
     // subset of pointcloud for the given plane

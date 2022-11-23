@@ -32,6 +32,7 @@ using namespace mrob;
 
 EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
         EigenFactorPlane(robust_type),
+        planeEstimationUnit_{Mat41::Zero()},
         Tcenter_(Mat4::Identity())
 {
 }
@@ -81,16 +82,12 @@ void EigenFactorPlaneCenter::evaluate_jacobians()
 void EigenFactorPlaneCenter::evaluate_chi2()
 {
     // error = lambda from eig
-    chi2_ =  planeError_;
-    // Point 2 plane exact error requires chi2 = pi' Q pi
-    //chi2_ = planeEstimationUnit_.dot( accumulatedCenterQ_ * planeEstimationUnit_ );
+    //chi2_ =  planeError_;
 
-    // A second alternative is getting back to the homogeneous plane and calcualte error
-    // This solution is similar to EF, but has some minor differences in second decimal
-    //planeEstimation_ = SE3(Tcenter_).inv().transform_plane(planeEstimationUnit_);
-    //planeEstimation_.normalize();
-    //chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
-    //std::cout << ", error lambda = " << planeError_ << ", error rotated back = " << chi2_ << std::endl;
+    // Point 2 plane exact error requires chi2 = pi' Q pi
+    chi2_ = planeEstimation_.dot(accumulatedQ_ * planeEstimation_);
+
+    //std::cout << ", error lambda = " << planeError_ << ", error projected plane = " << chi2_ << std::endl;
 }
 
 
@@ -98,11 +95,7 @@ void EigenFactorPlaneCenter::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
-    accumulatedQ_ = Mat4::Zero();
-    for (auto &Qt: Q_)
-    {
-        accumulatedQ_ += Qt;
-    }
+
 
     // Center the plane requires a transformation (translation) such that
     // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
@@ -124,7 +117,7 @@ void EigenFactorPlaneCenter::estimate_plane()
     planeEstimationUnit_.head<3>() = es.eigenvectors().col(0);
     planeEstimationUnit_(3) = 0.0;
 
-    //planeEstimation_ = SE3(Tcenter_).transform_plane(planeEstimationUnit_);
+    planeEstimation_ = SE3(Tcenter_).inv().transform_plane(planeEstimationUnit_);
 
     //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;

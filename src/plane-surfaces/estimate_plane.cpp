@@ -82,17 +82,17 @@ Mat41 estimate_plane_homogeneous(MatRefConst X)
     Q.topRightCorner<3,1>() = c;
     Q.bottomLeftCorner<1,3>() = c.transpose();
     Q(3,3) = N;
-    std::cout << "Q= \n" << Q << std::endl;
+    //std::cout << "Q= \n" << Q << std::endl;
 
 
     Eigen::SelfAdjointEigenSolver<Mat4> eigs(Q);
-    std::cout << "values = \n" << eigs.eigenvalues() << std::endl;
+    //std::cout << "values = \n" << eigs.eigenvalues() << std::endl;
     Mat41 plane = eigs.eigenvectors().col(0);
 
     double scale = plane.head<3>().norm();
     plane /= scale;
 
-    std::cout << "Plane = \n" << plane << std::endl;
+    //std::cout << "Plane = \n" << plane << std::endl;
     // error = eigs.eigenvalues()(0);
     return plane;
 

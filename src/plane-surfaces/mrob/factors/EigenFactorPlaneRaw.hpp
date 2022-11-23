@@ -13,17 +13,16 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlane.hpp
+ * EigenFactorPlaneRaw.hpp
  *
- *  Created on: Aug 16, 2019
- *  Created on: July 10, 2021 (for real)
+ *  Created on: November 16, 2022
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
-#ifndef EIGENFACTORPLANE_HPP_
-#define EIGENFACTORPLANE_HPP_
+#ifndef EIGENFACTORPLANERAW_HPP_
+#define EIGENFACTORPLANERAW_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -52,14 +51,14 @@ namespace mrob{
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
  * XXX should we store all points?
  */
-class EigenFactorPlane: public EigenFactor{
+class EigenFactorPlaneRaw: public EigenFactor{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlane(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlane() override = default;
+    EigenFactorPlaneRaw(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneRaw() override = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -78,11 +77,11 @@ public:
     void print() const;
 
     MatRefConst get_obs() const
-            {assert(0 && "EigenFactorPlane:get_obs: method should not be called");return Mat31::Zero();}
+            {assert(0 && "EigenFactorPlaneRaw:get_obs: method should not be called");return Mat31::Zero();}
     VectRefConst get_residual() const
-            {assert(0 && "EigenFactorPlane::get_resigual: method should not be called");return Mat31::Zero();}
+            {assert(0 && "EigenFactorPlaneRaw::get_resigual: method should not be called");return Mat31::Zero();}
     MatRefConst get_information_matrix() const
-            {assert(0 && "EigenFactorPlane::get_inform method should not be called");return Mat4::Zero();}
+            {assert(0 && "EigenFactorPlaneRaw::get_inform method should not be called");return Mat4::Zero();}
 
     /**
      * get jacobian returns the jacobian corresponding to the given node id.
@@ -185,7 +184,7 @@ protected:
     std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
     Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
-    Mat41 planeEstimation_, planeEstimationCenter_;
+    Mat41 planeEstimationUnit_, planeEstimation_;
     //matData_t planeError_; //this is chi2 scaled by the covariance of point measurement.
 
     // subset of pointcloud for the given plane
@@ -194,13 +193,12 @@ protected:
     std::deque<std::deque<matData_t> > allPointsInformation_;
     uint_t numberPoints_;
 
-    matData_t planeError_;
 
-    Mat4 Tcenter_; // Used to move the Q matrix close to have a d~0, to avoid scale
+    matData_t planeError_;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
 };
 
 }
-#endif /* EigenFactorPlane_HPP_ */
+#endif /* EigenFactorPlaneRaw_HPP_ */

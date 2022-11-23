@@ -46,6 +46,7 @@
 
 #include "mrob/factors/EigenFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
+#include "mrob/factors/EigenFactorPlaneRaw.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
@@ -259,6 +260,13 @@ public:
     factor_id_t add_eigen_factor_plane_center()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCenter(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_eigen_factor_plane_raw()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneRaw(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
@@ -484,6 +492,7 @@ void init_FGraph(py::module &m)
                     py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
+            .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_raw)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_eigen_factor_plane_coords_align", &FGraphPy::add_eigen_factor_plane_coords_align)
             ;
