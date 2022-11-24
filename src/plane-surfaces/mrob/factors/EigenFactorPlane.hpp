@@ -142,10 +142,11 @@ protected:
      * Calculates the matrix S = sum(p*p'), where p = [x,y,z,1]
      * for all planes, as an aggregation of the outer product of all
      * homogeneous points
+     * Deprecated flag:
      * If reset = true, clears all information and recalculates S
      * If reset = false (default) only calculates S if there is no calculation yet
      */
-    void calculate_all_matrices_S(bool reset=false);
+    void calculate_all_matrices_S();
     /**
      *  calculates the matrix Qi = 1^T_i * Si * (1^T_i)^transp
      *  for all planes. Since this is an iterative process on T's,

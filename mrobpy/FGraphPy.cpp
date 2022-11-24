@@ -292,8 +292,8 @@ public:
     }
 
 
-    // This is an implementation of the Plane Coordinates Align (BA,multiPC) from Huang RAL2021
-    factor_id_t add_eigen_factor_plane_coords_align()
+    // This is an implementation of the Plane Coordinates Align (BA,multiPC REG) from Huang RAL2021
+    factor_id_t add_bareg_plane()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCoordinatesAlign(robust_type_));
         this->add_eigen_factor(f);
@@ -494,7 +494,7 @@ void init_FGraph(py::module &m)
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
             .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_raw)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
-            .def("add_eigen_factor_plane_coords_align", &FGraphPy::add_eigen_factor_plane_coords_align)
+            .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             ;
 
 }

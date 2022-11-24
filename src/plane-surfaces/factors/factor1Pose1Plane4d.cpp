@@ -80,7 +80,7 @@ void Factor1Pose1Plane4d::evaluate_residuals()
     // If d~0 it should not work properly, but it works better than comparing normals
     if (pi_local(3)  < 0.0)
     {
-        std::cout << "correction" << std::endl;
+        //std::cout << "correction" << std::endl;
         r_ = pi_local + obs_;
     }
 }

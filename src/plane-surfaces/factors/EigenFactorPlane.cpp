@@ -156,10 +156,9 @@ void EigenFactorPlane::estimate_plane()
 
 }
 
-void EigenFactorPlane::calculate_all_matrices_S(bool reset)
+void EigenFactorPlane::calculate_all_matrices_S()
 {
-    if (reset)
-        S_.clear();
+    // processed only once TODO incremetnal additions, if this is ever going to be used?
     if (S_.empty())
     {
         for (auto &vectorPoints: allPlanePoints_)
@@ -175,6 +174,7 @@ void EigenFactorPlane::calculate_all_matrices_S(bool reset)
         }
         // XXX at this point, we could remove all the points stored, since they will not be used again.
         // Let's keep them for now in case we re-evaluate things or filter, it's just memory.
+        allPlanePoints_.clear();
     }
 }
 
