@@ -59,6 +59,7 @@ except ImportError:
 setuptools.setup(
     setuptools_git_versioning={
         "enabled": True,
+        "sort_by": "creatordate",
     },
     setup_requires=['setuptools-git-versioning<2'],
     cmdclass={'bdist_wheel': bdist_wheel}
