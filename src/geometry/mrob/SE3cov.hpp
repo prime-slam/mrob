@@ -110,6 +110,14 @@ namespace mrob
          * **/
         SE3Cov operator*(const SE3Cov &rhs) const;
 
+
+        /**
+         * @brief Generates string representation of the SE3cov object
+         *
+         * @return std::string object to print
+         */
+        std::string toString() const;
+
     protected:
         /**
          * @brief This is the 6x6 covariance matrix of the current pose.

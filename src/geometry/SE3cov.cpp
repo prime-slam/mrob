@@ -136,7 +136,14 @@ SE3Cov SE3Cov::operator*(const SE3Cov& rhs) const
     return SE3Cov::compound_2nd_order(rhs);
 }
 
-Mat6 mrob::curly_wedge(const Mat61& xi)
+std::string mrob::SE3Cov::toString() const
+{
+    std::stringstream ss;
+    ss << this->T_;
+    return ss.str();
+}
+
+Mat6 mrob::curly_wedge(const Mat61 &xi)
 {
     Mat6 result(Mat6::Zero());
     result.topLeftCorner<3,3>() = mrob::hat3(xi.head(3));

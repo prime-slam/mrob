@@ -133,6 +133,9 @@ void init_geometry(py::module &m) {
         .def("distance", &SO3::distance,
                 "Calculates the distance between rotation matrices as ||Ln(R'*R_i)||")
         .def("print", &SO3::print, "Prints current information of the rotation")
+        .def("__mul__", &SO3::operator*, py::is_operator())
+        .def("__str__", &SO3::toString, "Generates string representation of the SO3 object for print() output")
+        .def("__repr__", &SO3::toString, "Generates string representation of the SO3 object for console output");
         ;
     m.def("isSO3", &mrob::isSO3, "Returns True is the matrix is a valid rotation and False if not");
 
@@ -176,7 +179,9 @@ void init_geometry(py::module &m) {
                  py::overload_cast<const SE3Cov &>(&SE3Cov::mul, py::const_),
                  "Multiplication method mul() as an interface for compounding.",
                  py::return_value_policy::copy)
-            .def("__mul__", &SE3Cov::operator*, py::is_operator());
+            .def("__mul__", &SE3Cov::operator*, py::is_operator())
+            .def("__str__", &SE3Cov::toString, "Generates string representation of the SE3cov object for print() output")
+            .def("__repr__", &SE3Cov::toString, "Generates string representation of the SE3cov object for console output");
         m.def("curley_wedge", &mrob::curly_wedge, "Returns 6-by-6 matrix, the output of curley wedge operator.", py::return_value_policy::copy);
 }
 
