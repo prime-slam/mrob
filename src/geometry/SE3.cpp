@@ -340,11 +340,9 @@ Mat4 mrob::SE3GenerativeMatrix(uint_t coordinate)
     return G;
 }
 
-
-
-
-
-
-
-
-
+std::string SE3::toString() const
+{
+    std::stringstream ss;
+    ss << this->T_;
+    return ss.str();
+}

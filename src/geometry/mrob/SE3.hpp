@@ -189,6 +189,13 @@ public:
     void print(void) const;
     void print_lie(void) const;
 
+    /**
+     * @brief Generates string representation of the object
+     *
+     * @return std::string object to print
+     */
+    std::string toString() const;
+
 protected:
     Mat4 T_;
 
