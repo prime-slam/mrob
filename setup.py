@@ -37,6 +37,7 @@ try:
 
         def get_tag(self):
             python, abi, plat = _bdist_wheel.get_tag(self)
+            print(f"BDIST PY,ABI,PLAT: {python}, {abi}, {plat}") 
             if platform.system() == "Darwin":
                 python, abi = 'py3', 'none'
                 name = plat[:plat.find("_")]
@@ -56,6 +57,10 @@ except ImportError:
     bdist_wheel = None
 
 setuptools.setup(
-    setup_requires=['setuptools-git-versioning'],
+    setuptools_git_versioning={
+        "enabled": True,
+        "sort_by": "creatordate",
+    },
+    setup_requires=['setuptools-git-versioning<2'],
     cmdclass={'bdist_wheel': bdist_wheel}
 )
