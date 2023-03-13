@@ -48,17 +48,17 @@ jobs:
       - name: Install additional utils
         run: yum install -y git openssh-clients
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
         with:
           submodules: recursive
-      
-      - name: Add git safe directory
-        run: git config --global --add safe.directory /__w/mrob/mrob
 
       - name: Install fresh CMake into ManyLinux container
         run: |
             env pybin=$(LANG=C ls -d1r /opt/python/cp3*/bin | head -n 1) bash -c '$pybin/python -m pip install cmake && mkdir -p /usr/local/bin && ln -svf $pybin/cmake /usr/local/bin/cmake'
             cmake --version
+      
+      - name: Add git safe directory
+        run: git config --global --add safe.directory /__w/mrob/mrob
 
       - name: Build Python wheel
         run: scripts/build-wheel-linux.sh
