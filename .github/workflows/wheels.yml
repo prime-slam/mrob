@@ -48,9 +48,12 @@ jobs:
       - name: Install additional utils
         run: yum install -y git openssh-clients
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
+      
+      - name: Add git safe directory
+        run: git config --global --add safe.directory /__w/mrob/mrob
 
       - name: Install fresh CMake into ManyLinux container
         run: |
