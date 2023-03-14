@@ -138,6 +138,14 @@ public:
     void print_lie(void) const;
 
 
+    /**
+     * @brief Generates string representation of the SO3 object
+     *
+     * @return std::string object to print
+     */
+    std::string toString() const;
+
+
 protected:
     Mat3 R_;
 

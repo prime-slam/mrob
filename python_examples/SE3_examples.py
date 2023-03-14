@@ -38,7 +38,7 @@ if 1:
     print('Printing orientations')
     w = np.zeros(3)
     R = mrob.geometry.SO3(w)
-    R.print()
+    print(R)
     ax = plotConfig()
     T = np.eye(4)
     T[:3,:3] = R.R()
@@ -51,7 +51,7 @@ if 1:
     # Rotation on z axis
     w[2] = -np.pi/4
     R = mrob.geometry.SO3(w)
-    R.print()
+    print(R)
     T[:3,:3] = R.R()
     ax = plotConfig()
     plotT(mrob.geometry.SE3(T),ax)
@@ -64,7 +64,7 @@ if 1:
     # Rotation on z axis
     w = np.random.randn(3)
     R = mrob.geometry.SO3(w)
-    R.print()
+    print(R)
     T[:3,:3] = R.R()
     ax = plotConfig()
     plotT(mrob.geometry.SE3(T),ax)
@@ -95,22 +95,22 @@ if 1:
     T_0 = mrob.geometry.SE3(xi_ini)
     T_0_inv = T_0.inv()
     T_1 = mrob.geometry.SE3(xi_fin)
-    T_1.print()
-    print('direct T1\n',T_1.T())
-    mrob.geometry.SE3(T_1.T()).print()
+    print(T_1)
+    print('direct T1\n',T_1)
+    print(mrob.geometry.SE3(T_1.T()))
     #dxi = mrob.geometry.SE3( (T_1.T() @ T_0_inv.T()) ).Ln()
-    dxi = T_1.mul(T_0_inv).Ln()
+    dxi = (T_1*T_0_inv).Ln()
     for i in range(N):
         Ti = mrob.geometry.SE3(xi[i,:])
         plotT(Ti,ax)
-        #print(Ti.T())
+        #print(Ti)
         
-        Ts = mrob.geometry.SE3(t[i]*dxi).mul(T_0)
-        #print(Ts.T())
+        Ts = mrob.geometry.SE3(t[i]*dxi)*T_0
+        #print(Ts)
         plotT(Ts,ax)
         
         # ploting and visualizing error
-        #print(Ts.T())
+        #print(Ts)
         print(np.linalg.norm(Ti.Ln() - Ts.Ln()))
         #T.transform(np.array([0,0,0], dtype='float64'))
     plt.show()
@@ -131,6 +131,6 @@ if 0:
 if 0:
     w = np.random.rand(3)
     R = mrob.geometry.SO3(w)
-    print('SO3 matrix: \n', R.R() )
+    print('SO3 matrix: \n', R )
     print('SO3 in the manifold: \n', R.Ln())
     

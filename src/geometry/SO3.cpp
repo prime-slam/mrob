@@ -87,6 +87,13 @@ void SO3::update_rhs(const Mat31 &dw)
     R_ = R_ * dR.R();
 }
 
+std::string SO3::toString() const
+{
+    std::stringstream ss;
+    ss << this->R_;
+    return ss.str();
+}
+
 Mat31 mrob::vee3(const Mat3 &w_hat)
 {
     Mat31 w;
