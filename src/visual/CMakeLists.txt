@@ -3,13 +3,15 @@
 
 # extra source files
 SET(sources
-    factors/factor1PosePoint3dProj2d.cpp
+    factors/factorCameraProj3dPoint.cpp
+    factors/factorCameraProj3dLine.cpp
     #factors/nodeCameraPinHole.cpp
 )
 
 # extra header files
 SET(headers
-    mrob/factors/factor1PosePoint3dProj2d.hpp
+    mrob/factors/factorCameraProj3dPoint.hpp
+    mrob/factors/factorCameraProj3dLine.hpp
     #mrob/factors/nodeCameraPinHole.hpp
 )
 

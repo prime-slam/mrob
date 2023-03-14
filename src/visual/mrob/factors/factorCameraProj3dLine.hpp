@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * factor1PosePoint3dProj2d.hpp
+ * factorCameraProj3dLine.hpp
  *
  *  Created on: March 13, 2023
  *      Author: Gonzalo Ferrer
@@ -21,8 +21,8 @@
  *              Mobile Robotics Lab, Skoltech
  */
 
-#ifndef FACTOR1POSEPOINT3DPROJ2D_HPP_
-#define FACTOR1POSEPOINT3DPROJ2D_HPP_
+#ifndef FACTORCAMERAPROJ3DLINE_HPP_
+#define FACTORCAMERAPROJ3DLINE_HPP_
 
 
 #include "mrob/matrix_base.hpp"
@@ -32,42 +32,39 @@
 namespace mrob{
 
 /**
- * The Factor1PosePoint3dProj2d is a vertex representing the distribution between
- * a Rigid Body Transformation encoding a 3D pose and a Landmark, a 3D point
- * projected to the image plane in 2D.
+ * The FactorCameraProj3dLine is a vertex representing the distribution between
+ * a Rigid Body Transformation encoding a 3D pose and a 3D line expressed as 2 3D points,
+ * projected to the image plane in 2D (Vakhitov, ECCV 2016)
  *
- * The observation is a 2D point, in the local frame of the current 3D pose,
+ * The observation is a 2D line, in the local frame of the current 3D pose,
  * the sensor reference frame
  * The two Nodes that the factor is connecting, which are provided by their
  * shared_ptr's, are:
- *  - 1 Pose3d
- *  - 1 Landmark3d
+ *  - 2 observation (1,2) pixel coordinates in the image with start-end segments of the line
+ *  - 1 Pose in 3d (Camera)
+ *  - 2 Points in 3D (map coordinates) expressing the line end-start position
  *  - (TODO) Camera intrinsics K
  * We provide the node's Id to get the correspondent Jacobian
  *
  *
- * In particular, the relation between the transformation of poses is:
- *   z = proj_K(T^{-1}*l),   where proj_K(p) = K * [x/z, y/z, 1]'
- *
- * z is a 2d pixel coordinates in the camera plane
+ * z is a 2d line coordinates in the camera plane, in P^2
  * T is the transformation encoded by the 3D pose, the local frame (sensor)
- * l is a 3d point encoding the landmark position in the map coordinate frame
- *
- * and the residual is thus:
- *   r = proj_K(T^{-1}l) - z
+ * p1, p2  are the 3d point encoding the point positions in the map coordinate frame
  *
  *
  */
 
-class Factor1PosePoint3dProj2d : public Factor
+class FactorCameraProj3dLine : public Factor
 {
   public:
-    Factor1PosePoint3dProj2d(const Mat21 &observation, std::shared_ptr<Node> &nodePose,
-            std::shared_ptr<Node> &nodeLandmark,
+    FactorCameraProj3dLine(const Mat21 &obsPoint1, const Mat21 &obsPoint2,
+            std::shared_ptr<Node> &nodePose,
+            std::shared_ptr<Node> &nodePoint1,
+            std::shared_ptr<Node> &nodePoint2,
             const Mat41 &camera_k,
             const Mat2 &obsInf = Mat2::Identity(),
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1PosePoint3dProj2d() override = default;
+    ~FactorCameraProj3dLine() override = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -80,23 +77,30 @@ class Factor1PosePoint3dProj2d : public Factor
 
     void print() const;
 
-    MatRefConst get_obs() const {return obs_;};
+    MatRefConst get_obs() const {return line_obs_;};
     VectRefConst get_residual() const {return r_;};
     MatRefConst get_information_matrix() const {return W_;};
     MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const {return J_;};
 
   protected:
-    Mat21 obs_, r_; // Assumes this observations has been undistorted
-    Mat31 landmark_, local_point_;
+    Mat31 line_obs_;
+    Mat21 r_;
+    Mat31 point1_, point2_, local_point1_, local_point2_;
     Mat41 camera_k_; // This encodes [fx, fy, cx, cy]
     SE3 Tinv_;
     Mat2 W_;//inverse of observation covariance (information matrix)
-    Mat<2,9> J_;//Joint Jacobian: 6 (pose) + 3(pint) + 4 (K)
-    bool reversedNodeOrder_;//flag to keep order when building the adjacency matrix. This should be transparent for the user
+    Mat<2,12> J_;//Joint Jacobian: 6 (pose) + 3(point) + 3 (point) + 4 (K)
 
-    //project_point in 3D to 2D by the camera parameters in this class
     //TODO, maybe move projective methods all together? this can be used in many other places in visual
+    /**
+     * project_point in 3D to 2D by the camera parameters in this class
+    */
     Mat21 project_point(const Mat31 point);
+    /**
+     * calculate_image_line: given two points in the image coordiantes (pixels)
+     * outputs the line in the plane that interesects both
+    */
+    Mat31 calculate_image_line(const Mat21 &p1, const Mat21 &p2);
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
@@ -109,4 +113,4 @@ class Factor1PosePoint3dProj2d : public Factor
 
 
 
-#endif /* Factor1PosePoint3dproj2d_HPP_ */
+#endif /* FACTORCAMERAPROJ3DLINE_HPP_ */

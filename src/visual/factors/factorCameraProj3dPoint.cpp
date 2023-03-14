@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * factor1PosePoint3dProj2d.cpp
+ * factorCameraProj3dPoint.cpp
  *
  *  Created on: March 13, 2023
  *      Author: Gonzalo Ferrer
@@ -21,12 +21,12 @@
  *              Mobile Robotics Lab, Skoltech
  */
 
-#include "mrob/factors/factor1PosePoint3dProj2d.hpp"
+#include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include <iostream>
 
 using namespace mrob;
 
-Factor1PosePoint3dProj2d::Factor1PosePoint3dProj2d(const Mat21 &observation, std::shared_ptr<Node> &nodePose,
+FactorCameraProj3dPoint::FactorCameraProj3dPoint(const Mat21 &observation, std::shared_ptr<Node> &nodePose,
                 std::shared_ptr<Node> &nodeLandmark,
                 const Mat41 &camera_k,
                 const Mat2 &obsInf,
@@ -50,7 +50,7 @@ Factor1PosePoint3dProj2d::Factor1PosePoint3dProj2d(const Mat21 &observation, std
     J_.setZero();
 }
 
-Mat21 Factor1PosePoint3dProj2d::project_point(const Mat31 point)
+Mat21 FactorCameraProj3dPoint::project_point(const Mat31 point)
 {
     Mat21 result = Mat21::Zero();
     // Check for an aberrration
@@ -63,7 +63,7 @@ Mat21 Factor1PosePoint3dProj2d::project_point(const Mat31 point)
     return result;
 }
 
-void Factor1PosePoint3dProj2d::evaluate_residuals()
+void FactorCameraProj3dPoint::evaluate_residuals()
 {
     uint_t poseIndex = 0; 
     uint_t landmarkIndex = 1;
@@ -79,7 +79,7 @@ void Factor1PosePoint3dProj2d::evaluate_residuals()
     r_ = project_point(local_point_) - obs_;
 
 }
-void Factor1PosePoint3dProj2d::evaluate_jacobians()
+void FactorCameraProj3dPoint::evaluate_jacobians()
 {
     /** This function is calculated by using the chain rule.
      *  Here, our convention of left-hand-side retraction of poses makes the derivatives more involved
@@ -118,11 +118,11 @@ void Factor1PosePoint3dProj2d::evaluate_jacobians()
     }
 }
 
-void Factor1PosePoint3dProj2d::evaluate_chi2()
+void FactorCameraProj3dPoint::evaluate_chi2()
 {
     chi2_ = 0.5 * r_.dot(W_ * r_);
 }
-void Factor1PosePoint3dProj2d::print() const
+void FactorCameraProj3dPoint::print() const
 {
     std::cout << "Printing Factor: " << id_ << ", obs= \n" << obs_
               << "\n Residuals= \n" << r_
