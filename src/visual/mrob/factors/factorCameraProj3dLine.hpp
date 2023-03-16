@@ -91,11 +91,10 @@ class FactorCameraProj3dLine : public Factor
     Mat2 W_;//inverse of observation covariance (information matrix)
     Mat<2,12> J_;//Joint Jacobian: 6 (pose) + 3(point) + 3 (point) + 4 (K)
 
-    //TODO, maybe move projective methods all together? this can be used in many other places in visual
     /**
-     * project_point in 3D to 2D by the camera parameters in this class
+     * project_point in 3D to P^2 by the camera parameters in this class
     */
-    Mat21 project_point(const Mat31 point);
+    Mat31 project_point_homog(const Mat31 &point);
     /**
      * calculate_image_line: given two points in the image coordiantes (pixels)
      * outputs the line in the plane that interesects both

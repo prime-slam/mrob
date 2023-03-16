@@ -91,7 +91,7 @@ class FactorCameraProj3dPoint : public Factor
     Mat41 camera_k_; // This encodes [fx, fy, cx, cy]
     SE3 Tinv_;
     Mat2 W_;//inverse of observation covariance (information matrix)
-    Mat<2,9> J_;//Joint Jacobian: 6 (pose) + 3(pint) + 4 (K)
+    Mat<2,9> J_;//Joint Jacobian: 6 (pose) + 3(pint) || + 4 (K)
     bool reversedNodeOrder_;//flag to keep order when building the adjacency matrix. This should be transparent for the user
 
     //project_point in 3D to 2D by the camera parameters in this class
