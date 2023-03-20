@@ -58,8 +58,9 @@ Mat21 FactorCameraProj3dPoint::project_point(const Mat31 point)
         return result;
     // fx * x /z + cx
     // fy * y /z + cy
-    result << camera_k_[0] * point[0] / point[2] + camera_k_[2],
-              camera_k_[1] * point[1] / point[2] + camera_k_[3];
+    matData_t invz = 1.0 / point[2];
+    result << camera_k_[0] * point[0] * invz + camera_k_[2],
+              camera_k_[1] * point[1] * invz + camera_k_[3];
     return result;
 }
 
@@ -85,8 +86,10 @@ void FactorCameraProj3dPoint::evaluate_jacobians()
      *  Here, our convention of left-hand-side retraction of poses makes the derivatives more involved
      *  than comparing with taking a rhs convetion. 
      *  dr / dT = d proj_k / d p' * d p' / d T
+     *      J_project:
      *      d proj_k / d p' = [fx/z  0   -fx/z^2 x]
      *                        [0    fy/z -fy/z^2 y]
+     *      Jr:
      *      d p' / d T = d ( T-1 Exp(-dx) l ) / dl = T-1 [l^ -I]
      * 
      *  and
@@ -95,7 +98,7 @@ void FactorCameraProj3dPoint::evaluate_jacobians()
      *      d p' / d l = d (T^-1 l ) d l = R'  (this is linear)
     */
     Mat<4,6> Jr = Mat<4,6>::Zero();
-    Jr.topLeftCorner<3,3>() = hat3(local_point_);
+    Jr.topLeftCorner<3,3>() = hat3(landmark_);
     Jr.topRightCorner<3,3>() =  -Mat3::Identity();
     Mat<2,3> J_project = Mat<2,3>::Zero();
     // Check for point in the image plane
@@ -104,8 +107,9 @@ void FactorCameraProj3dPoint::evaluate_jacobians()
         J_.setZero(); //we can't really use the gradient, but increases the Ker() -> should be handled by LM.
         return;
     }
-    J_project << camera_k_[0] / local_point_[2], 0, -camera_k_[0] / (local_point_[2]*local_point_[2]) * local_point_[0] ,
-                 0, camera_k_[1] / local_point_[2], -camera_k_[1] / (local_point_[2]*local_point_[2]) * local_point_[1];
+    matData_t invz = 1.0 / local_point_[2];
+    J_project << camera_k_[0] * invz, 0, -camera_k_[0] * invz * invz * local_point_[0] ,
+                 0, camera_k_[1] * invz, -camera_k_[1] * invz * invz * local_point_[1];
     if (reversedNodeOrder_)
     {
         J_.topLeftCorner<2,3>() = J_project * Tinv_.R();
@@ -114,7 +118,7 @@ void FactorCameraProj3dPoint::evaluate_jacobians()
     else
     {
         J_.topLeftCorner<2,6>() = J_project * ( Tinv_.T()* Jr).topLeftCorner<3,6>();
-        J_.topRightCorner<2,3>() = J_project * Tinv_.R();   
+        J_.topRightCorner<2,3>() = J_project * Tinv_.R(); 
     }
 }
 
