@@ -34,7 +34,7 @@ FactorCameraProj3dLine::FactorCameraProj3dLine(const Mat21 &obsPoint1,
                 const Mat41 &camera_k,
                 const Mat2 &obsInf,
                 Factor::robustFactorType robust_type):
-            Factor(1,12,robust_type), camera_k_(camera_k), W_(obsInf)
+            Factor(2,12,robust_type), camera_k_(camera_k), W_(obsInf)
 {
     // Usually, we check for the order of nodes, such that id_0 < id_1 < id_2
     // Since we have 3 nodes, we will not preserve the order and when creating the adjacency matrix in factor_graph_solve.cpp
@@ -73,7 +73,7 @@ Mat31 FactorCameraProj3dLine::calculate_image_line(const Mat21 &p1, const Mat21 
     line << p1[1] - p2[1],
            -p1[0] + p2[0],
             p1[0]*p2[1] - p1[1]*p2[0];
-    line = line / line.norm();
+    line = line / line.head(2).norm();
     return line;
 }
 
@@ -115,24 +115,28 @@ void FactorCameraProj3dLine::evaluate_jacobians()
     Mat<4,6> Jr = Mat<4,6>::Zero();
     Jr.topLeftCorner<3,3>() = hat3(point1_);
     Jr.topRightCorner<3,3>() =  -Mat3::Identity();
-    Mat<3,3> J_project1 = Mat<3,3>::Zero();
+    Mat<2,3> J_project1 = Mat<2,3>::Zero();
     matData_t invz1 = 1.0 / local_point1_[2];
+    // here there should be a last row with all zeros, but we can rmeove it and adapt all part accordingly
     J_project1 << camera_k_[0] * invz1 , 0, -camera_k_[0]  * invz1 * invz1 * local_point1_[0] ,
-                 0, camera_k_[1]  * invz1, -camera_k_[1]  * invz1 * invz1 * local_point1_[1],
-                 0, 0, 0;
+                 0, camera_k_[1]  * invz1, -camera_k_[1]  * invz1 * invz1 * local_point1_[1];
     
+
     // Joint Jacobian
-    J_.topLeftCorner<1,3>() = line_obs_.transpose() * J_project1 * Tinv_.R();
-    //J_.topRIght<1,6>() = line_obs_.transpose() * J_project1 * ( Tinv_.T()* Jr).topLeftCorner<3,6>();
+    J_.topLeftCorner<1,6>() = line_obs_.head(2).transpose() * J_project1 * ( Tinv_.T()* Jr).topLeftCorner<3,6>();
+    J_.block<1,3>(0,6) = line_obs_.head(2).transpose() * J_project1 * Tinv_.R();
+    //J_.topRightCorner<1,3>() -> equal zero
 
 
     // Jacobian for the second point, in the second row
     Jr.topLeftCorner<3,3>() = hat3(point2_);
-    Mat<3,3> J_project2 = Mat<3,3>::Zero();
+    Mat<2,3> J_project2 = Mat<2,3>::Zero();
     matData_t invz2 = 1.0 / local_point2_[2];
     J_project2 << camera_k_[0] * invz2, 0, -camera_k_[0]  * invz2 * invz2 * local_point2_[0] ,
-                 0, camera_k_[1] * invz2, -camera_k_[1]  * invz2 * invz2 * local_point2_[1],
-                 0, 0, 0;
+                 0, camera_k_[1] * invz2, -camera_k_[1]  * invz2 * invz2 * local_point2_[1];
+
+    J_.bottomLeftCorner<1,6>() = line_obs_.head(2).transpose() * J_project2 * ( Tinv_.T()* Jr).topLeftCorner<3,6>();
+    J_.bottomRightCorner<1,3>() = line_obs_.head(2).transpose() * J_project2 * Tinv_.R();
 
 }
 

@@ -60,7 +60,7 @@ for i in range(N):
 #print(X)
 
 # Transform point no the new reference frame
-T = mrob.geometry.SE3(np.random.randn(6)*0.1)
+T = mrob.geometry.SE3(np.random.rand(6)*0.3)
 T.print()
 X_target = T.transform_array(X)
 #print(X_target)
@@ -114,10 +114,10 @@ for i in range(0,N,2):
             nodePoint2 = l2,
             camera_k = camera_k,
             obsInvCov = W)
-graph.print()
 
 # Solve FGraph
 print('3d Lines: current error = ', graph.chi2())
+graph.print()
 graph.solve(mrob.LM)
 T_estim_line = mrob.geometry.SE3(graph.get_estimated_state()[0]).inv()
 print('distance rotation = ', T.distance_rotation(T_estim_line))
