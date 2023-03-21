@@ -64,6 +64,8 @@ ADD_SUBDIRECTORY(./src/PCRegistration)
 INCLUDE_DIRECTORIES(./src/plane-surfaces)
 ADD_SUBDIRECTORY(./src/plane-surfaces)
 
+INCLUDE_DIRECTORIES(./src/visual)
+ADD_SUBDIRECTORY(./src/visual)
 
 
 # ===================================================================

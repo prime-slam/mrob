@@ -51,6 +51,9 @@
 #include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
 
+#include "mrob/factors/factorCameraProj3dPoint.hpp"
+#include "mrob/factors/factorCameraProj3dLine.hpp"
+
 //#include <Eigen/Geometry>
 
 namespace py = pybind11;
@@ -300,6 +303,37 @@ public:
         return f->get_id();
     }
 
+    // Visual factors
+    // --------------------------------------------------
+    // add_factor_camera_proj_3d_point
+    factor_id_t add_factor_camera_proj_3d_point(const py::EigenDRef<const Mat21> obs, uint_t nodePoseId,
+                uint_t nodeLandmarkId, const py::EigenDRef<const Mat41> camera_k,
+                const py::EigenDRef<const Mat2> obsInvCov)
+    {
+        auto n1 = this->get_node(nodePoseId);
+        auto n2 = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorCameraProj3dPoint(obs,n1,n2,camera_k,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_factor_camera_proj_3d_line(const py::EigenDRef<const Mat21> obsPoint1,
+                const py::EigenDRef<const Mat21> obsPoint2,
+                uint_t nodePoseId,
+                uint_t nodePoint1,
+                uint_t nodePoint2,
+                const py::EigenDRef<const Mat41> camera_k,
+                const py::EigenDRef<const Mat2> obsInvCov)
+    {
+        auto n_pose = this->get_node(nodePoseId);
+        auto n1 = this->get_node(nodePoint1);
+        auto n2 = this->get_node(nodePoint2);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorCameraProj3dLine(obsPoint1,
+                    obsPoint2, n_pose, n1, n2,camera_k,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -495,6 +529,23 @@ void init_FGraph(py::module &m)
             .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_raw)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
+            // Visual factors
+            .def("add_factor_camera_proj_3d_point", &FGraphPy::add_factor_camera_proj_3d_point,
+                    "\n Factor for the reprojection error from a point in the image plane",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("nodeLandmarkId"),
+                    py::arg("camera_k"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_camera_proj_3d_line", &FGraphPy::add_factor_camera_proj_3d_line,
+                    "\n Factor for the reprojection error from a line (as 2 points) in the image plane",
+                    py::arg("obsPoint1"),
+                    py::arg("obsPoint2"),
+                    py::arg("nodePoseId"),
+                    py::arg("nodePoint1"),
+                    py::arg("nodePoint2"),
+                    py::arg("camera_k"),
+                    py::arg("obsInvCov"))
             ;
 
 }
