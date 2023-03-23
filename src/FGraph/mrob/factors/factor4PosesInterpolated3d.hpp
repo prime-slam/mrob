@@ -34,34 +34,49 @@ namespace mrob{
 /**
  * The Factor4PosesInterpolated3d is a vertex representing the distribution between
  * four nodePose3d, that is, it is expressing a Rigid Body Transformation
- * between two poses that are results of the interpolation from two intervals. Each interval
- * has a starting and ending poses that's why afterall we use 4 poses as nodes here.
+ * between two poses that are results of the interpolation from two intervals at timestamp tau in [0,1]. 
+ * Each interval has a starting and ending pose that's why afterall we use 4 poses as nodes here.
+ *
+ * This factor might be used for the task in which we replace part of the nodes in factor graph
+ * with interpolation reducing the number of nodes in optimization task, but keeping number of factors.
+ * For that we decide to keep only for example each n-th node in factor graph and replace others with
+ * interpolation. After that each interpolated factor is related interval between two nodes that
+ * remain.
  *
  * The state is an observer RBT, and as we have commented, we need to specify
- * the two Nodes that the factor is connecting, which are provided by their
+ * the four Nodes that the factor is connecting, which are provided by their
  * shared_ptr's.
  * We provide the node's Id to get the correspondent Jacobian
+ * 
+ * Having two pairs of nodes that represent start and end poses of interpolation interval
+ * T_1_origin, T_1_target, T_2_origin, T_2_target, there are five possible cases of intersection of that
+ * intervals:
+ * 1) T_1_origin ... T_1_target ... T_2_origin ... T_2_target
+ * 2) T_1_origin ... T_1_target = T_2_origin ... T_2_target
+ * 3) T_1_origin = T_2_origin ... T_2_target = T_2_target 
+ * 4) T_2_origin ... T_2_target = T_1_origin ... T_1_target
+ * 5) T_2_origin = T_1_origin ... T_2_target = T_2_target 
+ * This cases are defined via nodes_intersection_case parameter.
  *
  * The convention in the library r = f(x) - z.
  *
  * In this particular factor, we will follow a similar convention as in odometry 2d,
  * where we 'observe' the last pose, and thus, the relation between the transformation of poses is:
- *   T_o * T_obs = T_t
+ *   T_o_ct(T_1_origin, T_1_target, tau_1) * T_obs = T_t_ct(T_2_origin, T_2_target, tau_2)
  *
  *
  *
- * T_o is the transformation encoded by the 3D pose 'origin'. Also note that the
- * transformation from a pose (Exp(x_o) transforms point in the local 'origin' frame to the world reference.
- * T_t target transformation from pose x_t
- * T_obs observation transformation from pose obs (observed from origin)
+ * T_o_ct is the transformation encoded by the 3D pose produced by interpolation at time tau_1 inside first interval
+ * defined by nodes T_1_origin, T_1_target. 
+ * T_t_ct target transformation that related to T_1_origin, T_1_target, tau_1.
+ * T_obs observation transformation from pose obs (observed from interpolated T_o_ct)
  *
  * and the residual is thus:
- *   r = Ln ( T_o * T_obs * T_t^-1 )
+ *   r = Ln ( T_o_ct * T_obs * T_t_ct^-1 )
  *
  * (equivalent to odometry 2d x_origin + observation - x_target)
  *
  *
- * (it could also be formulated as T_o^-1*T_t*Tob^-1, but the former way is more intuitive
  *
  *
  * The observations relate a pair of nodes. The order matters, since this will

@@ -186,11 +186,8 @@ Factor4PosesInterpolated3d::Factor4PosesInterpolated3d(const SE3 &observation,
 
 void Factor4PosesInterpolated3d::evaluate_residuals()
 {
-    // From Origin we observe Target such that: T_o * T_obs = T_t
-    // Tr = Txo * Tobs * Txt^-1
-    // NOTE: We could also use the adjoint to refer the manifold coordinates obs w.r.t xo but in this case that
-    // does not briung any advantage on the xo to the global frame (identity)
-    // (xo reference)T_obs * T_xo  = T_xo * (global)T_obs. (rhs is what we use here)
+    // From interpolated origin we observe interpolated Target such that: T_o_ct * T_obs = T_t_ct
+    // Tr = Txo_ct * Tobs * Txt_ct^-1
     Mat4 T_a_0 = get_neighbour_nodes()->at(id_a_0)->get_state();
     Mat4 T_b_0 = get_neighbour_nodes()->at(id_b_0)->get_state();
     Mat4 T_a_1 = get_neighbour_nodes()->at(id_a_1)->get_state();

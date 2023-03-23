@@ -31,25 +31,24 @@ namespace mrob{
 
 /**
  * factor2PosesPoint2PlaneInterpolated is a vertex in the Fgraph library that models
- * the distribution of observations of a 3D pose from a pose that interpolated using two poses at
- * time delta_time. The purpose of this factors is to estimate
- * the relative transformation from two different sets of point clouds, given some planar constraaints.
- * Mainly, it will include a pointcloud from images (chessboard) after solving the PnP (external)
- * and any sensor providing depth.
+ * in-scan time-continuous point cloud mapping procedure. Having a map of 3D points and a
+ * 3D pointcloud scanned by moving agent between two poses during time interval we want to map observations
+ * to map and perform point to plane ICP.
+ * Refer to "CT-ICP: Real-time Elastic LiDAR Odometry with Loop Closure" paper by Dellenbach et al. 
+ * to see particular use case for that factor.
  *
 * Observations
- *  - Point x
- *  - Point y, normal n_y, from reference y
+ *  - Point x captured at pose T_tau at time t_alpha while agent moving between begin pose T_a and end pose T_b (scan)
+ *  - Point y, normal n_y, from reference y (map)
  *
- * State to estimate is 3D pose y^T_x.
+ * State to estimate is two 3D poses T_a and T_b. T_alpha - pose interpolated at time t_alpha [0,1] for interval T_a->T_b
  *
  * The residual, as a convention in the library is:
- *   r = f(x) = n_y' * (Tx - y) -> 0 if the relative point is in the plane.
+ *   r = f(x) = n_y' * (T_tau * x - y) -> 0 if the relative point is in the plane.
  *
  * The Jacobian is then
- *  dr = n_y' [-(Tp)^, I] [(1 - delta_time_) * SE3(xi_delta).adj(), delta_time * I]
+ *  dr = n_y' [-(Tp)^, I] [(1 - t_alpha) * (T_b * T_a.inv()).ln_vee() * time).adj(), t_alpha * I]
  *
- * TODO: correctly characterize the covariance, since this is a contribution from 2 rv
  */
 
 class factor2PosesPoint2PlaneInterpolated: public Factor
