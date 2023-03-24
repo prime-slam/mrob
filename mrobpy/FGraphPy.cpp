@@ -33,6 +33,7 @@
 #include "mrob/factors/nodePose3d.hpp"
 #include "mrob/factors/factor1Pose3d.hpp"
 #include "mrob/factors/factor2Poses3d.hpp"
+#include "mrob/factors/factor4PosesInterpolated3d.hpp"
 #include "mrob/factors/nodeLandmark3d.hpp"
 #include "mrob/factors/factor1Pose1Landmark3d.hpp"
 #include "mrob/factors/nodeLandmark2d.hpp"
@@ -138,6 +139,20 @@ public:
         auto nO = this->get_node(nodeOriginId);
         auto nT = this->get_node(nodeTargetId);
         std::shared_ptr<mrob::Factor> f(new mrob::Factor2Poses3d(obs,nO,nT,obsInvCov, updateNodeTarget, robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_factor_4poses_interpolated_3d(const SE3 &obs, 
+                                    uint_t nodeOriginFirstPairId, uint_t nodeTargetFirstPairId,
+                                    uint_t nodeOriginSecondPairId, uint_t nodeTargetSecondPairId,
+                                    const float time_first, const float time_second, const py::EigenDRef<const Mat6> obsInvCov)
+    {
+        auto nO1 = this->get_node(nodeOriginFirstPairId);
+        auto nT1 = this->get_node(nodeTargetFirstPairId);
+        auto nO2 = this->get_node(nodeOriginSecondPairId);
+        auto nT2 = this->get_node(nodeTargetSecondPairId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor4PosesInterpolated3d(obs,nO1,nT1, nO2, nT2, time_first, time_second, obsInvCov, robust_type_));
         this->add_factor(f);
         return f->get_id();
     }
@@ -461,6 +476,16 @@ void init_FGraph(py::module &m)
                             py::arg("obs"),
                             py::arg("nodeOridingId"),
                             py::arg("nodeTargetId"),
+                            py::arg("obsInvCov"),
+                            py::arg("updateNodeTarget") = false)
+            .def("add_factor_4poses_interpolated_3d", &FGraphPy::add_factor_4poses_interpolated_3d,
+                            "Factors connecting 4 poses which are two pairs of initial and final poses for interpolation. If last input set to true (by default false), also updates the value of the target Node according to the new obs + origin node",
+                            py::arg("obs"),
+                            py::arg("nodeOriginFirstPairId"),
+                            py::arg("nodeTargetFirstPairId"),
+                            py::arg("nodeOriginSecondPairId"),
+                            py::arg("nodeTargetSecondPairId"),
+                            py::arg("time"),
                             py::arg("obsInvCov"),
                             py::arg("updateNodeTarget") = false)
             // -----------------------------------------------------------------------------

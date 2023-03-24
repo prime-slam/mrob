@@ -8,6 +8,7 @@ SET(sources
     weight_point.cpp
     factors/factor1PosePoint2Point.cpp
     factors/factor1PosePoint2Plane.cpp
+    factors/factor2PosesPoint2PlaneInterpolated.cpp
 )
 
 # extra header files
@@ -15,6 +16,7 @@ SET(headers
     mrob/pc_registration.hpp
     mrob/factors/factor1PosePoint2Point.hpp
     mrob/factors/factor1PosePoint2Plane.hpp
+    factors/factor2PosesPoint2PlaneInterpolated.hpp
 )
 
 # create the shared library
