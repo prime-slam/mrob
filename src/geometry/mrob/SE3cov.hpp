@@ -121,16 +121,16 @@ namespace mrob
     protected:
         /**
          * @brief This is the 6x6 covariance matrix of the current pose.
-         * Convention is \f$\xi = (\theta, \rho)\f$, where \f$\theta\f$ are the orientation angles,
-         * and \f$\rho\f$ is the position vector.
+         * Convention is \\f$\\xi = (\\theta, \\rho)\\f$, where \\f$\\theta\\f$ are the orientation angles,
+         * and \\f$\\rho\\f$ is the position vector.
          * 
-         * \f[
-         * \Sigma = E[\xi\cdot\xi^T] = \left[\begin{array}{cc}
-         * \Sigma_{\theta \theta} & \Sigma_{\theta \rho} \\
-         * \Sigma_{\rho \theta} & \Sigma_{\rho \rho}\\
-         * \end{array}
-         * \right]
-         * \f]
+         * \\f[
+         * \\Sigma = E[\\xi\\cdot\\xi^T] = \\left[\\begin{array}{cc}
+         * \\Sigma_{\\theta \\theta} & \\Sigma_{\\theta \\rho} \\
+         * \\Sigma_{\\rho \\theta} & \\Sigma_{\\rho \\rho}\\
+         * \\end{array}
+         * \\right]
+         * \\f]
          * 
          */
         Mat6 covariance_; //!< Covariance matrix of pose uncertainty
