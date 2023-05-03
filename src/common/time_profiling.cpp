@@ -51,7 +51,10 @@ void TimeProfiling::stop(const std::string &key)
 {
     auto t2 = std::chrono::steady_clock::now();
     auto dif = std::chrono::duration_cast<Ttim>(t2 - t1_);
-    time_profiles_.push_back( std::make_pair(key,  dif.count()) );
+    if (time_profiles_.count(key))
+        time_profiles_.at(key) += dif.count();
+    else
+        time_profiles_.emplace(key,  dif.count());
 }
 
 
@@ -59,7 +62,7 @@ void TimeProfiling::print()
 {
     double sum = total_time();
 
-    std::cout << "\nTime profile for " << sum/1e3 << " [ms]: ";
+    std::cout << "\nTime profile for " << sum/1e3 << " [ms]: \n";
     for (auto &&t : time_profiles_)
         std::cout << t.first << " = " << t.second/sum *100 << "%,\n";
     std::cout << "\n";
