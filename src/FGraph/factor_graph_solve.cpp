@@ -38,8 +38,9 @@ using namespace Eigen;
 
 
 FGraphSolve::FGraphSolve(matrixMethod method):
-	FGraph(), matrixMethod_(method), optimMethod_(GN), N_(0), M_(0),
-	lambda_(1e-6), solutionTolerance_(1e-2), buildAdjacencyFlag_(false)
+	FGraph(), matrixMethod_(method), optimMethod_(LM), N_(0), M_(0),
+	lambda_(1e-6), solutionTolerance_(1e-2), buildAdjacencyFlag_(false),
+    verbose_(false)
 {
 
 }
@@ -47,7 +48,8 @@ FGraphSolve::FGraphSolve(matrixMethod method):
 FGraphSolve::~FGraphSolve() = default;
 
 
-uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda, matData_t solutionTolerance)
+uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters,
+        matData_t lambda, matData_t solutionTolerance, bool verbose)
 {
     /**
      * 2800 2D nodes on M3500
@@ -60,6 +62,7 @@ uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda,
      */
     lambda_ = lambda;
     solutionTolerance_ = solutionTolerance;
+    verbose_ = verbose;
     time_profiles_.reset();
     optimMethod_ = method;
 
@@ -86,7 +89,7 @@ uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters, matData_t lambda,
 
 
     // TODO add variable verbose to output times
-    if (0)
+    if (verbose_)
         time_profiles_.print();
         
     return iters; 
@@ -185,10 +188,15 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
 
         // 1.2) Check for convergence, needs update and re-evaluaiton of errors
         deltaChi2 = currentChi2 - this->chi2(true);
-        std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: iteration "
-                  << iter << " lambda = " << lambda_ << ", error " << currentChi2
-                  << ", and delta = " << deltaChi2
-                  << std::endl;
+        // For now we enable diable this by an if
+        // TODO later it should be on pre-processor as an option on the cmake
+        if (verbose_)
+        {
+            std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: iteration "
+                    << iter << " lambda = " << lambda_ << ", error " << currentChi2
+                    << ", and delta = " << deltaChi2
+                    << std::endl;
+        }
         if (deltaChi2 < 0)
         {
             // proposed dx did not improve, repeat 1) and reduce area of optimization = increase lambda
@@ -200,7 +208,8 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         // 1.3) check for convergence
         if (deltaChi2 < solutionTolerance_)
         {
-            std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: Converged Successfully" << std::endl;
+            if (verbose_)
+                std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: Converged Successfully" << std::endl;
             return iter;
         }
 
@@ -210,7 +219,8 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         //     chi2(x_k) - m_k(dx)
         // where m_k is the quadratized model = ||r||^2 - dx'*J' r + 0.5 dx'(J'J + lambda*D2)dx
         modelFidelity = deltaChi2 / (dx_.dot(b_) - 0.5*dx_.dot(L_* dx_));
-        std::cout << "model fidelity = " << modelFidelity << " and m_k = " << dx_.dot(b_) << std::endl;
+        if (verbose_)
+            std::cout << "model fidelity = " << modelFidelity << " and m_k = " << dx_.dot(b_) << std::endl;
 
         //3) update lambda
         if (modelFidelity < sigma1)
@@ -222,10 +232,13 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
     } while (iter < maxIters);
 
     // output
-    std::cout << "FGraphSolve::optimize_levenberg_marquardt: failed to converge after "
-              << iter << " iterations and error " << currentChi2
-              << ", and delta = " << deltaChi2
-              << std::endl;
+    if (verbose_)
+    {
+        std::cout << "FGraphSolve::optimize_levenberg_marquardt: failed to converge after "
+                << iter << " iterations and error " << currentChi2
+                << ", and delta = " << deltaChi2
+                << std::endl;
+    }
     return 0; //Failed to converge is indicated with 0 iterations
 
 }
