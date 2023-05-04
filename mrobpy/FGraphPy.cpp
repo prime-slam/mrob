@@ -367,15 +367,17 @@ void init_FGraph(py::module &m)
                     py::arg("robust_type") =  Factor::robustFactorType::QUADRATIC)
             .def("solve", &FGraphSolve::solve,
                     "Solves the corresponding FG.\n"
-                    "Options:\n method = mrob.GN (Gauss Newton), by default option. It carries out a SINGLE iteration.\n"
-                    "                  = mrob.LM (Levenberg-Marquard), it has several parameters:\n"
-                    " - marIters = 30 (by default). Only for LM\n"
+                    "Options:\n method = mrob.GN (Gauss Newton). It carries out a SINGLE iteration.\n"
+                    "                  = mrob.LM (Levenberg-Marquard), default option,it has several parameters:\n"
+                    " - marIters = 20 (by default). Only for LM\n"
                     " - lambda = 1-6, LM paramter for the size of the update\n"
-                    " - solutionTolerance: convergence criteria.",
-                    py::arg("method") =  FGraphSolve::optimMethod::GN,
-                    py::arg("maxIters") = 30,
+                    " - solutionTolerance: convergence criteria\n"
+                    " - verbose: by default false. If you want output on optim, set to true.",
+                    py::arg("method") =  FGraphSolve::optimMethod::LM,
+                    py::arg("maxIters") = 20,
                     py::arg("lambda") = 1e-6,
-                    py::arg("solutionTolerance") = 1e-2)
+                    py::arg("solutionTolerance") = 1e-2,
+                    py::arg("verbose") = false)
             .def("chi2", &FGraphSolve::chi2,
                     "Calculated the chi2 of the problem.\n"
                     "By default re-evaluates residuals, \n"

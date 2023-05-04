@@ -23,7 +23,7 @@
 #define TIME_PROFILING_HPP_
 
 #include <chrono>
-#include <vector>
+#include <unordered_map>
 #include <string>
 
 
@@ -54,7 +54,6 @@ public:
     void reset();
     /**
      * start
-     * TODO add here the key?
      */
     void start();
     /**
@@ -73,7 +72,7 @@ public:
 
 protected:
     std::chrono::steady_clock::time_point t1_;
-    std::vector<std::pair<std::string, double>> time_profiles_;
+    std::unordered_map<std::string, double> time_profiles_;
 };
 
 }

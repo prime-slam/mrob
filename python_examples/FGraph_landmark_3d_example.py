@@ -38,8 +38,8 @@ graph.add_factor_1pose_1landmark_3d(obs,n1,l3,W)
 
 print('\n\n\n Solving Fgraph:\n')
 #graph.solve(mrob.fgraph.GN) #1 iteration of Gauss-Newton
-graph.solve(mrob.LM,10) #as many iterations until convergence for Levenberg Marquardt
-graph.print(True)
+graph.solve(verbose=True) #as many iterations until convergence for Levenberg Marquardt
+graph.print(False)
 
 
 

@@ -82,7 +82,8 @@ public:
     /**
      * This enums optimization methods available:
      *  - Gauss Newton
-     *  - Levenberg Marquardt (trust-region-like for lambda adjustment) TODO LM elliptical?
+     *  - Levenberg Marquardt (trust-region-like for lambda adjustment)
+     *  - LM elliptical J'WJ + lambda * diag(J'WJ)
      */
     enum optimMethod{GN=0, LM, LM_ELLIPS};
 
@@ -92,12 +93,14 @@ public:
     /**
      * Solve call the corresponding routine on the class parameters or
      * ultimately on the function input,
-     * by default optim method is Gauss Newton
+     * by default optim method is Levenberg-Marquardt
      *
      * Return: number of iterations
      *         Failed to converge = 0 iterations
      */
-    uint_t solve(optimMethod method = GN, uint_t maxIters = 20, matData_t lambda = 1e-6, matData_t solutionTolerance = 1e-2);
+    uint_t solve(optimMethod method = LM, uint_t maxIters = 10,
+                matData_t lambda = 1e-6, matData_t solutionTolerance = 1e-2,
+                bool verbose = false);
     /**
      * Evaluates the current solution chi2.
      *
@@ -269,6 +272,9 @@ protected:
 
     // time profiling
     TimeProfiling time_profiles_;
+
+    // printing flag
+    bool verbose_;
 };
 
 
