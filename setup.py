@@ -38,15 +38,7 @@ try:
         def get_tag(self):
             python, abi, plat = _bdist_wheel.get_tag(self)
             print(f"BDIST PY,ABI,PLAT: {python}, {abi}, {plat}") 
-            if platform.system() == "Darwin":
-                python, abi = 'py3', 'none'
-                name = plat[:plat.find("_")]
-                for i in range(3):
-                    plat = plat[plat.find("_") + 1:]   # skip name and version of OS
-                arch = plat
-                version = os.getenv('MACOSX_DEPLOYMENT_TARGET').replace('.', '_')
-                plat = name + "_" + version + "_" + arch
-            elif platform.system() == "Windows":
+            if platform.system() == "Windows":
                 if ctypes.sizeof(ctypes.c_voidp) * 8 > 32:
                     plat = "win_" + platform.machine().lower()
                 else:
