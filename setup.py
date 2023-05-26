@@ -1,35 +1,14 @@
-#  Copyright (c) 2022, Gonzalo Ferrer
-# 
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-# 
-# 
-#  setup.py
-# 
-#  Created on: Jan 22, 2020
-#       Author: Lyubov Miloserdova
-#               miloslubov@gmail.com
-#
-
-
 from setuptools import find_packages, setup
 from setuptools.command.install import install as _install
 import ctypes
+import logging
+import os
+
 
 cmdclass = dict()
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-    import platform
 
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
@@ -38,19 +17,18 @@ try:
 
         def get_tag(self):
             python, abi, plat = _bdist_wheel.get_tag(self)
-            print(f"BDIST PY,ABI,PLAT: {python}, {abi}, {plat}") 
-            if platform.system() == "Windows":
-                if ctypes.sizeof(ctypes.c_voidp) * 8 > 32:
-                    plat = "win_" + platform.machine().lower()
-                else:
-                    plat = "win32"
+            if plat[:5] == 'linux':
+                libc = ctypes.CDLL('libc.so.6')
+                libc.gnu_get_libc_version.restype = ctypes.c_char_p
+                GLIBC_VER = libc.gnu_get_libc_version().decode('utf8').split('.')
+                plat = f'manylinux_{GLIBC_VER[0]}_{GLIBC_VER[1]}{plat[5:]}'
             return python, abi, plat
-        
-    
+
+
     cmdclass['bdist_wheel'] = bdist_wheel
 
 except ImportError:
-    bdist_wheel = None
+    logging.warn("Wheel package missing!")
 
 
 class install(_install):
@@ -62,12 +40,18 @@ class install(_install):
 
 cmdclass['install'] = install
 
-
-setup(
+print("pcks", find_packages())
+setup_args = dict(
+    name="deplex",
     setuptools_git_versioning={
         "enabled": True,
         "sort_by": "creatordate",
     },
-    setup_requires=['setuptools-git-versioning<2'],
+    setup_requires=["setuptools-git-versioning<2"],
+    zip_safe=False,
+    packages=find_packages(),
+    include_package_data=True,
     cmdclass=cmdclass
 )
+
+setup(**setup_args)
