@@ -63,7 +63,7 @@ class install(_install):
 cmdclass['install'] = install
 
 
-setuptools.setup(
+setup(
     setuptools_git_versioning={
         "enabled": True,
         "sort_by": "creatordate",
