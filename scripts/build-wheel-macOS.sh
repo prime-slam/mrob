@@ -23,7 +23,7 @@
 
 set -euo pipefail
 export LC_ALL=C
-export MACOSX_DEPLOYMENT_TARGET=10.9
+export MACOSX_DEPLOYMENT_TARGET=11
 
 cd $(dirname $(greadlink -f "${BASH_SOURCE[0]}"))/..
 mkdir -p ./build ./dist ./mrob
