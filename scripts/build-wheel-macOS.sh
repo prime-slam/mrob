@@ -48,3 +48,7 @@ done
 cd ../
 python3 -m pip install --user -q build
 python3 -m build --wheel --outdir dist/ .
+
+python3 -m pip install delocate==0.10.4
+
+delocate-wheel -v ./dist/*.whl
