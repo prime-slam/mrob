@@ -71,7 +71,7 @@ jobs:
 
   build_wheel_macOS:
     name: Build wheel on macOS
-    runs-on: macos-10.15
+    runs-on: macos-11
     needs: build
     strategy:
       fail-fast: false
