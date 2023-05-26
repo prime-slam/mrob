@@ -21,19 +21,20 @@
 #
 
 
-import setuptools
+from setuptools import find_packages, setup
+from setuptools.command.install import install as _install
+import ctypes
 
+cmdclass = dict()
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-    import platform, os, ctypes
+    import platform
 
     class bdist_wheel(_bdist_wheel):
-
         def finalize_options(self):
             _bdist_wheel.finalize_options(self)
-            if platform.system() == "Darwin":
-                self.root_is_pure = False
+            self.root_is_pure = False
 
         def get_tag(self):
             python, abi, plat = _bdist_wheel.get_tag(self)
@@ -44,9 +45,23 @@ try:
                 else:
                     plat = "win32"
             return python, abi, plat
+        
+    
+    cmdclass['bdist_wheel'] = bdist_wheel
 
 except ImportError:
     bdist_wheel = None
+
+
+class install(_install):
+    def finalize_options(self):
+        _install.finalize_options(self)
+        self.install_libbase = self.install_platlib
+        self.install_lib = self.install_platlib
+
+
+cmdclass['install'] = install
+
 
 setuptools.setup(
     setuptools_git_versioning={
@@ -54,5 +69,5 @@ setuptools.setup(
         "sort_by": "creatordate",
     },
     setup_requires=['setuptools-git-versioning<2'],
-    cmdclass={'bdist_wheel': bdist_wheel}
+    cmdclass=cmdclass
 )
