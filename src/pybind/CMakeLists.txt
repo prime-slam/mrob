@@ -7,7 +7,7 @@ pybind11_add_module(pybind)
 #####################################
 # Set mrob python-package related variables
 #####################################
-set(PYTHON_PACKAGE_SRC_DIR ${PROJECT_SOURCE_DIR}/python)
+set(PYTHON_PACKAGE_SRC_DIR ${PROJECT_SOURCE_DIR}/mrobpy)
 set(PYTHON_PACKAGE_DST_DIR ${CMAKE_BINARY_DIR}/python_package)
 set(PYTHON_BINARY_DIR ${MROB_LIB_DIR}/pybind)
 set(PYTHON_WHEEL_DST_DIR ${CMAKE_BINARY_DIR}/wheels)

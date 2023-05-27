@@ -75,5 +75,5 @@ ADD_SUBDIRECTORY(./src/visual)
 
 IF(NOT ANDROID)
     ADD_SUBDIRECTORY(./external/pybind11)
-    ADD_SUBDIRECTORY(./mrobpy)
+    ADD_SUBDIRECTORY(./src/pybind)
 ENDIF(NOT ANDROID)
