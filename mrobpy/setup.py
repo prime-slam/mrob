@@ -55,7 +55,7 @@ cmdclass['install'] = install
 
 print("pcks", find_packages())
 setup_args = dict(
-    name="deplex",
+    name="mrob",
     setuptools_git_versioning={
         "enabled": True,
         "sort_by": "creatordate",
