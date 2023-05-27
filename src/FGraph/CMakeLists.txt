@@ -48,6 +48,9 @@ SET(factors_sources
 ADD_LIBRARY(FGraph SHARED  ${sources} ${factors_sources})
 TARGET_LINK_LIBRARIES(FGraph SE3 common)
 
+SET_TARGET_PROPERTIES(FGraph PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
+)
 
 ADD_SUBDIRECTORY(examples)
 #ADD_SUBDIRECTORY(tests)

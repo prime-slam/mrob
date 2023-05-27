@@ -28,6 +28,8 @@ ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 ELSE()
 ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+SET(MROB_LIB_DIR ${CMAKE_BINARY_DIR}/lib)
+
 # BUILD_TESTING option handling. By default tests are turned off but the value is cached and can be changed in Cmake-GUI
 set(BUILD_TESTING false CACHE BOOL "Build unit tests for MROB modules")
 

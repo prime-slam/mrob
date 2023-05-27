@@ -13,3 +13,7 @@ SET(sources
 )
 # create the shared library
 ADD_LIBRARY(common SHARED  ${sources})
+
+SET_TARGET_PROPERTIES(common PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
+)

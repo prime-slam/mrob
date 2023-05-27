@@ -17,6 +17,10 @@ SET(headers
 # create the shared library
 ADD_LIBRARY(SE3 SHARED ${sources})
 
+SET_TARGET_PROPERTIES(SE3 PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
+)
+
 # build tests if enabled
 IF(BUILD_TESTING)
     ADD_SUBDIRECTORY(tests)
