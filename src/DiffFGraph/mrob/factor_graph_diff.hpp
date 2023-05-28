@@ -52,8 +52,14 @@ public:
     std::vector<Mat1X> get_diff_obs();
 
     /**
-     * TODO Override add factor, to not add by mistake any factor that is not of the right type
+     * Add diff factor, same as in FGraph.
     */
+   factor_id_t add_diff_factor(std::shared_ptr<DiffFactor> &diff_factor);
+   /**
+     * Overwrite to not add by mistake any factor that is not of the right type
+   */
+   factor_id_t add_factor(std::shared_ptr<Factor> &factor);
+   
 private:
 
 }
