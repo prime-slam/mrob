@@ -17,14 +17,14 @@ jobs:
 
       - name: Install required packages from distro
         run: |
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends git build-essential g++ cmake python3-distutils python3-dev python3-numpy python3-pip
-            python3 -m pip install pytest
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends git build-essential g++ cmake python3-distutils python3-dev python3-numpy python3-pip
+          python3 -m pip install pytest
 
       - name: Configure and build native mrob library with Python bindings
         run: |
-            cmake -B ${{ github.workspace }}/build -DBUILD_TESTING=ON
-            && cmake --build ${{ github.workspace }}/build --config Release -j $(nproc)  
+          cmake -B ${{ github.workspace }}/build -DBUILD_TESTING=ON
+          cmake --build ${{ github.workspace }}/build --config Release -j $(nproc)  
 
       - name: C++ unit tests
         run: make test -C build
