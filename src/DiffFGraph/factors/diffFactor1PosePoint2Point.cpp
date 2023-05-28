@@ -12,30 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ * diffFactor1PosePoint2Point.cpp
  *
- * factor_graph_diff.cpp
- *
- *  Created on: May 8, 2023
+ *  Created on: May 28, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
- *              Mobile Robotics Lab, Skoltech
+ *              Mobile Robotics Lab.
  */
 
-#include "mrob/factor_graph_diff.hpp"
+
+#include "mrob/factors/diffFactor1PosePoint2Point.hpp"
+
+#include <iostream>
+
 
 using namespace mrob;
 
-FGraphDiff::FGraphDiff(): FGraphSolve(FGraphSolve::ADJ)
+DiffFactor1PosePoint2Point::DiffFactor1PosePoint2Point(const Mat31 &z_point_x, const Mat31 &z_point_y,  std::shared_ptr<Node> &node,
+            const Mat3 &obsInf, Factor::robustFactorType robust_type):
+        Factor1PosePoint2Point(z_point_x,z_point_y, node, obsInf, robust_type)
 {
-
+    // 
 }
-
-FGraphDiff::~FGraphDiff() = default;
-
-
-factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
-{
-    // same logic as in standard
-}
-
-// TODO need id ordering for the observations. Is this the factor id?

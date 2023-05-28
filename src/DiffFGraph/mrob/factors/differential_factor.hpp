@@ -13,29 +13,32 @@
  * limitations under the License.
  *
  *
- * factor_graph_diff.cpp
+ * factor.hpp
  *
- *  Created on: May 8, 2023
+ *  Created on: Feb 12, 2018
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
- *              Mobile Robotics Lab, Skoltech
+ *              Mobile Robotics Lab, Skoltech 
  */
 
-#include "mrob/factor_graph_diff.hpp"
+#ifndef DIFFERENTIAL_FACTOR_HPP_
+#define DIFFERENTIAL_FACTOR_HPP_
 
-using namespace mrob;
 
-FGraphDiff::FGraphDiff(): FGraphSolve(FGraphSolve::ADJ)
+#include "mrob/factor.hpp"
+#include "mrob/node.hpp"
+
+namespace mrob{
+
+class DiffFactor : public Factor
 {
 
-}
+    DiffFactor(robustFactorType factor_type = QUADRATIC, uint_t potNumberNodes = 5);
+    virtual ~DiffFactor() = default;
+    virtual VectRefConst get_state() const = 0;
+    virtual VectRefConst get_obs_deriv() const = 0;
+};
 
-FGraphDiff::~FGraphDiff() = default;
+}//namespace
 
-
-factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
-{
-    // same logic as in standard
-}
-
-// TODO need id ordering for the observations. Is this the factor id?
+#endif /* FACTOR_HPP_ */
