@@ -31,6 +31,7 @@ jobs:
 
   linux_wheel:
     name: Build wheel on ${{ matrix.os }}
+    needs: build
     runs-on: ${{ matrix.os }}
     container:
       image: quay.io/pypa/manylinux2014_x86_64:2022-12-11-145d107
@@ -41,6 +42,8 @@ jobs:
         os: [ ubuntu-latest ]
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Add git safe directory
         run: git config --global --add safe.directory /__w/mrob/mrob
