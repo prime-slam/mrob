@@ -28,7 +28,7 @@ echo "Running $NUMPROC parallel jobs"
 for v in "${PYTHON_VERSION[@]}"; do
   PYTHON_PATH=(/opt/python/cp"${v}"*/bin/python)
   cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH[0]}"
-  cmake --build build -j "${NUMPROC}" --target build-wheel
+  cmake --build build --target build-wheel
 done
 
 auditwheel repair ./build/wheels/*.whl
