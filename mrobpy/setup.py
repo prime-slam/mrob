@@ -17,6 +17,15 @@ from setuptools.command.install import install as _install
 import ctypes
 import logging
 
+import os
+from pathlib import Path 
+
+
+logging.warn("setup.py path:", Path.cwd().resolve())
+
+for f in os.listdir(Path.cwd()):
+    logging.warn("files found:", Path.cwd() / f)
+
 
 cmdclass = dict()
 
