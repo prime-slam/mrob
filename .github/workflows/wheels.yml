@@ -58,32 +58,33 @@ jobs:
           name: wheels
           path: ./wheelhouse
 
-  # macos_wheel:
-  #   name: Build wheel on ${{ matrix.os }}
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os: [ macos-11 ]
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
+  macos_wheel:
+    name: Build wheel on ${{ matrix.os }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-11 ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-  #     - name: Git fetch
-  #       run: | 
-  #         git fetch --prune --unshallow --recurse-submodules=no
-  #         git restore .
+      - name: Git fetch
+        run: | 
+          git fetch --prune --unshallow --recurse-submodules=no
+          git restore .
 
-  #     - name: Build Python wheel
-  #       run: |
-  #         chmod -R +x tools/* \
-  #         && tools/macos-wheels.sh
-  #         git status
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: wheels
-  #         path: ./wheelhouse
+      - name: Build Python wheel
+        run: |
+          chmod -R +x tools/* \
+          && tools/macos-wheels.sh
+          git status
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: ./wheelhouse
 
 
   # build_wheel_linux:
