@@ -29,30 +29,57 @@ jobs:
       - name: C++ unit tests
         run: make test -C build
 
-  linux_wheel:
+  # linux_wheel:
+  #   name: Build wheel on ${{ matrix.os }}
+  #   needs: build
+  #   runs-on: ${{ matrix.os }}
+  #   container:
+  #     image: quay.io/pypa/manylinux2014_x86_64:2022-12-11-145d107
+  #     options: --user root
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ ubuntu-latest ]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+
+  #     - name: Add git safe directory
+  #       run: git config --global --add safe.directory /__w/mrob/mrob
+
+  #     - name: Build Python wheel
+  #       run: |
+  #         chmod -R +x tools/* \
+  #         && tools/linux-wheels.sh
+
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels
+  #         path: ./wheelhouse
+
+  macos_wheel:
     name: Build wheel on ${{ matrix.os }}
-    needs: build
     runs-on: ${{ matrix.os }}
-    container:
-      image: quay.io/pypa/manylinux2014_x86_64:2022-12-11-145d107
-      options: --user root
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ macos-11 ]
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Add git safe directory
-        run: git config --global --add safe.directory /__w/mrob/mrob
+      - name: Git fetch
+        run: | 
+          git fetch --prune --unshallow --recurse-submodules=no
+          git restore .
 
       - name: Build Python wheel
         run: |
           chmod -R +x tools/* \
-          && tools/linux-wheels.sh
-
+          && tools/macos-wheels.sh
+          git status
       - uses: actions/upload-artifact@v3
         with:
           name: wheels
