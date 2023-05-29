@@ -28,6 +28,9 @@ echo "Running $NUMPROC parallel jobs"
 for v in "${PYTHON_VERSION[@]}"; do
   PYTHON_PATH=(/opt/python/cp"${v}"*/bin/python)
   cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH[0]}"
+  echo "== BUILD PYTHON PACKAGE =="
+  cmake --build build --target python-package
+  echo "== BUILD PYTHON WHEEL =="
   cmake --build build --target build-wheel
 done
 
