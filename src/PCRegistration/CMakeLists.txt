@@ -17,8 +17,8 @@ SET(headers
     mrob/factors/factor1PosePoint2Plane.hpp
 )
 
-# create the shared library
-ADD_LIBRARY(PCRegistration SHARED  ${sources} )
+# create library
+ADD_LIBRARY(PCRegistration ${sources} )
 TARGET_LINK_LIBRARIES(PCRegistration SE3 FGraph common)
 
 SET_TARGET_PROPERTIES(PCRegistration PROPERTIES

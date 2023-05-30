@@ -9,7 +9,7 @@ jobs:
     env:
       PYTHONPATH: ./lib
     strategy:
-      fail-fast: false
+      fail-fast: true
     steps:
       - uses: actions/checkout@v2
         with:
@@ -31,7 +31,6 @@ jobs:
 
   linux_wheel:
     name: Build wheel on ${{ matrix.os }}
-    needs: build
     runs-on: ${{ matrix.os }}
     container:
       image: quay.io/pypa/manylinux2014_x86_64:2022-12-11-145d107
@@ -60,7 +59,6 @@ jobs:
 
   macos_wheel:
     name: Build wheel on ${{ matrix.os }}
-    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

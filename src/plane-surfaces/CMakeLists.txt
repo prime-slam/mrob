@@ -33,8 +33,8 @@ SET(headers
     mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp
 )
 
-# create the shared library
-ADD_LIBRARY(plane-surfaces SHARED  ${sources} )
+# create library
+ADD_LIBRARY(plane-surfaces ${sources} )
 # linking PCregistration is only due to plane_registration, remove when not needed
 TARGET_LINK_LIBRARIES(plane-surfaces PCRegistration SE3 FGraph common)
 

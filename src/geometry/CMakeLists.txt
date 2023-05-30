@@ -14,8 +14,8 @@ SET(headers
     mrob/SE3cov.hpp
 )
 
-# create the shared library
-ADD_LIBRARY(SE3 SHARED ${sources})
+# create library
+ADD_LIBRARY(SE3 ${sources})
 
 SET_TARGET_PROPERTIES(SE3 PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"

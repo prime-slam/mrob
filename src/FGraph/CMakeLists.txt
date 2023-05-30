@@ -44,8 +44,8 @@ SET(factors_sources
     factors/factor2Poses3d2obs.cpp
 )
 
-# create the shared library
-ADD_LIBRARY(FGraph SHARED  ${sources} ${factors_sources})
+# create library
+ADD_LIBRARY(FGraph ${sources} ${factors_sources})
 TARGET_LINK_LIBRARIES(FGraph SE3 common)
 
 SET_TARGET_PROPERTIES(FGraph PROPERTIES

@@ -15,8 +15,8 @@ SET(headers
     #mrob/factors/nodeCameraPinHole.hpp
 )
 
-# create the shared library
-ADD_LIBRARY(visual SHARED  ${sources} )
+# create library
+ADD_LIBRARY(visual ${sources} )
 TARGET_LINK_LIBRARIES(visual SE3 FGraph common)
 
 SET_TARGET_PROPERTIES(visual PROPERTIES
