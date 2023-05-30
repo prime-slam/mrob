@@ -11,12 +11,13 @@
 # limitations under the License.
 
 set -euo pipefail
+shopt -s extglob
 export LC_ALL=C
 export MACOSX_DEPLOYMENT_TARGET=10.15
 
 cmake -B build 
 
-for PYBIN in /Users/runner/hostedtoolcache/Python/3.*/x64/bin/python3.*[0-9][0-9]?
+for PYBIN in /Users/runner/hostedtoolcache/Python/3.*/x64/bin/python3.+([0-9])
 do
   "${PYBIN}" -m pip install build
   cmake -B build -DPYTHON_EXECUTABLE="${PYBIN}"
