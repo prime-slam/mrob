@@ -24,6 +24,7 @@
 #define DIFFFACTOR1POSEPOINT2POINT_HPP_
 
 #include "mrob/differential_factor.hpp"
+#include "mrob/factors/factor1PosePoint2Point.hpp"
 
 namespace mrob{
 
@@ -46,7 +47,7 @@ namespace mrob{
  *
  */
 
-class DiffFactor1PosePoint2Point : public virtual Factor1PosePoint2Point, public virtual differential_factor
+class DiffFactor1PosePoint2Point : public virtual Factor1PosePoint2Point, public virtual DiffFactor
 {
   public:
     DiffFactor1PosePoint2Point(const Mat31 &z_point_x, const Mat31 &z_point_y,  std::shared_ptr<Node> &node,

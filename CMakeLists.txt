@@ -67,6 +67,8 @@ ADD_SUBDIRECTORY(./src/plane-surfaces)
 INCLUDE_DIRECTORIES(./src/visual)
 ADD_SUBDIRECTORY(./src/visual)
 
+INCLUDE_DIRECTORIES(./src/DiffFGraph)
+ADD_SUBDIRECTORY(./src/DiffFGraph)
 
 # ===================================================================
 # New modules should be included here

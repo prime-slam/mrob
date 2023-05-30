@@ -3,6 +3,7 @@
 # extra header files
 SET(headers
     mrob/factor_graph_diff.hpp
+    mrob/differential_factor.hpp
 )
 
 # extra source files
@@ -19,5 +20,5 @@ SET(factors_sources
 )
 
 # create the shared library
-ADD_LIBRARY(DiffFGraph SHARED  ${sources} ${factors_sources})
+ADD_LIBRARY(DiffFGraph  ${sources} ${factors_sources})
 TARGET_LINK_LIBRARIES(DiffFGraph FGraph SE3 common)

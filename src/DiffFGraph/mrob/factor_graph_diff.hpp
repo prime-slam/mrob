@@ -26,6 +26,7 @@
 #define SRC_FACTOR_GRAPH_DIFF_HPP_
 
 #include "mrob/factor_graph_solve.hpp"
+#include "mrob/factors/differential_factor.hpp"
 #include <vector>
 
 namespace mrob{
@@ -52,17 +53,18 @@ public:
     std::vector<Mat1X> get_diff_obs();
 
     /**
-     * Add diff factor, same as in FGraph.
+     * Add diff factor, same as in FGraph, but only for those factors supporting differentiation
     */
-   factor_id_t add_diff_factor(std::shared_ptr<DiffFactor> &diff_factor);
+   factor_id_t add_factor(std::shared_ptr<DiffFactor> &diff_factor);
+  protected:
    /**
-     * Overwrite to not add by mistake any factor that is not of the right type
+     * Hides the function to not add by mistake any factor that is not of the right type
    */
-   factor_id_t add_factor(std::shared_ptr<Factor> &factor);
+   using FGraph::add_factor;
    
 private:
 
+};
+
 }
-
-
 #endif /* SRC_FACTOR_GRAPH_DIFF_HPP_ */
