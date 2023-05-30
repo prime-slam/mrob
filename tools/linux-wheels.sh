@@ -22,9 +22,6 @@ cmake --version
 # Python 3.6-3.10
 PYTHON_VERSION=(36 37 38 39 310)
 
-NUMPROC=$(nproc)
-echo "Running $NUMPROC parallel jobs"
-
 cmake -B build
 
 for v in "${PYTHON_VERSION[@]}"; do
@@ -34,12 +31,3 @@ for v in "${PYTHON_VERSION[@]}"; do
 done
 
 auditwheel repair ./build/wheels/*.whl
-
-echo "Installing wheel and running example"
-
-## TODO: Run examples
-# for v in "${PYTHON_VERSION[@]}"; do
-#   PYTHON_PATH=(/opt/python/cp"${v}"*/bin/python)
-#   "${PYTHON_PATH[0]}" -m pip install mrob --find-links=./build/wheels
-#   "${PYTHON_PATH[0]}" <path_to_example>
-# done
