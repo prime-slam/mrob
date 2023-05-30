@@ -16,13 +16,10 @@ export MACOSX_DEPLOYMENT_TARGET=10.15
 
 cmake -B build 
 
-# Python 3.6-3.10
-PYTHON_VERSION=("3.6" "3.7" "3.8" "3.9" "3.10")
-
-for v in "${PYTHON_VERSION[@]}"; do
-  PYTHON_PATH=(/Users/runner/hostedtoolcache/Python/"${v}"/x64/bin/python*?[0-9])
-  "${PYTHON_PATH}" -m pip install build
-  cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH}"
+for PYBIN in /Users/runner/hostedtoolcache/Python/3.*/x64/bin/python3.*[0-9][0-9]?
+do
+  "${PYBIN}" -m pip install build
+  cmake -B build -DPYTHON_EXECUTABLE="${PYBIN}"
   cmake --build build --target build-wheel
 done
 
