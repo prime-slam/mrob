@@ -23,6 +23,7 @@
 
 #include "mrob/factor_graph_diff.hpp"
 
+
 using namespace mrob;
 
 FGraphDiff::FGraphDiff(): FGraphSolve(FGraphSolve::ADJ)
@@ -30,12 +31,11 @@ FGraphDiff::FGraphDiff(): FGraphSolve(FGraphSolve::ADJ)
 
 }
 
-FGraphDiff::~FGraphDiff() = default;
-
 
 factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
 {
     // same logic as in standard
+    return 0;
 }
 
 // TODO need id ordering for the observations. Is this the factor id?
