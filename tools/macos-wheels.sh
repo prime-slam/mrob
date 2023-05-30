@@ -21,8 +21,8 @@ PYTHON_VERSION=("3.6" "3.7" "3.8" "3.9" "3.10")
 
 for v in "${PYTHON_VERSION[@]}"; do
   PYTHON_PATH=(/Users/runner/hostedtoolcache/Python/"${v}"/x64/bin/python*?[0-9])
-  "${PYBIN}" -m pip install build
-  cmake -B build -DPYTHON_EXECUTABLE="${PYBIN}"
+  "${PYTHON_PATH}" -m pip install build
+  cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH}"
   cmake --build build --target build-wheel
 done
 
