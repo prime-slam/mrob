@@ -28,6 +28,14 @@ ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 ELSE()
 ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+if (WIN32)
+    set(BUILD_SHARED_LIBS OFF)
+else()
+    option(BUILD_SHARED_LIBS "Build shared library" ON)
+endif()
+
+SET(MROB_LIB_DIR ${CMAKE_BINARY_DIR}/lib)
+
 # BUILD_TESTING option handling. By default tests are turned off but the value is cached and can be changed in Cmake-GUI
 set(BUILD_TESTING false CACHE BOOL "Build unit tests for MROB modules")
 
@@ -73,5 +81,5 @@ ADD_SUBDIRECTORY(./src/visual)
 
 IF(NOT ANDROID)
     ADD_SUBDIRECTORY(./external/pybind11)
-    ADD_SUBDIRECTORY(./mrobpy)
+    ADD_SUBDIRECTORY(./src/pybind)
 ENDIF(NOT ANDROID)

@@ -11,5 +11,9 @@ SET(sources
     time_profiling.cpp
     optimizer.cpp
 )
-# create the shared library
-ADD_LIBRARY(common SHARED  ${sources})
+# create library
+ADD_LIBRARY(common ${sources})
+
+SET_TARGET_PROPERTIES(common PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
+)
