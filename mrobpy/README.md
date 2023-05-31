@@ -9,61 +9,29 @@
 # MROB: Mobile Robotics library
 The Mobile Robotics library (mrob) is our common framework for implementing our robotics research and projects. It includes a core set of functionalities such as geometric transformations (SE3), factor graphs for general state estimation, optimization, 3D point cloud registration and more to come.
 
-The general structure for the algorithms implemented:
-* [common](https://github.com/g-ferrer/mrob/tree/master/src/common): common matrix definitions and typedefs.
-* [geometry](https://github.com/g-ferrer/mrob/tree/master/src/geometry): Geometric transformations, mostly Rotations and Rigid Body Transformations in 3D.
-* [Fgraph](https://github.com/g-ferrer/mrob/tree/master/src/FGraph): Factor Graphs for state estimation
-* [PCReg](https://github.com/g-ferrer/mrob/tree/master/src/PCRegistration): Point Cloud Registration.
-* [mrobPy](https://github.com/g-ferrer/mrob/tree/master/mrobpy) Python bindings (using pybind11) for the above methods.
-
-## Python Examples
-The library is mainly designed to run in python, that is, algorithms are written in cpp and bind to python for general purpose use.
-We provide some examples in [python_examples](https://github.com/g-ferrer/mrob/tree/master/python_examples) for more details.
-
-
-## Dependencies
-The present library is meant to be a self-contained library. However, there are few dependencies:
-* C++'14
-* CMake
-* [Eigen](https://gitlab.com/libeigen/eigen) (included as a submodule)
-* [pybind11](https://github.com/pybind/pybind11) (included as a submodule)
-  - python3-distutils
-  - python3-dev
-* [Catch2 v2.x branch](https://github.com/catchorg/Catch2/tree/v2.x) (included as a submodule)
-
-This is the list of required packages to install:
-`sudo apt install build-essential cmake python3-distutils python3-dev`
-
-
-## Repository 
-Standard github cloning, adding the recursive term for submodules.
-
-`git clone --recursive git@github.com:g-ferrer/mrob.git`
-
-If there was ever a submodule update (not frequently) the command to use:
-
-`git submodule update --recursive`
-
+MROB was designed in C++14 with the aim of using it in Python via bindings. 
 ## Installation
 ```
-cd mrob
-mkdir build
-cd build
-cmake ..
-make -j
+python -m pip install mrob
 ```
+## Usage
+```python
+import mrob 
+import numpy as np
 
-If you need to use this library in Python code, you can install it using pip:
-`pip install mrob`
+graph = mrob.FGraph()
+R = mrob.geometry.SO3(np.eye(3))
+t = np.zeros(3)
+pose = mrob.geometry.SE3(R, t)
+```
+## Examples
+You can find more usage examples in [python_examples](https://github.com/prime-slam/mrob/tree/master/python_examples).
 
-**Note:** If your OS is Windows and you don't have Microsoft Visual C++ Redistributable package installed, 
-then you need to [install it](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160#visual-studio-2015-2017-2019-and-2022) additionally.
-If you are using a 32-bit Python, then install the package for the X86 architecture. 
-If you are using 64-bit Python, then install the package for the X64 architecture. 
-Don't be afraid to install both packages.
-
+## Supported platforms
+|         | macOS    | Linux         | Windows     |
+|---------|----------|---------------|-------------|
+| Version | 11+      | manylinux2014 | Windows2019 |
+| Python  | 3.7-3.10 | 3.6-3.10      | 3.6-3.10    |
 
 ## License
 Apache-2.0 License
-
-
