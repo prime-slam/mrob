@@ -138,7 +138,7 @@ jobs:
           name: wheels
           path: wheels
 
-      - name: Install deplex package
+      - name: Install mrob package
         env:
           py_version: ${{ matrix.python-version }}
         run: |
