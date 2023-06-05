@@ -13,29 +13,16 @@
  * limitations under the License.
  *
  *
- * factor_graph_diff.cpp
+ * factor_graph_solve.hpp
  *
- *  Created on: May 8, 2023
+ *  Created on: June 5, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
 
-#include "mrob/factor_graph_diff.hpp"
+#include "mrob/differentialPointCloudRegistration.hpp"
 
 
 using namespace mrob;
 
-FGraphDiff::FGraphDiff(): FGraphSolve(FGraphSolve::ADJ)
-{
-
-}
-
-
-factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
-{
-    // same logic as in standard
-    return 0;
-}
-
-// TODO need id ordering for the observations. Is this the factor id?
