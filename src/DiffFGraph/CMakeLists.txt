@@ -2,13 +2,13 @@
 
 # extra header files
 SET(headers
-    mrob/factor_graph_diff.hpp
+    mrob/differential_factor_graph.hpp
     mrob/differential_factor.hpp
 )
 
 # extra source files
 SET(sources
-    factor_graph_diff.cpp
+    differential_factor_graph.cpp
 )
 
 SET(factors_headers

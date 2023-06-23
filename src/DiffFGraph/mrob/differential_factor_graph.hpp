@@ -37,14 +37,14 @@ namespace mrob{
  * 
  * This class is just an extension from FGraph to return the correct
 */
-class FGraphDiff: public FGraphSolve
+class DiffFGraph: public FGraphSolve
 {
 public:
-    FGraphDiff();
+    DiffFGraph();
     /**
      * Creates virtual destructor
     */
-    virtual ~FGraphDiff();
+    virtual ~DiffFGraph();
 
     /**
      * This functions returns a list of derivatives wrt to the observation
