@@ -25,7 +25,7 @@
 #ifndef DIFFERENTIAL_POINT_CLOUD_REGISTRATION_
 #define DIFFERENTIAL_POINT_CLOUD_REGISTRATION_
 
-#include "mrob/"
+#include "mrob/differential_factor_graph.hpp"
 
 /**
  * This class creates a specific problem for PC registration and allows a simple function to
@@ -41,15 +41,15 @@
  * Input:
  *  - X: Point cloud of points, dim Nx3
  *  - Y: Point cloud of points, dim Nx3
- *  - W: weights for each pair of PC.
+ *  - W: weights for each pair of PC. Nx1 (vector)
  * 
 */
 
 class DifferentialPCRegistration{
 public:
-    DifferentialPCRegistration();
+    DifferentialPCRegistration(MatRefConst X, MatRefConst Y, VectRefConst w);
     virtual ~DifferentialPCRegistration();
-    void initialize(MatRefConst X, MatRefConst Y, VectRefConst w);
+    MatRefConst get_differential_observations(MatRefConst ground_truth)
 
 };
 

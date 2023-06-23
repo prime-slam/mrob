@@ -34,3 +34,21 @@ DiffFactor1PosePoint2Point::DiffFactor1PosePoint2Point(const Mat31 &z_point_x, c
 {
     // 
 }
+
+DiffFactor1PosePoint2Point::~DiffFactor1PosePoint2Point() = default;
+
+
+MatRefConst DiffFactor1PosePoint2Point::calculate_derivative_obs_state()
+{
+    // recalculates the jacobians and provides the derivative d2r / dx /dz
+    // 1) calculates the residuals from parent class Factor1PosePoint2Point
+    Factor1PosePoint2Point::evaluate_residuals();//TODO fix ambiguity
+
+    //2) calculate jacobian (it will be used later)
+    Factor1PosePoint2Point::evaluate_jacobians();
+
+    //3) calculate the new derivative
+    Mat<3,6> derivative_dx_dz;
+    
+    return derivative_dx_dz;
+}

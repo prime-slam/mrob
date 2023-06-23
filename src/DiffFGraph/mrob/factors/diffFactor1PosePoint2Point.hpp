@@ -52,12 +52,8 @@ class DiffFactor1PosePoint2Point : public virtual Factor1PosePoint2Point, public
   public:
     DiffFactor1PosePoint2Point(const Mat31 &z_point_x, const Mat31 &z_point_y,  std::shared_ptr<Node> &node,
             const Mat3 &obsInf, Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~DiffFactor1PosePoint2Point() override = default;
-    /**
-     * All 
-     */
-    virtual void evaluate_residuals() override;
-
+    ~DiffFactor1PosePoint2Point();
+    MatRefConst calculate_derivative_obs_state();
 
   protected:
     Mat31 z1_, z2_;

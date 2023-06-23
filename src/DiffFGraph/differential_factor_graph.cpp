@@ -32,7 +32,9 @@ DiffFGraph::DiffFGraph(): FGraphSolve(FGraphSolve::ADJ)
 }
 
 
-factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
+DiffFGraph::~DiffFGraph() = default;
+
+factor_id_t DiffFGraph::add_factor(std::shared_ptr<DiffFactor> &factor)
 {
     // same logic as in standard
     return 0;

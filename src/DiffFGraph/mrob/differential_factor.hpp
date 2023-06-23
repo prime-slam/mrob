@@ -41,7 +41,7 @@ class DiffFactor : public Factor
      * 
      * TODO later use public virtual inheritance
     */
-    virtual MatRefConst get_jacobian_obs_state() const = 0;
+    virtual MatRefConst calculate_derivative_obs_state() = 0;
 };
 
 }//namespace
