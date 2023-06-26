@@ -40,6 +40,8 @@ class DiffFactor : public Factor
      * for the correct functioning of the new generation 
      * 
      * TODO later use public virtual inheritance
+     * 
+     * Dimenstion are |obs| x |state|
     */
     virtual MatRefConst calculate_derivative_obs_state() = 0;
 };

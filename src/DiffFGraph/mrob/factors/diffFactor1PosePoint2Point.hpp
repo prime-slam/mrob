@@ -45,6 +45,11 @@ namespace mrob{
  * The Jacobian is then
  *  dr = [-(Tx)^, I]
  *
+ * The derivative dzs dT is a matrix size of the observations (rows) times the state pose in 3d, (cols)
+ * The observations are:
+ *  - x: the point in 3d
+ *  - y the other pair point in 3d
+ *  - w: the weight of the pair (scalar)
  */
 
 class DiffFactor1PosePoint2Point : public virtual Factor1PosePoint2Point, public virtual DiffFactor
@@ -56,8 +61,8 @@ class DiffFactor1PosePoint2Point : public virtual Factor1PosePoint2Point, public
     MatRefConst calculate_derivative_obs_state();
 
   protected:
-    Mat31 z1_, z2_;
-    Mat<3,6> Jxz_;
+    //Mat31 z_point_x_, z_point_y_; // declared in base class
+    Mat<7,6> derivative_dz_dT_;// dims dz = 3+3+1 (rows) and dT =6 (cols)
 };
 
 }

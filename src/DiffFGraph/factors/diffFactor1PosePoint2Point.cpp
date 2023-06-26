@@ -42,13 +42,38 @@ MatRefConst DiffFactor1PosePoint2Point::calculate_derivative_obs_state()
 {
     // recalculates the jacobians and provides the derivative d2r / dx /dz
     // 1) calculates the residuals from parent class Factor1PosePoint2Point
-    Factor1PosePoint2Point::evaluate_residuals();//TODO fix ambiguity
+    Factor1PosePoint2Point::evaluate_residuals();
 
     //2) calculate jacobian (it will be used later)
     Factor1PosePoint2Point::evaluate_jacobians();
 
-    //3) calculate the new derivative
-    Mat<3,6> derivative_dx_dz;
+    //3) calculate the new derivative, the matrix 
+    derivative_dz_dT_.setZero();
+
+    // 3.1) partial derivative wrt x, matrix shape 3x6
+    // dC/dxdxi = d / dx ( dr'/dT * r) = dr'/dz * dr/dT + d2r'/dzdT * r
+    //          = R*[-(Tx)^ I] 
+    Mat4 Tnode = Factor1PosePoint2Point::get_neighbour_nodes()->at(0)->get_state();
+    SE3 T = SE3(Tnode);
+    // first orders are summed for the x observation
+    derivative_dz_dT_.topLeftCorner<3,6>() = T.R().transpose() *J_;
+    // second order part, it needs to be calcualted for each coordiante of x:
+    Mat3 second_order_derivative = Mat3::Zero();
+    for (uint_t i = 0; i < 3; ++i)
+    {
+        second_order_derivative.col(i) = r_.transpose() * hat3(T.R().col(i));
+    }
+    derivative_dz_dT_.topLeftCorner<3,3>() += second_order_derivative;
+
+    // 3.2) partial derivative wrt y, matrix shape 3x6
+    // dC/dydxi = d / dy ( dr'/dT * r) = (-I)*[-(Tx)^ I]
+    derivative_dz_dT_.block<3,6>(3,0) = -J_;
     
-    return derivative_dx_dz;
+    // 3.3) partial derivative wrt w, matrix shape 1x6
+    // dC/dydxi = d / dw (w * r' *dr'/dT ) = r' * [-(Tx)^ I]
+    derivative_dz_dT_.bottomLeftCorner<1,6>() = r_.transpose() * J_;
+
+    // Note: minus is from the implicit optimziation that the gradient susbtract the solution.
+    //We account for that in here
+    return -derivative_dz_dT_;
 }
