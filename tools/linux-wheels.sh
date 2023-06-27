@@ -1,4 +1,5 @@
-#  Copyright (c) 2022, Gonzalo Ferrer
+#!/bin/bash
+#  Copyright (c) 2023, Gonzalo Ferrer
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -11,15 +12,22 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-# 
-# 
-#  pyproject.toml
-# 
-#  Created on: Oct 31, 2020
-#       Author: Lyubov Miloserdova
-#               miloslubov@gmail.com
-#
 
-[build-system]
-requires = ["setuptools >= 40.8.0", "wheel", "setuptools-git-versioning >= 1.12.0"]
-build-backend = "setuptools.build_meta"
+set -euo pipefail
+export LC_ALL=C
+
+#Early check for build tools
+cmake --version
+
+# Python 3.6-3.10
+PYTHON_VERSION=(36 37 38 39 310)
+
+cmake -B build
+
+for v in "${PYTHON_VERSION[@]}"; do
+  PYTHON_PATH=(/opt/python/cp"${v}"*/bin/python)
+  cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH[0]}"
+  cmake --build build --target build-wheel
+done
+
+auditwheel repair ./build/wheels/*.whl

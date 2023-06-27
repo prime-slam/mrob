@@ -40,7 +40,7 @@ void init_PCPlanes(py::module &m);
 
 
 
-PYBIND11_MODULE(mrob, m) {
+PYBIND11_MODULE(pybind, m) {
     m.doc() = "pybind11 MROB library, now including \n-geometry: SE3, SO3 and other routines\n-registration: routines for PC aligment and others\n-fgrad: Factors Graphs ";
     // Later, in binding code:
     py::add_ostream_redirect(m, "ostream_redirect");
