@@ -26,7 +26,7 @@
 #define SRC_FACTOR_GRAPH_DIFF_HPP_
 
 #include "mrob/factor_graph_solve.hpp"
-#include "mrob/factors/differential_factor.hpp"
+#include "mrob/differential_factor.hpp"
 #include <vector>
 
 namespace mrob{

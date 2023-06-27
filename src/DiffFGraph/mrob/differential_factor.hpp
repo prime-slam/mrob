@@ -15,7 +15,7 @@
  *
  * factor.hpp
  *
- *  Created on: Feb 12, 2018
+ *  Created on: June 23, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
