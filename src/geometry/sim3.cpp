@@ -162,7 +162,8 @@ void Sim3::Exp(const Mat71 &nu)
 
 void Sim3::regenerate()
 {
-    SO3 R = SO3(S_.topLeftCorner<3,3>());
+    Mat3 block_R = S_.topLeftCorner<3,3>();
+    SO3 R = SO3(block_R);
     R.regenerate();
     S_.topLeftCorner<3,3>() = R.R();
 }
