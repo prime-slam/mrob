@@ -31,13 +31,16 @@
 
 /**
  * The sim(3) group
- *  * S = [R t]
- *     [0 s]
+ *  * S = [R    t]
+ *        [0 s^-1]
  * 
  * Lie Coordinates:
  * nu = [theta, pho, lambda] = [xi, lambda]
  * 
- * For now it has the minimum functionalities to optimize
+ * For now it has the minimum functionalities to optimize:
+ *  - Constructor
+ *  - Exponent (as a class method that updates its own state)
+ *  - upodate lhs
 */
 
 namespace mrob{
@@ -55,14 +58,21 @@ public:
      */
     void update_lhs(const Mat71 &dnu);
     /**
-     * Exponential Mapping
+     * Exponential Mapping: From lie coordionates to sim3
     */
-    void Exp(const Mat4 &xi_hat);
+    void Exp(const Mat71 &nu);
     /**
      * T method returns a matrix 4x4 of the sim3 transformation. Ref<> is more convinient than
      * the matrix for the factor/nodes base class definitions and python bindings
      */
     const Eigen::Ref<const Mat4> S() const;
+
+    /**
+     * Regenerate, does the following operation, only onm the SO3 part
+     * S = [Exp(Ln(R)) t]
+     *   = [0       s^-1]
+     */
+    void regenerate();
 
     /**
      * @brief Generates string representation of the object
@@ -78,4 +88,4 @@ public:
 };
 
 }// namespace
-
+#endif /* SIM3_HPP_ */

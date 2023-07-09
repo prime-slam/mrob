@@ -113,6 +113,7 @@ Mat3 mrob::hat3(const Mat31 &w)
 
 void SO3::exp(const Mat3 &w_hat)
 {
+    //TODO: exp does not really need hat(), this only add overhead, we should remove for efficiency
     Mat31 w = vee3(w_hat);
     double o = w.norm();
     double o2 = w.squaredNorm();
@@ -295,6 +296,11 @@ bool mrob::isSO3(const Mat3 &R)
 
 }
 
+void SO3::regenerate()
+{
+    Mat3 theta_hat = this->ln();
+    this->exp(theta_hat);
+}
 
 Mat3 mrob::quat_to_so3(const Eigen::Ref<const Mat41> v)
 {

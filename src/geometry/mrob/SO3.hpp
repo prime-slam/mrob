@@ -136,6 +136,11 @@ public:
 
     void print(void) const;
     void print_lie(void) const;
+    /**
+     * Regenerate, does the following operation:
+     * R = Exp ( Ln(R) )
+     */
+    void regenerate();
 
 
     /**

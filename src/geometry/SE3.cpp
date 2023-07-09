@@ -130,6 +130,7 @@ void SE3::exp(const Mat4 &xi_hat)
     matData_t c2, c3;
     if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
         c2 = (1 - std::cos(o))/o2;
+        // TODO numerically this can improved by c3 = (1 - c1)/o2
         c3 = (o - std::sin(o))/o2/o;
     }
     else
