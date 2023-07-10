@@ -8,6 +8,7 @@ SET(sources
     weight_point.cpp
     factors/factor1PosePoint2Point.cpp
     factors/factor1PosePoint2Plane.cpp
+    factors/factor1Sim3Point2Point.cpp
 )
 
 # extra header files

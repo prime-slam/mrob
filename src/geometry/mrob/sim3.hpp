@@ -51,6 +51,8 @@ public:
     Sim3(const Mat4 &S = Mat4::Identity());
     Sim3(const Mat71 &nu);
     Sim3(const Sim3 &S);
+    Sim3& operator=(const Sim3&) = default;
+    Sim3& operator=(Sim3&&) = default;
     /**
      * This is our *default* way to update transformations, from the Left hand side of T
      * Updates the current transformation with the incremental d\nu \in sim3
@@ -88,6 +90,10 @@ protected:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
+
+bool isSim3(const Mat4 &S);
+
 
 }// namespace
 #endif /* SIM3_HPP_ */

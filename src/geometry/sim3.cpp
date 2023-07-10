@@ -52,7 +52,7 @@ const Eigen::Ref<const Mat4> Sim3::S() const
 void Sim3::update_lhs(const Mat71 &dnu)
 {
     Sim3 dS(dnu);
-    S_ = S_ * dS.S();
+    S_ = dS.S() * S_;
 }
 
 
@@ -173,6 +173,16 @@ void Sim3::regenerate()
 void Sim3::print() const
 {
     std::cout << S_ << std::endl;
+}
+
+bool mrob::isSim3(const Mat4 &S)
+{
+    if (!isSO3(S.topLeftCorner<3,3>()) )
+        return false;
+    // ensuring this is zeros
+    if ( (S.row(3).head(3)).sum() > 1e-6 )
+        return false;
+    return true;
 }
 
 std::string Sim3::toString() const
