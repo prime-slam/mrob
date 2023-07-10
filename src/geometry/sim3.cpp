@@ -24,6 +24,7 @@
 #include "mrob/sim3.hpp"
 #include "mrob/SO3.hpp"
 #include <cmath>
+#include <iostream>
 
 
 using namespace mrob;
@@ -166,6 +167,12 @@ void Sim3::regenerate()
     SO3 R = SO3(block_R);
     R.regenerate();
     S_.topLeftCorner<3,3>() = R.R();
+    S_.bottomLeftCorner<1,3>() << 0,0,0;
+}
+
+void Sim3::print() const
+{
+    std::cout << S_ << std::endl;
 }
 
 std::string Sim3::toString() const

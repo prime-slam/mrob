@@ -74,6 +74,8 @@ public:
      */
     void regenerate();
 
+    void print(void) const;
+
     /**
      * @brief Generates string representation of the object
      *
