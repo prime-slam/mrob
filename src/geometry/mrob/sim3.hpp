@@ -84,7 +84,7 @@ public:
     matData_t scale() const;
 
     /**
-     * Transform (homogeneous) vector into scaled as if SE3, ignoring scale
+     * Transform (homogeneous) vector as if SE3, ignoring scale
      * 
      *      S *[p] = [R*p + t]
      * 

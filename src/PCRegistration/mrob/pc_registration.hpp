@@ -26,6 +26,7 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp"
+#include "mrob/sim3.hpp"
 
 namespace mrob{
 /**
@@ -95,6 +96,13 @@ int gicp(MatRefConst X, MatRefConst Y,
 int weighted_point(MatRefConst X, MatRefConst Y,
                    VectRefConst w, SE3 &T, double tol = 1e-4);
 
+
+/**
+ * Scaled Point Cloud aligment by Sim3 optimization
+ * 
+ * ||S*X - Y||
+*/
+int scaled_alignment(MatRefConst X, MatRefConst Y, Mat4 &S);
 
 }}//namespace
 #endif /* PC_REGISTRATION_HPP_ */

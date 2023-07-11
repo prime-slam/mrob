@@ -31,7 +31,7 @@
 using namespace mrob;
 using namespace Eigen;
 
-int PCRegistration::arun(const Ref<const MatX> X, const Ref<const MatX> Y, SE3 &T)
+int PCRegistration::arun(MatRefConst X, MatRefConst Y, SE3 &T)
 {
     assert(X.cols() == 3  && "PCRegistration::Arun: Incorrect sizing, we expect Nx3");
     assert(X.rows() >= 3  && "PCRegistration::Arun: Incorrect sizing, we expect at least 3 correspondences (not aligned)");

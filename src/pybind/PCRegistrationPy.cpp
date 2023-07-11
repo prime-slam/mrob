@@ -64,11 +64,19 @@ SE3 weighted_solve(const py::EigenDRef<const MatX> X, const py::EigenDRef<const 
     return res;
 }
 
+Mat4 scaled_alignment(const py::EigenDRef<const MatX> X, const py::EigenDRef<const MatX> Y)
+{
+    Mat4 res;
+    PCRegistration::scaled_alignment(X,Y,res);
+    return res;
+}
+
 void init_PCRegistration(py::module &m)
 {
     m.def("arun", &arun_solve);
     m.def("gicp", &gicp_solve);
     m.def("weighted", &weighted_solve);
+    m.def("scaled_alignment", &weighted_solve);
 }
 
 

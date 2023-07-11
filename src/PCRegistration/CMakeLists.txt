@@ -6,6 +6,7 @@ SET(sources
     arun.cpp
     gicp.cpp
     weight_point.cpp
+    scaled_alignment.cpp
     factors/factor1PosePoint2Point.cpp
     factors/factor1PosePoint2Plane.cpp
     factors/factor1Sim3Point2Point.cpp
@@ -16,6 +17,7 @@ SET(headers
     mrob/pc_registration.hpp
     mrob/factors/factor1PosePoint2Point.hpp
     mrob/factors/factor1PosePoint2Plane.hpp
+    mrob/factors/factor1Sim3Point2Point.hpp
 )
 
 # create library
