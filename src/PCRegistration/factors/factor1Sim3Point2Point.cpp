@@ -30,11 +30,9 @@
 using namespace mrob;
 
 Factor1Sim3Point2Point::Factor1Sim3Point2Point(const Mat31 &z_point_x, const Mat31 &z_point_y,  std::shared_ptr<Node> &node,
-            const Mat4 &obsInf, Factor::robustFactorType robust_type):
-        Factor(4,7,robust_type), W_(obsInf)
+            const Mat3 &obsInf, Factor::robustFactorType robust_type):
+        Factor(3,7,robust_type), z_point_x_(z_point_x), z_point_y_(z_point_y), W_(obsInf)
 {
-    z_point_x_homog_ << z_point_x, 1.0;
-    z_point_y_homog_ << z_point_y, 1.0;
     neighbourNodes_.push_back(node);
 }
 
@@ -43,15 +41,16 @@ void Factor1Sim3Point2Point::evaluate_residuals()
     // r = Tx - y
     Mat4 Tnode = get_neighbour_nodes()->at(0)->get_state();
     Sim3 S = Sim3(Tnode);
-    Tx_ = S.S() * z_point_x_homog_;
-    r_ = Tx_ - z_point_y_homog_;
+    Sx_ = S.transform(z_point_x_);
+    scale_ = S.scale();
+    scaledSx_ = scale_ * Sx_;
+    r_ = scaledSx_ - z_point_y_;
 }
 
 void Factor1Sim3Point2Point::evaluate_jacobians()
 {
     J_.setZero();
-    J_.topLeftCorner<3,6>() << -hat3(Tx_.head(3)) , Mat3::Identity();
-    J_(3,6) = -1;
+    J_ << -hat3(scaledSx_) , scale_*Mat3::Identity(), Sx_;
 }
 
 void Factor1Sim3Point2Point::evaluate_chi2()
@@ -61,8 +60,8 @@ void Factor1Sim3Point2Point::evaluate_chi2()
 
 void Factor1Sim3Point2Point::print() const
 {
-    std::cout << "Printing Factor: " << id_ << ", obs point x= \n" << z_point_x_homog_
-              << "\nobs point y =\n" << z_point_y_homog_
+    std::cout << "Printing Factor: " << id_ << ", obs point x= \n" << z_point_x_
+              << "\nobs point y =\n" << z_point_y_
               << "\n Residuals= \n" << r_
               << " \nand Information matrix\n" << W_
               << "\n Calculated Jacobian = \n" << J_

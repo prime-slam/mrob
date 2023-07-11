@@ -161,6 +161,33 @@ void Sim3::Exp(const Mat71 &nu)
     S_.topRightCorner<3,1>() = t;
 }
 
+Mat3 Sim3::R() const
+{
+    return S_.topLeftCorner<3,3>();
+}
+
+Mat31 Sim3::t() const
+{
+    return S_.topRightCorner<3,1>();
+}
+
+
+matData_t Sim3::scale() const
+{
+    // In principle this should be 1/0, but maybe there is aneed to check this at regen or constructor
+    return 1.0/S_(3,3);
+}
+
+Mat31 Sim3::transform(const Mat31 &p) const
+{
+    return this->R()*p + this->t();
+}
+
+Mat31 Sim3::transform_scaled(const Mat31 &p) const
+{
+    return this->scale()*this->transform(p);
+}
+
 void Sim3::regenerate()
 {
     Mat3 block_R = S_.topLeftCorner<3,3>();

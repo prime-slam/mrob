@@ -40,7 +40,8 @@
  * For now it has the minimum functionalities to optimize:
  *  - Constructor
  *  - Exponent (as a class method that updates its own state)
- *  - upodate lhs
+ *  - update lhs
+ *  - transform (homogeneous) vector into scaled
 */
 
 namespace mrob{
@@ -68,6 +69,38 @@ public:
      * the matrix for the factor/nodes base class definitions and python bindings
      */
     const Eigen::Ref<const Mat4> S() const;
+    /**
+     * R method returns a matrix 3x3 of the SO3 rotation corresponding to the subblock matrix
+     */
+    Mat3 R() const;
+    /**
+     * t method returns translation
+     */
+    Mat31 t() const;
+    /**
+     * Get scale s, from matrix S.
+     * Note that in the sim3, scale is inverted
+    */
+    matData_t scale() const;
+
+    /**
+     * Transform (homogeneous) vector into scaled as if SE3, ignoring scale
+     * 
+     *      S *[p] = [R*p + t]
+     * 
+    */
+    Mat31 transform(const Mat31 &p) const;
+
+    /**
+     * Transform scaled gets a vector (homog) into scaled:
+     * 
+     *      S *[p] = [R*p + t] ~ [s(R*p + t)]
+     *         [1]   [  s^-1 ]   [     1    ]
+     * 
+     * This is the same vector, but scaled and the equality holds since
+     * the vector is in the projective group P^3 
+    */
+    Mat31 transform_scaled(const Mat31 &p) const;
 
     /**
      * Regenerate, does the following operation, only onm the SO3 part
