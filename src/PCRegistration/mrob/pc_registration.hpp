@@ -96,5 +96,19 @@ int weighted_point(MatRefConst X, MatRefConst Y,
                    VectRefConst w, SE3 &T, double tol = 1e-4);
 
 
+/**
+ *  This solution is based on the paper by Arun et al. "Least-squares fitting of two 3-D point sets", 1987
+ *  Given N points x = x_1,x_2,x_3 and their correspondences y_i, calculate the
+ *  transformation S = [sR t], such as: min sum (y_i - (sR * x_i + t))^2
+ *
+ *  An improvement over it was proposed by Sinji Umeyama 1991, which uniqueness determine R
+ *
+ *  3 points in x and y are the minimum requirements, and provide the right solution IF
+ *  there is no noise.
+ *
+ *  Returns 0 if failed and 1 if a correct solution was found
+ */
+int scaled_arun(MatRefConst X, MatRefConst Y, Mat4 &S);
+
 }}//namespace
 #endif /* PC_REGISTRATION_HPP_ */

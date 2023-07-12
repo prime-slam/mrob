@@ -6,6 +6,7 @@ SET(sources
     arun.cpp
     gicp.cpp
     weight_point.cpp
+    scaled_arun.cpp
     factors/factor1PosePoint2Point.cpp
     factors/factor1PosePoint2Plane.cpp
 )
