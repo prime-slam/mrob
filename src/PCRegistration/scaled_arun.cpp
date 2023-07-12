@@ -110,7 +110,7 @@ int PCRegistration::scaled_arun(MatRefConst X, MatRefConst Y, Mat4 &S)
     matData_t scale;
     matData_t qx2_sum = qx.col(0).squaredNorm() + qx.col(1).squaredNorm() + qx.col(2).squaredNorm();
     matData_t qy2_sum = qy.col(0).squaredNorm() + qy.col(1).squaredNorm() + qy.col(2).squaredNorm();
-    scale = std::sqrt(qx2_sum / qy2_sum);
+    scale = std::sqrt(qy2_sum / qx2_sum);
 
     // 7) calculate translation as: t = cy - scale *R * cx
     Mat31 t = cym.transpose() - scale*R*cxm.transpose();
