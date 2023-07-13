@@ -15,7 +15,7 @@
  *
  * arun.cpp
  *
- *  Created on: Jan 31, 2018
+ *  Created on: July 12, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
@@ -27,11 +27,12 @@
 #include <memory>
 #include <iostream>
 #include "mrob/pc_registration.hpp"
+#include <cmath>
 
 using namespace mrob;
 using namespace Eigen;
 
-int PCRegistration::arun(MatRefConst X, MatRefConst Y, SE3 &T)
+int PCRegistration::scaled_arun(MatRefConst X, MatRefConst Y, Mat4 &S)
 {
     assert(X.cols() == 3  && "PCRegistration::Arun: Incorrect sizing, we expect Nx3");
     assert(X.rows() >= 3  && "PCRegistration::Arun: Incorrect sizing, we expect at least 3 correspondences (not aligned)");
@@ -46,7 +47,9 @@ int PCRegistration::arun(MatRefConst X, MatRefConst Y, SE3 &T)
      *  5) Calculate the rotation solution R = V*U'
      *      5.5) check for correct solution (det = +1) or reflection (det = -1)
      *      step 5.5 is actually unnecessary IF applying Umeyama technique
-     *  6) calculate translation as: t = cy - R * cx
+     *  6) NEW calcualte scale as
+     *        s = 
+     *  7) NEW calculate translation as: t = cy - s R * cx
      */
     // We have already asserted in base_T that they are 3xN matrices. (and the same length).
 
@@ -87,7 +90,6 @@ int PCRegistration::arun(MatRefConst X, MatRefConst Y, SE3 &T)
             l_prev = l;//this works because we assume that they singular values are ordered.
     }
 
-
     // 5) Calculate the rotation solution R = V*U'
     Mat3 R = SVD.matrixV() * SVD.matrixU().transpose();
 
@@ -103,13 +105,20 @@ int PCRegistration::arun(MatRefConst X, MatRefConst Y, SE3 &T)
         //std::cout << "R value = " << R << std::endl;
     }
 
-    // 6) calculate translation as: t = cy - R * cx
-    Mat31 t = cym.transpose() - R*cxm.transpose();
+
+    // 6) calculate scale
+    matData_t scale;
+    matData_t qx2_sum = qx.col(0).squaredNorm() + qx.col(1).squaredNorm() + qx.col(2).squaredNorm();
+    matData_t qy2_sum = qy.col(0).squaredNorm() + qy.col(1).squaredNorm() + qy.col(2).squaredNorm();
+    scale = std::sqrt(qy2_sum / qx2_sum);
+
+    // 7) calculate translation as: t = cy - scale *R * cx
+    Mat31 t = cym.transpose() - scale*R*cxm.transpose();
     //std::cout << "t = " << t << std::endl;
 
     // 7) return result
-    T.ref2T() << R, t,
-                 0,0,0,1;
+    S << scale * R, t,
+              0,0,0,1;
 
     return 1;
 }
