@@ -26,3 +26,8 @@
 
 using namespace mrob;
 
+DifferentialPCRegistration::DifferentialPCRegistration(MatRefConst source, MatRefConst target, VectRefConst w):
+    factor(),
+{
+
+}

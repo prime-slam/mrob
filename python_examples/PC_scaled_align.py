@@ -1,6 +1,6 @@
 #
 # add path to local library mrob on bashr_rc: "export PYTHONPATH=${PYTHONPATH}:${HOME}/mrob/mrob/lib"
-import pybind as mrob
+import mrob
 import numpy as np
 import open3d
 

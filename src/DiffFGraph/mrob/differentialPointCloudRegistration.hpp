@@ -35,6 +35,8 @@
  * 
  * $$min_{T} \sum_n^N = ||T x_n - y_n||_{w_n}^2$$
  * 
+ * where x is also known as 'source' and y is the 'target'.
+ * 
  * The gradients are obtained by the Implicit Theorem, assuming we hav ereached a stationary
  * solution to the optimization problem.
  * 
@@ -47,9 +49,17 @@
 
 class DifferentialPCRegistration{
 public:
-    DifferentialPCRegistration(MatRefConst X, MatRefConst Y, VectRefConst w);
+    // target = Y, source X
+    DifferentialPCRegistration(MatRefConst source, MatRefConst target, VectRefConst w);
     virtual ~DifferentialPCRegistration();
-    MatRefConst get_differential_observations(MatRefConst ground_truth)
+    void solve_and_calculate_derivatives(MatRefConst ground_truth);
+    MatRefConst get_differential_observations_source(void);
+    MatRefConst get_differential_observations_target(void);
+    MatRefConst get_differential_observations_weights(void);
+
+protected:
+    DiffFGraph factor;
+    MatX1 z;
 
 };
 
