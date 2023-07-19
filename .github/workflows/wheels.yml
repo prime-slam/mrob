@@ -1,186 +1,61 @@
-name: Build wheels
+name: Build
 
-on: [push, pull_request, workflow_dispatch]
+on: [push, pull_request]
 
 jobs:
-  build:
-    name: Build mrob project 
-    runs-on: ubuntu-latest
-    env:
-      PYTHONPATH: ./lib
-    strategy:
-      fail-fast: true
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Install required packages from distro
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends git build-essential g++ cmake python3-distutils python3-dev python3-numpy python3-pip
-          python3 -m pip install pytest
-
-      - name: Configure and build native mrob library with Python bindings
-        run: |
-          cmake -B ${{ github.workspace }}/build -DBUILD_TESTING=ON
-          cmake --build ${{ github.workspace }}/build --config Release -j $(nproc)  
-
-      - name: C++ unit tests
-        run: make test -C build
-
-  linux_wheel:
-    name: Build wheel on ${{ matrix.os }}
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    container:
-      image: quay.io/pypa/manylinux2014_x86_64:2022-12-11-145d107
-      options: --user root
     strategy:
-      fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest] # , windows-2019, macos-11]
+
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: recursive
 
-      - name: Add git safe directory
-        run: git config --global --add safe.directory /__w/mrob/mrob
-
-      - name: Build Python wheel
-        run: |
-          chmod -R +x tools/* \
-          && tools/linux-wheels.sh
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.14.1
+        # env:
+        #   CIBW_SOME_OPTION: value
+        #    ...
+        # with:
+        #   package-dir: .
+        #   output-dir: wheelhouse
+        #   config-file: "{package}/pyproject.toml"
 
       - uses: actions/upload-artifact@v3
         with:
-          name: wheels
-          path: ./wheelhouse
+          path: ./wheelhouse/*.whl
 
-  macos_wheel:
-    name: Build wheel on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-11 ]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  # publish_pypi:
+  #   name: Publish wheels to PyPI
+  #   needs: test_wheel
+  #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v2
 
-      - name: Git fetch
-        run: | 
-          git fetch --prune --unshallow --recurse-submodules=no
-          git restore .
-
-      - name: Build Python wheel
-        run: |
-          chmod -R +x tools/* \
-          && tools/macos-wheels.sh
-          git status
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./wheelhouse
-
-  windows_wheel:
-    name: Build wheel on ${{ matrix.os }} ${{ matrix.arch }} Py-${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ windows-2019 ]
-        arch: [ x64 ]
-        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Display Python version
-        run: python --version
-
-      - name: Build Python wheel
-        run: ./tools/windows-wheels.cmd
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: ./build/wheels
+  #     - name: Publish to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         user: __token__
+  #         password: ${{ secrets.PYPI_API_TOKEN }}
+  #         packages_dir: wheels/
+  #         verbose: true
 
 
-  test_wheel:
-    name: Test Python ${{ matrix.python-version }} wheel on ${{ matrix.os }}
-    needs: [linux_wheel, macos_wheel, windows_wheel]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: [ "3.10" ]
-    steps:
-      - uses: actions/checkout@v3
+  # publish-github-release:
+  #   name: Publish wheels to GitHub Releases
+  #   needs: test_wheel
+  #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v2
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: wheels
-          path: wheels
-
-      - name: Install mrob package
-        env:
-          py_version: ${{ matrix.python-version }}
-        run: |
-          python -m pip install mrob --find-links=./wheels --no-index
-
-      - name: Install Test requirements
-        run: |
-          python -m pip install -r mrobpy/requirements_test.txt
-
-      - name: Python tests
-        run: |
-          python -m pytest mrobpy/tests
-
-  publish_pypi:
-    name: Publish wheels to PyPI
-    needs: test_wheel
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: wheels/
-          verbose: true
-
-
-  publish-github-release:
-    name: Publish wheels to GitHub Releases
-    needs: test_wheel
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: wheels/*.whl
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - uses: softprops/action-gh-release@v1
+  #       with:
+  #         files: wheels/*.whl
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
