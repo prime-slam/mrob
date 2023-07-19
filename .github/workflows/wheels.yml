@@ -18,8 +18,8 @@ jobs:
         # env:
         #   CIBW_SOME_OPTION: value
         #    ...
-        # with:
-        #   package-dir: .
+        with:
+          package-dir: mrobpy
         #   output-dir: wheelhouse
         #   config-file: "{package}/pyproject.toml"
 
