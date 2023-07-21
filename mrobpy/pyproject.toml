@@ -1,11 +1,9 @@
 [tool.cibuildwheel]
 build = "*"
-skip = ""
-test-skip = ""
-
 test-requires = ["pytest", "numpy"]
 test-command = "pytest {package}/tests"
 
-archs = ["auto"]
-
+[tool.cibuildwheel.linux]
+build = "cp*"
+archs = "auto64"
 before-build = "bash tools/linux-cibuildwheel.sh"
