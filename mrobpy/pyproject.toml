@@ -10,6 +10,7 @@ test-command = "pytest {package}/tests"
 
 [tool.cibuildwheel.macos]
 archs = ["arm64"]
+skip = "cp38-*"
 before-build = "bash tools/linux-cibuildwheel.sh"
 
 # [tool.cibuildwheel.windows]
