@@ -9,7 +9,7 @@ build = "cp*-manylinux*"
 before-build = "bash tools/linux-cibuildwheel.sh"
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "universal2"]
+archs = ["x86_64", "arm64"]
 before-build = "bash tools/linux-cibuildwheel.sh"
 
 # [tool.cibuildwheel.windows]
