@@ -13,4 +13,5 @@ before-build = "bash tools/linux-cibuildwheel.sh"
 archs = ["x86_64", "arm64"]
 before-build = "bash tools/linux-cibuildwheel.sh"
 
-# [tool.cibuildwheel.windows]
+[tool.cibuildwheel.windows]
+before-build = "tools/windows-cibuildwheel.cmd"
