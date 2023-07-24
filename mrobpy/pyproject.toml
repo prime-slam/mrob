@@ -4,14 +4,12 @@ archs = "auto64"
 test-requires = ["pytest", "numpy"]
 test-command = "pytest {package}/tests"
 
-# [tool.cibuildwheel.linux]
-# build = "cp*-manylinux*"
-# before-build = "bash tools/linux-cibuildwheel.sh"
+[tool.cibuildwheel.linux]
+build = "cp*-manylinux*"
+before-build = "bash tools/linux-cibuildwheel.sh"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-# skip = "cp38-*"
 before-build = "bash tools/linux-cibuildwheel.sh"
-# environment = { LIBRARY_PATH="/usr/local/share/vcpkg/installed/arm64-osx/lib" }
 
 # [tool.cibuildwheel.windows]
