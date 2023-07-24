@@ -1,6 +1,7 @@
 [tool.cibuildwheel]
 build = "cp*"
 archs = "auto64"
+build-verbosity = 1
 test-requires = ["pytest", "numpy"]
 test-command = "pytest {package}/tests"
 

@@ -1,11 +1,6 @@
 # Clear DST dir from pybind
 file(GLOB PYBIND_ARTIFACTS ${PYTHON_BINARY_DST}/pybind*)
 
-file(GLOB PYBIND_SRC_ARTIFACTS ${PYTHON_BINARY_DIR}/*)
-
-message(STATUS "Pybind artifacts: ${PYBIND_ARTIFACTS}")
-message(STATUS "Pybind src: ${PYBIND_SRC_ARTIFACTS}")
-
 if (NOT "${PYBIND_ARTIFACTS}" STREQUAL "")
     file(REMOVE_RECURSE ${PYBIND_ARTIFACTS})
 endif()

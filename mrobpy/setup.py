@@ -17,8 +17,17 @@ from setuptools.command.install import install as _install
 import ctypes
 import logging
 
+import shutil
+import pathlib
+
 
 cmdclass = dict()
+package_name = "mrob"
+
+# Clear setuptools build lib directory (https://github.com/pypa/setuptools/issues/1871)
+build_lib_path = pathlib.Path(f"build/lib/{package_name}")
+if build_lib_path.exists():
+    shutil.rmtree(build_lib_path)
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -55,7 +64,7 @@ cmdclass['install'] = install
 
 print("pcks", find_packages())
 setup_args = dict(
-    name="mrob",
+    name=package_name,
     setuptools_git_versioning={
         "enabled": True,
         "sort_by": "creatordate",
