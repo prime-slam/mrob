@@ -13,4 +13,4 @@ build = "cp*-manylinux*"
 archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.windows]
-before-build = "python tools\\windows-cibuildwheel.py"
+before-build = "python tools\\windows-wheels.py"
