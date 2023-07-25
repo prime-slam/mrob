@@ -25,6 +25,14 @@ MROB has a [Python package](https://pypi.org/project/mrob/) for a wide range of 
 ```bash
 python -m pip install mrob
 ```
+### Install on local machine 
+```
+python -m pip install cibuildwheel
+cibuildwheel --platform [linux|windows|macos] mrobpy/
+python -m pip install mrob --no-index --find-links wheelhouse/
+```
+For more options visit https://cibuildwheel.readthedocs.io/en/stable/setup/
+
 ### Documentation
 For comprehensive description and usage examples in Python please refer to [mrobpy](https://github.com/prime-slam/mrob/tree/master/mrobpy#readme).
 
