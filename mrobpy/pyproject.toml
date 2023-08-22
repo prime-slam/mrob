@@ -1,3 +1,16 @@
-[build-system]
-requires = [ "setuptools>=41", "wheel", "setuptools-git-versioning<2", ]
-build-backend = "setuptools.build_meta"
+[tool.cibuildwheel]
+build = "cp*"
+archs = "auto64"
+before-build = "bash tools/unix-wheels.sh"
+build-verbosity = 1
+test-requires = ["pytest", "numpy"]
+test-command = "pytest {package}/tests"
+
+[tool.cibuildwheel.linux]
+build = "cp*-manylinux*"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.cibuildwheel.windows]
+before-build = "python tools\\windows-wheels.py"

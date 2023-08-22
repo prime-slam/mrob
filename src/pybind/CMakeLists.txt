@@ -7,10 +7,8 @@ pybind11_add_module(pybind)
 #####################################
 # Set mrob python-package related variables
 #####################################
-set(PYTHON_PACKAGE_SRC_DIR ${PROJECT_SOURCE_DIR}/mrobpy)
-set(PYTHON_PACKAGE_DST_DIR ${CMAKE_BINARY_DIR}/python_package)
 set(PYTHON_BINARY_DIR ${MROB_LIB_DIR}/pybind)
-set(PYTHON_WHEEL_DST_DIR ${CMAKE_BINARY_DIR}/wheels)
+set(PYTHON_BINARY_DST ${PROJECT_SOURCE_DIR}/mrobpy/mrob)
 
 target_sources(pybind PRIVATE 
     mrobPy.cpp
@@ -45,16 +43,15 @@ set_target_properties(pybind PROPERTIES
 #####################################
 add_custom_target(python-package
     COMMAND ${CMAKE_COMMAND}
-    -DPYTHON_PACKAGE_SRC_DIR=${PYTHON_PACKAGE_SRC_DIR}
-    -DPYTHON_PACKAGE_DST_DIR=${PYTHON_PACKAGE_DST_DIR}
     -DPYTHON_BINARY_DIR=${PYTHON_BINARY_DIR}
+    -DPYTHON_BINARY_DST=${PYTHON_BINARY_DST}
     -P ${CMAKE_CURRENT_SOURCE_DIR}/make_python_package.cmake
     DEPENDS pybind
 )
 
-add_custom_target(build-wheel
-    COMMAND ${PYTHON_EXECUTABLE} -m build --wheel --outdir ${PYTHON_WHEEL_DST_DIR}
-    COMMAND echo "pip wheel created at ${PYTHON_WHEEL_DST_DIR}"
-    WORKING_DIRECTORY ${PYTHON_PACKAGE_DST_DIR}
-    DEPENDS python-package
-)
+# add_custom_target(build-wheel
+#     COMMAND ${PYTHON_EXECUTABLE} -m build --wheel --outdir ${PYTHON_WHEEL_DST_DIR}
+#     COMMAND echo "pip wheel created at ${PYTHON_WHEEL_DST_DIR}"
+#     WORKING_DIRECTORY ${PYTHON_PACKAGE_DST_DIR}
+#     DEPENDS python-package
+# )

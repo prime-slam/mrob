@@ -16,18 +16,8 @@
 set -euo pipefail
 export LC_ALL=C
 
-#Early check for build tools
-cmake --version
+# Get Python MAJOR.MINOR version to specify Python path for pybind
+PYTHON_VERSION=$(python3 --version | grep -o 3.[0-9]*)
 
-# Python 3.6-3.10
-PYTHON_VERSION=(36 37 38 39 310)
-
-cmake -B build
-
-for v in "${PYTHON_VERSION[@]}"; do
-  PYTHON_PATH=(/opt/python/cp"${v}"*/bin/python)
-  cmake -B build -DPYTHON_EXECUTABLE="${PYTHON_PATH[0]}"
-  cmake --build build --target build-wheel
-done
-
-auditwheel repair ./build/wheels/*.whl
+cmake -B cppbuild -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPYTHON_EXECUTABLE=$(which python${PYTHON_VERSION})
+cmake --build cppbuild --target python-package 
