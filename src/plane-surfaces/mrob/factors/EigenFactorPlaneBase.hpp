@@ -13,17 +13,16 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlane.hpp
+ * EigenFactorPlaneBase.hpp
  *
- *  Created on: Aug 16, 2019
- *  Created on: July 10, 2021 (for real)
+ *  Created on: Aug 23, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
-#ifndef EIGENFACTORPLANE_HPP_
-#define EIGENFACTORPLANE_HPP_
+#ifndef EIGENFACTORPLANEBASE_HPP_
+#define EIGENFACTORPLANEBASE_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -35,13 +34,14 @@
 namespace mrob{
 
 /**
- * Eigen factor Plane is a vertex that complies with the Fgraph standards
+ * Eigen factor Plane Base is the base class for EF based on planes as geomterical features
+ * In general, EF is a vertex that complies with the Fgraph standards
  * and inherits from base EigenFactor.hpp
  *
  * The Plane factor connects different poses that have observed the same geometric entity.
  * It is not required an explicit parametrization of the plane, so the resultant topology
  * is N nodes connecting to the plane factor.
- *
+ * 
  * NOTE: due to its nature, multiple observation can be added to the same EF,
  * meaning we need to create a constructor PLUS an additional method
  *  - add_point()
@@ -50,60 +50,23 @@ namespace mrob{
  * but we need extra methods and variables to keep track of the neighbours
  *
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
- * XXX should we store all points?
  */
-class EigenFactorPlane: public EigenFactor{
+class EigenFactorPlaneBase: public EigenFactor{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlane(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlane() override = default;
-    /**
-     * Jacobians are not evaluated, just the residuals.
-     * This function is calculating the current plane estimation
-     */
-    void evaluate_residuals() override;
-    /**
-     * Evaluates Jacobians, given the residual evaluated
-     * It also evaluated the Hessians
-     */
-    void evaluate_jacobians() override;
-    /**
-     * Chi2 is a scaling of the plane error
-     */
-    void evaluate_chi2() override;
-
-    void print() const;
-
+    EigenFactorPlaneBase(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneBase();
+    
     MatRefConst get_obs() const
-            {assert(0 && "EigenFactorPlane:get_obs: method should not be called");return Mat31::Zero();}
+            {assert(0 && "EigenFactorPlaneBase:get_obs: method should not be called");return Mat31::Zero();}
     VectRefConst get_residual() const
-            {assert(0 && "EigenFactorPlane::get_resigual: method should not be called");return Mat31::Zero();}
+            {assert(0 && "EigenFactorPlaneBase::get_resigual: method should not be called");return Mat31::Zero();}
     MatRefConst get_information_matrix() const
-            {assert(0 && "EigenFactorPlane::get_inform method should not be called");return Mat4::Zero();}
+            {assert(0 && "EigenFactorPlaneBase::get_inform method should not be called");return Mat4::Zero();}
 
-    /**
-     * get jacobian returns the jacobian corresponding to the given node id.
-     * @return
-     */
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override;
-    /**
-     * get hessian returns the Hassian corresponding to the given node id.
-     * @return
-     */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0) const;
-    MatRefConst get_hessian_block(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const {}
-
-
-    // NEW functions added to the base class factor.hpp
-    /**
-     * get current state of the Eigen Factor, in this case,
-     * a plane is returned as the current planeEstimation
-     */
-    VectRefConst get_state(void) const override
-                {return planeEstimation_;}
     /**
      * Add point: raw points are stored into an unoderred map
      *
@@ -112,16 +75,16 @@ public:
      * The alternative is adding directly S, but this offers less
      * flexibility.
      */
-    void add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W) override;
+    void add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W);
     /**
      * Add point array: uses internally add_point in a block operation
      */
-    void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
+    void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W);
     /**
      * Add point S matrix: directly stores S matrices as S = sum p_i'*p_i the homogenoues outer product sum
      * This is done when you dont want to store all points, but process them outside
      */
-    void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
+    void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W);
     /**
      * get mean point calculates the mean of the pointcloud observed at pose node id,
      * given that S = sum p * p' =  sum ([x2 xy xz x
@@ -131,6 +94,16 @@ public:
      * ser we just calculate S and return
      */
     Mat31 get_mean_point(factor_id_t id);
+    /**
+     * get current state of the Eigen Factor, in this case,
+     * a plane is returned as the current planeEstimation
+     */
+    VectRefConst get_state(void) const
+                {return planeEstimation_;}
+    /**
+     * Print function with basic information
+    */
+    void print() const;
 
 
 protected:
@@ -177,6 +150,9 @@ protected:
      * We store the block diagonal terms, according to the indexes of the nodes
      */
     std::deque<Mat6, Eigen::aligned_allocator<Mat6>> H_;
+    // TODO maybe this is the solution. The bad thing is that it requires to calculate all crossterms
+    // while maybe they will not be called during the Fgraph.
+    //std::unordered_map<std::pair<factor_id_t,factor_id_t>,Mat6, Eigen::aligned_allocator<Mat6>> H_;
     /**
      * According to our notation S = sum p*p'
      * We choose unordered map here since this is a subset of neighbours (small) and we will iterate over them
@@ -187,8 +163,7 @@ protected:
     std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
     Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
-    Mat41 planeEstimation_, planeEstimationCenter_;
-    //matData_t planeError_; //this is chi2 scaled by the covariance of point measurement.
+    Mat41 planeEstimation_;
 
     // subset of pointcloud for the given plane
     //std::unordered_map<factor_id_t, std::vector<Mat31> > allPlanePoints_;
@@ -196,13 +171,13 @@ protected:
     std::deque<std::deque<matData_t> > allPointsInformation_;
     uint_t numberPoints_;
 
-    matData_t planeError_;
+    // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
+    Mat4 Q_inv_no_kernel_;
 
-    Mat4 Tcenter_; // Used to move the Q matrix close to have a d~0, to avoid scale
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
 };
 
 }
-#endif /* EigenFactorPlane_HPP_ */
+#endif /* EigenFactorPlaneBase_HPP_ */
