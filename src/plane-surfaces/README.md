@@ -9,6 +9,12 @@ There are also some routines dedicated to generate sinthetic planes or estimate_
 ## Dependencies
 C++'14, Eigen
 
+## Current implementations
+* Eigen-Factor
+* Eigen-Factor-Centered (to be deprecated)
+* Eigen-Factor-Raw (to be deprecated)
+* pi-factor
+* BAREG
 
 ## To be deprecated (now solved by the FGraph):
 plane_registration.cpp
