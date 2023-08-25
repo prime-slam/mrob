@@ -303,13 +303,9 @@ Mat41 SE3::transform_plane(const Mat41 &pi)
     return this->inv().T().transpose() * pi;
 }
 
-// Here we deine a global variable inside the file of this class, to be copied
-const std::vector<Mat4> LieGenerative{
-
-};
 
 
-// DEPRECATED?
+// TODO DEPRECATED?
 Mat4 mrob::SE3GenerativeMatrix(uint_t coordinate)
 {
     Mat4 G = Mat4::Zero();

@@ -46,10 +46,10 @@
 
 #include "mrob/factors/EigenFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
-#include "mrob/factors/EigenFactorPlaneRaw.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
+#include "mrob/factors/EigenFactorPlaneDense.hpp"
 
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
@@ -222,6 +222,7 @@ public:
         this->add_node(n);
         return n->get_id();
     }
+    //TODO: DEPRECATED
     factor_id_t add_factor_1pose_1plane_4d(const py::EigenDRef<const Mat41> obs, uint_t nodePoseId,
                 uint_t nodeLandmarkId, const py::EigenDRef<const Mat4> obsInvCov)
     {
@@ -244,6 +245,7 @@ public:
         this->add_eigen_factor(f);
         return f->get_id();
     }
+    //TODO: DEPRECATED
     void eigen_factor_plane_add_point(factor_id_t planeEigenId, factor_id_t nodePoseId, const py::EigenDRef<const Mat31> point, matData_t &W)
     {
         auto ef = this->get_eigen_factor(planeEigenId);
@@ -267,9 +269,9 @@ public:
         return f->get_id();
     }
 
-    factor_id_t add_eigen_factor_plane_raw()
+    factor_id_t add_eigen_factor_plane_dense()
     {
-        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneRaw(robust_type_));
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneDense(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
@@ -528,7 +530,7 @@ void init_FGraph(py::module &m)
                     py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
-            .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_raw)
+            .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_dense)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             // Visual factors
