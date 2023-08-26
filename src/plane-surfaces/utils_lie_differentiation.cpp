@@ -30,7 +30,7 @@
 using namespace mrob;
 
 
-Mat<4,6> gradient_Q_x_pi(const Mat4 Q, const Mat41 pi)
+Mat<4,6> mrob::gradient_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
 {
     Mat<4,6> jacobian;
     Mat4 dQ;
@@ -98,7 +98,7 @@ Mat<4,6> gradient_Q_x_pi(const Mat4 Q, const Mat41 pi)
 }
 
 
-Mat6 pi_t_x_hessian_Q_x_pi(const Mat4 Q, const Mat41 pi)
+Mat6 mrob::pi_t_x_hessian_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
 {
     Mat6 hessian = Mat6::Zero();
     Mat41 dQ_x_pi;
@@ -294,7 +294,7 @@ Mat6 pi_t_x_hessian_Q_x_pi(const Mat4 Q, const Mat41 pi)
     return hessian;
 }
 
-Mat<6,4> pi_t_times_lie_generatives(const Mat41 pi)
+Mat<6,4> mrob::pi_t_times_lie_generatives(const Mat41 &pi)
 {
     Mat<6,4> gradient = Mat<6,4>::Zero();
     // iter  0  =

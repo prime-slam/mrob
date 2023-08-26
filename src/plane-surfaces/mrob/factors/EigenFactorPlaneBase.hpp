@@ -58,7 +58,7 @@ public:
      * at this stage, but will be introduced when we add points/Q matrix.
      */
     EigenFactorPlaneBase(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneBase();
+    ~EigenFactorPlaneBase()  = default;
     
     MatRefConst get_obs() const
             {assert(0 && "EigenFactorPlaneBase:get_obs: method should not be called");return Mat31::Zero();}

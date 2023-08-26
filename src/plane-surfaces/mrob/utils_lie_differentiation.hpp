@@ -41,7 +41,7 @@ namespace mrob{
  * where the inputs are the Q matrix (symetric), the plane vector pi
  * and the coordinate of the derivative
 */
-Mat<4,6> gradient_Q_x_pi(const Mat4 Q, const Mat41 pi);
+Mat<4,6> gradient_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
 
 
 /**
@@ -52,13 +52,13 @@ Mat<4,6> gradient_Q_x_pi(const Mat4 Q, const Mat41 pi);
  * The result is aggregated into a matrix (i,j) (it is symetric)
  * stored in the upper triangular view.
 */
-Mat6 pi_t_x_hessian_Q_x_pi(const Mat4 Q, const Mat41 pi);
+Mat6 pi_t_x_hessian_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
 
 /**
  * Returns the expression : J.row(i) = pi' * G_i
  * 
 */
-Mat<6,4> pi_t_times_lie_generatives(const Mat41 pi);
+Mat<6,4> pi_t_times_lie_generatives(const Mat41 &pi);
 
 }
 
