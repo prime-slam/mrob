@@ -59,7 +59,7 @@ public:
      * at this stage, but will be introduced when we add points/Q matrix.
      */
     EigenFactorPlaneDense(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneDense();
+    ~EigenFactorPlaneDense() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -94,8 +94,6 @@ public:
     MatRefConst get_hessian_block(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const;
 
 
-
-protected:
 
 };
 
