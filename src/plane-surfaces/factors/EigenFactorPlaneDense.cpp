@@ -56,12 +56,17 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         grad = gradient_Q_x_pi(Qt,planeEstimation_);
         jacobian =  grad.transpose() * planeEstimation_;
 
-        // calculate hessian. Uper triangular view
-        hessian = pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) + 2.0*pi_t_times_lie_generatives(planeEstimation_)*grad;
+        // calculate hessian ONLY Upper Trianlar view
+        //tested: pi_t_x_hessian_Q_x_pi(),coincident with EFcenter-element-by-element implementation
+        Mat<6,4> pi_t_G;
+        pi_t_G = pi_t_times_lie_generatives(planeEstimation_);
+        hessian = pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
+                  pi_t_G*grad + grad.transpose()*pi_t_G.transpose();
 
         J_.push_back(jacobian);
         H_.push_back(hessian);
         // need to store 
+        //std::cout << "Jacobian =\n" << hessian <<std::endl;
     }
 }
 
