@@ -75,7 +75,7 @@ void EigenFactorPlaneCenter::evaluate_jacobians()
         }
         J_.push_back(jacobian);
         H_.push_back(hessian);
-
+        //std::cout << "Hessia =\n" << hessian <<std::endl;
     }
 }
 
