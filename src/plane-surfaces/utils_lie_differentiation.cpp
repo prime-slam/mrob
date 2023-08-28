@@ -303,7 +303,7 @@ Mat<6,4> mrob::pi_t_times_lie_generatives(const Mat41 &pi)
 
     // iter  1  =
     //  [-3.  0.  1.  0.]
-    gradient.row(1) << -pi(2),    0, -pi(0), 0;
+    gradient.row(1) << -pi(2),    0, pi(0), 0;
 
     // iter  2  =
     //  [ 2. -1.  0.  0.]
