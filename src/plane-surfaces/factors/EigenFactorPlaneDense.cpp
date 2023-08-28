@@ -46,6 +46,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
     // Assumes residuals evaluated beforehand
     J_.clear();
     H_.clear();
+    gradQ_xi_times_pi_.clear();
     for (auto &Qt: Q_)
     {
         Mat61 jacobian = Mat61::Zero();
@@ -53,15 +54,25 @@ void EigenFactorPlaneDense::evaluate_jacobians()
 
         // calculate gradient
         Mat<4,6> grad;
+        gradQ_xi_times_pi_.push_back(grad);
         grad = gradient_Q_x_pi(Qt,planeEstimation_);
         jacobian =  grad.transpose() * planeEstimation_;
 
         // calculate hessian ONLY Upper Trianlar view
         //tested: pi_t_x_hessian_Q_x_pi(),coincident with EFcenter-element-by-element implementation
-        Mat<6,4> pi_t_G;
-        pi_t_G = pi_t_times_lie_generatives(planeEstimation_);
-        hessian = pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
-                  pi_t_G*grad + grad.transpose()*pi_t_G.transpose();
+        Mat6 pi_t_G_time_Q_grad;
+        pi_t_G_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*pi_t_times_lie_generatives(planeEstimation_)*grad;
+
+        // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
+        Mat6 grad_pi_time_Q_grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*Q_inv_no_kernel_*grad;
+
+        // sum of all terms
+        hessian.triangularView<Eigen::Upper>() =
+                pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
+                grad_pi_time_Q_grad + // crosterm due to plane x dQ
+                pi_t_G_time_Q_grad; //slihglty better than EFcenter
+
 
         J_.push_back(jacobian);
         H_.push_back(hessian);
