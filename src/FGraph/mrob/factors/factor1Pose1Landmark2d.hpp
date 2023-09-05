@@ -64,7 +64,7 @@ class Factor1Pose1Landmark2d : public Factor
     Factor1Pose1Landmark2d(const Mat21 &observation, std::shared_ptr<Node> &nodePose,
             std::shared_ptr<Node> &nodeLandmark, const Mat2 &obsInf, bool initializeLandmark=false,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1Pose1Landmark2d() override = default;
+    ~Factor1Pose1Landmark2d() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -75,12 +75,12 @@ class Factor1Pose1Landmark2d : public Factor
     void evaluate_jacobians() override;
     void evaluate_chi2() override;
 
-    void print() const;
+    void print() const override;
 
-    MatRefConst get_obs() const {return obs_;};
-    VectRefConst get_residual() const {return r_;};
-    MatRefConst get_information_matrix() const {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const {return J_;};
+    MatRefConst get_obs() const override {return obs_;};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override {return W_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
 
   protected:
     Mat21 obs_, r_, landmark_;

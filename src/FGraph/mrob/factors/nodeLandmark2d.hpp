@@ -43,7 +43,7 @@ class NodeLandmark2d : public Node
      * For initialization, requires an initial estimation of the state.
      */
     NodeLandmark2d(const Mat21 &initial_x, Node::nodeMode mode = STANDARD);
-    virtual ~NodeLandmark2d()  override = default;
+    ~NodeLandmark2d() = default;
 
     void update(VectRefConst &dx) override;
     void update_from_auxiliary(VectRefConst &dx) override;
@@ -51,7 +51,7 @@ class NodeLandmark2d : public Node
     void set_auxiliary_state(MatRefConst &x) override;
     MatRefConst get_state() const override {return state_;}
     MatRefConst get_auxiliary_state() const override {return auxiliaryState_;}
-    void print() const;
+    void print() const override;
 
   protected:
     Mat21 state_;

@@ -38,7 +38,7 @@ class NodeLandmark3d : public Node
      */
     NodeLandmark3d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
     //NodePose3d(const SE3 &initial_T);
-    virtual ~NodeLandmark3d()  override = default;
+    ~NodeLandmark3d() = default;
 
     void update(VectRefConst &dx) override;
     void update_from_auxiliary(VectRefConst &dx) override;
@@ -46,7 +46,7 @@ class NodeLandmark3d : public Node
     void set_auxiliary_state(MatRefConst &x) override;
     MatRefConst get_state() const override {return state_;}
     MatRefConst get_auxiliary_state() const override {return auxiliaryState_;}
-    void print() const;
+    void print() const override;
 
   protected:
     Mat31 state_;

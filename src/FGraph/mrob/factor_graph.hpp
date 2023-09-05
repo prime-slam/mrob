@@ -109,8 +109,8 @@ public:
     uint_t get_dimension_obs() {return obsDim_;};
 
     //TODO serialization
-    void save_graph() const;
-    void load_graph();
+    //void save_graph() const;
+    //void load_graph();
 
 protected:
     /**

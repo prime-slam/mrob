@@ -55,7 +55,7 @@ namespace mrob{
         Factor2Poses2d(const Mat31 &observation, std::shared_ptr<Node> &nodeOrigin,
                        std::shared_ptr<Node> &nodeTarget, const Mat3 &obsInf, bool updateNodeTarget=false,
                        Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-        ~Factor2Poses2d() override = default;
+        ~Factor2Poses2d() = default;
 
         void evaluate_residuals() override;
         void evaluate_jacobians() override;
@@ -64,7 +64,7 @@ namespace mrob{
         MatRefConst get_obs() const override {return obs_;};
         VectRefConst get_residual() const override {return r_;};
         MatRefConst get_information_matrix() const override {return W_;};
-        MatRefConst get_jacobian([[maybe_unused]]mrob::factor_id_t id = 0) const override {return J_;};
+        MatRefConst get_jacobian(mrob::factor_id_t /*id*/) const override {return J_;};
         void print() const override;
 
     protected:
@@ -101,7 +101,7 @@ namespace mrob{
         Factor2Poses2dOdom(const Mat31 &observation, std::shared_ptr<Node> &nodeOrigin,
                            std::shared_ptr<Node> &nodeTarget, const Mat3 &obsInf, bool updateNodeTarget=true,
                            Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-        ~Factor2Poses2dOdom() override = default;
+        ~Factor2Poses2dOdom() = default;
 
         void evaluate_residuals() override;
         void evaluate_jacobians() override;

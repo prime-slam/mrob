@@ -79,7 +79,7 @@ class Factor2Poses3d : public Factor
     Factor2Poses3d(const SE3 &observation, std::shared_ptr<Node> &nodeOrigin,
             std::shared_ptr<Node> &nodeTarget, const Mat6 &obsInf, bool updateNodeTarget=false,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor2Poses3d() override = default;
+    ~Factor2Poses3d() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -87,15 +87,15 @@ class Factor2Poses3d : public Factor
     /**
      * Evaluates residuals and Jacobians
      */
-    virtual void evaluate_jacobians() override;
-    virtual void evaluate_chi2() override;
+    void evaluate_jacobians() override;
+    void evaluate_chi2() override;
 
-    virtual void print() const;
+    void print() const override;
 
     MatRefConst get_obs() const override {return Tobs_.T();}
     VectRefConst get_residual() const override {return r_;}
     MatRefConst get_information_matrix() const override {return W_;}
-    MatRefConst get_jacobian([[maybe_unused]]factor_id_t id = 0) const override {return J_;}
+    MatRefConst get_jacobian(factor_id_t /*id */) const override {return J_;}
 
   protected:
     // The Jacobians' correspondant nodes are ordered on the vector<Node>

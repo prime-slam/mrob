@@ -47,18 +47,18 @@ namespace mrob{
     public:
         Factor1Pose2d(const Mat31 &observation, std::shared_ptr<Node> &n1,
                 const Mat3 &obsInf, Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-        ~Factor1Pose2d() override = default;
+        ~Factor1Pose2d() = default;
 
         void evaluate_residuals() override;
         void evaluate_jacobians() override;
         void evaluate_chi2() override;
 
-        void print() const;
+        void print() const override;
 
-        MatRefConst get_obs() const {return obs_;};
-        VectRefConst get_residual() const {return r_;};
-        MatRefConst get_information_matrix() const {return W_;};
-        MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const {return J_;};
+        MatRefConst get_obs() const override {return obs_;};
+        VectRefConst get_residual() const override {return r_;};
+        MatRefConst get_information_matrix() const override {return W_;};
+        MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
 
     protected:
         Mat31 obs_, r_; //and residuals

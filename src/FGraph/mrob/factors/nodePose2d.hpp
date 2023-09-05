@@ -40,15 +40,15 @@ namespace mrob{
          * For initialization, requires an initial estimation of the state.
          */
         explicit NodePose2d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
-        virtual ~NodePose2d()  override = default;
+        ~NodePose2d() = default;
 
-        virtual void update(VectRefConst &dx);
-        virtual void update_from_auxiliary(VectRefConst &dx);
-        virtual void set_state(MatRefConst &x);
-        virtual void set_auxiliary_state(MatRefConst &x);
-        virtual MatRefConst get_state() const {return state_;};
-        virtual MatRefConst get_auxiliary_state() const {return auxiliaryState_;};
-        void print() const;
+        void update(VectRefConst &dx) override;
+        void update_from_auxiliary(VectRefConst &dx) override;
+        void set_state(MatRefConst &x) override;
+        void set_auxiliary_state(MatRefConst &x) override;
+        MatRefConst get_state() const override {return state_;};
+        MatRefConst get_auxiliary_state() const override {return auxiliaryState_;};
+        void print() const override;
     protected:
         Mat31 state_;
         Mat31 auxiliaryState_;
