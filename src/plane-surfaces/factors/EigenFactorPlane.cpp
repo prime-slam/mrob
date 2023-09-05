@@ -238,3 +238,10 @@ MatRefConst EigenFactorPlane::get_hessian(mrob::factor_id_t id) const
     return H_.at(localId);
 }
 
+MatRefConst EigenFactorPlane::get_hessian_block(mrob::factor_id_t id,mrob::factor_id_t id_j) const
+{
+    assert(id == id_j   && "EigenFactorPlane::get_hessian_block: same element");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlane::get_hessian_block: element not found");
+    uint_t localId = reverseNodeIds_.at(id);
+    return H_.at(localId);
+}

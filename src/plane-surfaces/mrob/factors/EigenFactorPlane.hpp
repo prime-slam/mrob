@@ -88,13 +88,13 @@ public:
      * get jacobian returns the jacobian corresponding to the given node id.
      * @return
      */
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override;
+    MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override;
     /**
      * get hessian returns the Hassian corresponding to the given node id.
      * @return
      */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0) const;
-    MatRefConst get_hessian_block(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const {}
+    MatRefConst get_hessian(mrob::factor_id_t id = 0) const override;
+    MatRefConst get_hessian_block(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const override;
 
 
     // NEW functions added to the base class factor.hpp

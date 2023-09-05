@@ -48,7 +48,7 @@ public:
      * at this stage, but will be introduced when we add points/Q matrix.
      */
     EigenFactorPlaneCoordinatesAlign(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCoordinatesAlign() override = default;
+    ~EigenFactorPlaneCoordinatesAlign() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
