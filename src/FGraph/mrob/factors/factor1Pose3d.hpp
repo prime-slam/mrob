@@ -48,7 +48,7 @@ class Factor1Pose3d : public Factor
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
     Factor1Pose3d(const SE3 &observation, std::shared_ptr<Node> &n1, const Mat6 &obsInf,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1Pose3d() override = default;
+    ~Factor1Pose3d() = default;
     /**
      * Returns the chi2 error and fills the residual vector
      */
@@ -56,12 +56,12 @@ class Factor1Pose3d : public Factor
     void evaluate_jacobians() override;
     void evaluate_chi2() override;
 
-    void print() const;
+    void print() const override;
 
-    MatRefConst get_obs() const {return Tobs_.T();};
-    VectRefConst get_residual() const {return r_;};
-    MatRefConst get_information_matrix() const {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const {return J_;};
+    MatRefConst get_obs() const override {return Tobs_.T();};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override {return W_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
 
 
   protected:

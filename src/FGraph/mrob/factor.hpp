@@ -135,7 +135,7 @@ public:
      * Mostly only for EigenFactors whose number of connected nodes is unbounded
      *
      */
-    virtual MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const = 0;
+    virtual MatRefConst get_jacobian(mrob::factor_id_t id = 0) const = 0;
 
 
     factor_id_t get_id() const {return id_;}

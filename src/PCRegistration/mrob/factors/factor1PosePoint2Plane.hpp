@@ -57,27 +57,27 @@ class Factor1PosePoint2Plane: public Factor
     Factor1PosePoint2Plane(const Mat31 &z_point_x, const Mat31 &z_point_y, const Mat31 &z_normal_y,
             std::shared_ptr<Node> &node,  const Mat1 &obsInf,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1PosePoint2Plane() override = default;
+    ~Factor1PosePoint2Plane() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      * r = <pi, T p>
      *
      * The transformation T is, thus, the transformation from the point reference to the plane reference
      */
-    virtual void evaluate_residuals() override;
+    void evaluate_residuals() override;
     /**
      * Evaluates residuals and Jacobians
      * J = dr/dxi = pi'*[-Tp^. I]
      */
-    virtual void evaluate_jacobians() override;
-    virtual void evaluate_chi2() override;
+    void evaluate_jacobians() override;
+    void evaluate_chi2() override;
 
-    virtual void print() const;
+    void print() const override;
 
     MatRefConst get_obs() const override {return r_;};
     VectRefConst get_residual() const override {return r_;};
     MatRefConst get_information_matrix() const override {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
 
   protected:
     Mat31 z_point_x_, z_point_y_,  Tx_;

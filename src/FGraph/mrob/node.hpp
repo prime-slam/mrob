@@ -93,7 +93,7 @@ class Node{
      * it as an argument for the getState function, no need to be dynamic,
      * as long as the dimension is correctly set
      */
-    virtual const MatRefConst get_state() const = 0;
+    virtual MatRefConst get_state() const = 0;
     /**
      * Returns a matrix to the last auxiliary state. This data structure is for the incre-
      * metal implementation, or for error evaluation

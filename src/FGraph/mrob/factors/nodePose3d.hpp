@@ -44,26 +44,23 @@ class NodePose3d : public Node
      * Initialization directly on SE3 a matrix
      */
     NodePose3d(const SE3 &initial_x, Node::nodeMode mode = STANDARD);
-    ~NodePose3d()  override = default;
+    ~NodePose3d() = default;
     /**
      * Left update operation corresponds to
      * T'=exp(dxi^)*T
      * x'=vee(ln(T'))
      */
-    virtual void update(VectRefConst &dx);
-    virtual void update_from_auxiliary(VectRefConst &dx);
-    virtual void set_state(MatRefConst &x);
-    virtual void set_auxiliary_state(MatRefConst &x);
-    virtual MatRefConst get_state() const {return state_.T();};
-    virtual MatRefConst get_auxiliary_state() const {return auxiliaryState_.T();};
-    void print() const;
+    void update(VectRefConst &dx) override;
+    void update_from_auxiliary(VectRefConst &dx) override;
+    void set_state(MatRefConst &x) override;
+    void set_auxiliary_state(MatRefConst &x) override;
+    MatRefConst get_state() const override {return state_.T();};
+    MatRefConst get_auxiliary_state() const override {return auxiliaryState_.T();};
+    void print() const override;
 
   protected:
     SE3 state_;
     SE3 auxiliaryState_; //an auxiliary vector for undoing updates
-
-  public:
-    //EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
 
 
 };

@@ -64,7 +64,7 @@ class FactorCameraProj3dLine : public Factor
             const Mat41 &camera_k,
             const Mat2 &obsInf = Mat2::Identity(),
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~FactorCameraProj3dLine() override = default;
+    ~FactorCameraProj3dLine() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -75,12 +75,12 @@ class FactorCameraProj3dLine : public Factor
     void evaluate_jacobians() override;
     void evaluate_chi2() override;
 
-    void print() const;
+    void print() const override;
 
-    MatRefConst get_obs() const {return line_obs_;};
-    VectRefConst get_residual() const {return r_;};
-    MatRefConst get_information_matrix() const {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const {return J_;};
+    MatRefConst get_obs() const override{return line_obs_;};
+    VectRefConst get_residual() const override {return r_;};
+    MatRefConst get_information_matrix() const override {return W_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
 
   protected:
     Mat31 line_obs_;
