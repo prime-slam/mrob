@@ -61,7 +61,7 @@ public:
      * at this stage, but will be introduced when we add points/Q matrix.
      */
     EigenFactorPlaneCenter(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCenter() override = default;
+    ~EigenFactorPlaneCenter() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation

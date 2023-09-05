@@ -58,7 +58,7 @@ public:
      * at this stage, but will be introduced when we add points/Q matrix.
      */
     EigenFactorPlaneRaw(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneRaw() override = default;
+    ~EigenFactorPlaneRaw() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -74,25 +74,27 @@ public:
      */
     void evaluate_chi2() override;
 
-    void print() const;
+    void print() const override;
 
-    MatRefConst get_obs() const
+    MatRefConst get_obs() const override
             {assert(0 && "EigenFactorPlaneRaw:get_obs: method should not be called");return Mat31::Zero();}
-    VectRefConst get_residual() const
+    VectRefConst get_residual() const override
             {assert(0 && "EigenFactorPlaneRaw::get_resigual: method should not be called");return Mat31::Zero();}
-    MatRefConst get_information_matrix() const
+    MatRefConst get_information_matrix() const override
             {assert(0 && "EigenFactorPlaneRaw::get_inform method should not be called");return Mat4::Zero();}
 
     /**
      * get jacobian returns the jacobian corresponding to the given node id.
      * @return
      */
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override;
+    MatRefConst get_jacobian(mrob::factor_id_t id = 0) const override;
     /**
      * get hessian returns the Hassian corresponding to the given node id.
      * @return
      */
     MatRefConst get_hessian(mrob::factor_id_t id = 0) const override;
+
+    MatRefConst get_hessian_block(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const override;
 
 
     // NEW functions added to the base class factor.hpp

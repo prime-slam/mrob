@@ -59,7 +59,7 @@ public:
      * Creates an Eigen Factor point.
      */
     EigenFactorPoint(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPoint() override = default;
+    ~EigenFactorPoint() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
