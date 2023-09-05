@@ -60,11 +60,11 @@ public:
     EigenFactorPlaneBase(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
     ~EigenFactorPlaneBase()  = default;
     
-    MatRefConst get_obs() const
+    MatRefConst get_obs() const override
             {assert(0 && "EigenFactorPlaneBase:get_obs: method should not be called");return Mat31::Zero();}
-    VectRefConst get_residual() const
+    VectRefConst get_residual() const override
             {assert(0 && "EigenFactorPlaneBase::get_resigual: method should not be called");return Mat31::Zero();}
-    MatRefConst get_information_matrix() const
+    MatRefConst get_information_matrix() const override
             {assert(0 && "EigenFactorPlaneBase::get_inform method should not be called");return Mat4::Zero();}
 
     /**

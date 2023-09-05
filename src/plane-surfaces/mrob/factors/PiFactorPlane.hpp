@@ -50,7 +50,7 @@ public:
     PiFactorPlane(const Mat4 &Sobservation, std::shared_ptr<Node> &nodePose,
             std::shared_ptr<Node> &nodePlane,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~PiFactorPlane() override = default;
+    ~PiFactorPlane() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -61,12 +61,12 @@ public:
     virtual void evaluate_jacobians() override;
     virtual void evaluate_chi2() override;
 
-    virtual void print() const;
+    virtual void print() const override;
 
     MatRefConst get_obs() const override {return Sobs_;};
     VectRefConst get_residual() const override {return r_;};
     MatRefConst get_information_matrix() const override {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id*/) const override {return J_;};
 
 
 
