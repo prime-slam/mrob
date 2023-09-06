@@ -82,49 +82,6 @@ void EigenFactorPlaneBase::add_points_S_matrix(const Mat4 &S, std::shared_ptr<No
     node->print();
 }
 
-void EigenFactorPlaneBase::estimate_plane()
-{
-    calculate_all_matrices_S();
-    calculate_all_matrices_Q();
-
-    // Center the plane requires a transformation (translation) such that
-    // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
-    // This only hold for when T^{-\top} = [I, -n d].
-    // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
-    Mat4 Tcenter = Mat4::Identity();
-    Tcenter.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
-    //std::cout << "T center = " << Tcenter_ <<  std::endl;
-
-    //std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
-
-    Mat4 accumulatedCenterQ;
-    accumulatedCenterQ = Tcenter * accumulatedQ_ * Tcenter.transpose();
-
-    //std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
-
-
-    // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
-    Eigen::SelfAdjointEigenSolver<Mat3> es;
-    es.computeDirect(accumulatedCenterQ.topLeftCorner<3,3>());
-    // This plane center is more stable when calcualating a solution than its counterpart in 4d
-    // Most likely it is how the error leaks from the distance componet and breaks the normal component,
-    // that needs to be projected (regenerated) on the 4x4 case. this way, we make sure it is a unit vector by construction.
-    // Right after the calcuation, we convert back to the correct reference frame.
-    Mat41 planeEstimationCenter;
-    planeEstimationCenter.head<3>() = es.eigenvectors().col(0);
-    planeEstimationCenter(3) = 0.0;
-
-    // TODO need this transformation of the plane to be repeasted later for other EIGVs
-    planeEstimation_ = SE3(Tcenter).inv().transform_plane(planeEstimationCenter);
-    //planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;// this is more comprehensive
-
-    //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
-    //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
-
-    // Calcualte almost inverse of Q for later derivatives:
-    Q_inv_no_kernel_ = accumulatedQ_.inverse();//slightly inacurate solution
-
-}
 
 void EigenFactorPlaneBase::calculate_all_matrices_S()
 {
@@ -188,9 +145,25 @@ void EigenFactorPlaneBase::print() const
     std::cout << "Plotting S \n";
     for(auto &S: S_)
         std::cout << S << std::endl;
-    std::cout << "Plotting Jacobians \n";
-    for(auto &J: J_)
-        std::cout << J.transpose() << std::endl;
 }
 
+MatRefConst EigenFactorPlaneBase::get_jacobian(mrob::factor_id_t id) const
+{
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlanebase::get_jacobian: element not found");
+    uint_t localId = reverseNodeIds_.at(id);
+    return J_.at(localId);
+}
 
+MatRefConst EigenFactorPlaneBase::get_hessian(mrob::factor_id_t id) const
+{
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneBase::get_hessian: element not found");
+    uint_t localId = reverseNodeIds_.at(id);
+    return H_.at(localId);
+}
+
+MatRefConst EigenFactorPlaneBase::get_hessian_block(mrob::factor_id_t id,mrob::factor_id_t /*id_j*/) const
+{
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlanebase::get_hessian_block: element not found");
+    uint_t localId = reverseNodeIds_.at(id);
+    return H_.at(localId);
+}

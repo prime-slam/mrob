@@ -50,6 +50,7 @@
 #include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
 #include "mrob/factors/EigenFactorPlaneDense.hpp"
+#include "mrob/factors/BaregEFPlane.hpp"
 
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
@@ -239,13 +240,13 @@ public:
     // Eigen factor plane, it requires adding an empty structure and then each point will increase
     // the set of points, at the given pose.
     // NOTE: there is no need to specify pose.
+    //TODO: DEPRECATED
     factor_id_t add_eigen_factor_plane() //TODO add robust factor when created
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlane(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
-    //TODO: DEPRECATED
     void eigen_factor_plane_add_point(factor_id_t planeEigenId, factor_id_t nodePoseId, const py::EigenDRef<const Mat31> point, matData_t &W)
     {
         auto ef = this->get_eigen_factor(planeEigenId);
@@ -277,6 +278,7 @@ public:
     }
 
     // Eigen factor point. Centroids observed usualy for initial guess
+    //TODO: Needs fixing, now it is alternating optim
     factor_id_t add_eigen_factor_point()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPoint(robust_type_));
@@ -298,9 +300,18 @@ public:
 
 
     // This is an implementation of the Plane Coordinates Align (BA,multiPC REG) from Huang RAL2021
-    factor_id_t add_bareg_plane()
+    //TODO: DEPRECATED
+    factor_id_t add_align_coord()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCoordinatesAlign(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
+    // This is an implementation of the Plane Coordinates Align (BA,multiPC REG) from Huang RAL2021
+    factor_id_t add_bareg_plane()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::BaregEFPlane(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
@@ -516,7 +527,7 @@ void init_FGraph(py::module &m)
                             py::arg("nodeLandmarkId"))
             // -----------------------------------------------------------
             // Eigen Factors
-            .def("add_eigen_factor_plane", &FGraphPy::add_eigen_factor_plane)
+            .def("add_eigen_factor_plane", &FGraphPy::add_eigen_factor_plane_dense)
             .def("eigen_factor_plane_add_point", &FGraphPy::eigen_factor_plane_add_point,
                     "Adds a point given a node id and the EF it belongs to.",
                     py::arg("planeEigenId"),
@@ -530,7 +541,7 @@ void init_FGraph(py::module &m)
                     py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
-            .def("add_eigen_factor_plane_raw", &FGraphPy::add_eigen_factor_plane_dense)
+            .def("add_eigen_factor_plane_raw", &FGraphPy::add_align_coord)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             // Visual factors

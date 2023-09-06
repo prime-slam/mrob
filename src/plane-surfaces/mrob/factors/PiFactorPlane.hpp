@@ -22,7 +22,7 @@
  */
 
 #ifndef PIFACTORPLANE_HPP_
-#define PIFACTORPLABE_HPP_
+#define PIFACTORPLANE_HPP_
 
 
 #include "mrob/matrix_base.hpp"
