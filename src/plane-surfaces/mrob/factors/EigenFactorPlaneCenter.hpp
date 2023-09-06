@@ -27,10 +27,7 @@
 
 
 #include "mrob/factor.hpp"
-#include "mrob/factors/EigenFactorPlane.hpp"
-#include <unordered_map>
-#include <deque>
-#include <Eigen/StdVector>
+#include "mrob/factors/EigenFactorPlaneBase.hpp"
 
 
 namespace mrob{
@@ -54,7 +51,7 @@ namespace mrob{
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
  * XXX should we store all points?
  */
-class EigenFactorPlaneCenter: public EigenFactorPlane{
+class EigenFactorPlaneCenter: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
@@ -89,8 +86,6 @@ protected:
     Mat41 planeEstimationUnit_;
     Mat4 Tcenter_;
 
-    // subset of pointcloud for the given plane
-    //std::unordered_map<factor_id_t, std::vector<Mat31> > allPlanePoints_;
 
 };
 
