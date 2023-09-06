@@ -26,7 +26,7 @@
 
 
 #include "mrob/factor.hpp"
-#include "mrob/factors/EigenFactorPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneBase.hpp"
 #include <unordered_map>
 #include <deque>
 #include <Eigen/StdVector>
@@ -53,7 +53,7 @@ namespace mrob{
  *
  *
  */
-class EigenFactorPoint: public EigenFactorPlane{
+class EigenFactorPoint: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor point.
@@ -77,6 +77,7 @@ public:
 
 
 protected:
+    void estimate_plane() override {};
     //vector of residuals, and T*mu_i follows the same indexing than Jacobian and Hessian
     std::deque<Mat31, Eigen::aligned_allocator<Mat31>> r_,transformed_mu_;
     SE3 T_ini_inv_;
