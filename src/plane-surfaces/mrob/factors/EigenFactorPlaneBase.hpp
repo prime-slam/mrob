@@ -75,16 +75,16 @@ public:
      * The alternative is adding directly S, but this offers less
      * flexibility.
      */
-    void add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W);
+    void add_point(const Mat31& p, std::shared_ptr<Node> &node, matData_t &W) override;
     /**
      * Add point array: uses internally add_point in a block operation
      */
-    void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W);
+    void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
     /**
      * Add point S matrix: directly stores S matrices as S = sum p_i'*p_i the homogenoues outer product sum
      * This is done when you dont want to store all points, but process them outside
      */
-    void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W);
+    void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W) override;
     /**
      * get mean point calculates the mean of the pointcloud observed at pose node id,
      * given that S = sum p * p' =  sum ([x2 xy xz x
@@ -98,12 +98,29 @@ public:
      * get current state of the Eigen Factor, in this case,
      * a plane is returned as the current planeEstimation
      */
-    VectRefConst get_state(void) const
+    VectRefConst get_state(void) const  override
                 {return planeEstimation_;}
     /**
      * Print function with basic information
     */
-    void print() const;
+    void print() const override;
+
+    /**
+     * get jacobian returns the jacobian corresponding to the given node id.
+     * @return
+     */
+    MatRefConst get_jacobian(mrob::factor_id_t id = 0) const override;
+    /**
+     * get hessian returns the Hassian corresponding to the given node id.
+     * @return
+     */
+    MatRefConst get_hessian(mrob::factor_id_t id = 0) const override;
+
+    /**
+     * get hessian returns the Hassian corresponding to the given node id.
+     * @return
+     */
+    MatRefConst get_hessian_block(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
 
 
 protected:
@@ -111,7 +128,7 @@ protected:
      * Estimates the plane parameters: v = [n', d]'_{4x1}, where v is unit, (due to the Eigen solution)
      * although for standard plane estimation we could enforce unit on the normal vector n.
      */
-    virtual void estimate_plane();
+    virtual void estimate_plane() = 0;
     /**
      * Calculates the matrix S = sum(p*p'), where p = [x,y,z,1]
      * for all planes, as an aggregation of the outer product of all
@@ -141,6 +158,16 @@ protected:
      */
     std::unordered_map<factor_id_t, uint_t> reverseNodeIds_;
     /**
+     * According to our notation S = sum p*p'
+     * We choose unordered map here since this is a subset of neighbours (small) and we will iterate over them
+     * Iterations may be not in strict order, but we don't care much for now (will we?)
+     *
+     * Q = T *S *T'
+     */
+    std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
+    Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
+
+    /**
      * The Jacobian of the plane error, the poses involved.
      * Stores the map according to the nodes indexes/identifiers.
      */
@@ -153,16 +180,11 @@ protected:
     // TODO maybe this is the solution. The bad thing is that it requires to calculate all crossterms
     // while maybe they will not be called during the Fgraph.
     //std::unordered_map<std::pair<factor_id_t,factor_id_t>,Mat6, Eigen::aligned_allocator<Mat6>> H_;
-    /**
-     * According to our notation S = sum p*p'
-     * We choose unordered map here since this is a subset of neighbours (small) and we will iterate over them
-     * Iterations may be not in strict order, but we don't care much for now (will we?)
-     *
-     * Q = T *S *T'
-     */
-    std::deque<Mat4, Eigen::aligned_allocator<Mat4>> S_, Q_;
-    Mat4 accumulatedQ_;//Q matrix of accumulated values for the incremental update of the error.
 
+    /**
+     * This vector is to be estimated in child classes, but it will be common
+     * for all EFPlane classes
+    */
     Mat41 planeEstimation_;
 
     // subset of pointcloud for the given plane
@@ -171,8 +193,7 @@ protected:
     std::deque<std::deque<matData_t> > allPointsInformation_;
     uint_t numberPoints_;
 
-    // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat4 Q_inv_no_kernel_;
+
 
 
 public:
