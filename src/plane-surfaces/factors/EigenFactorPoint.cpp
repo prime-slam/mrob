@@ -31,7 +31,7 @@
 using namespace mrob;
 
 EigenFactorPoint::EigenFactorPoint(Factor::robustFactorType robust_type):
-        EigenFactorPlane(robust_type)
+        EigenFactorPlaneBase(robust_type)
 {
 }
 
@@ -101,5 +101,4 @@ void EigenFactorPoint::evaluate_chi2()
     }
     chi2_ *= 0.5;
 }
-
 

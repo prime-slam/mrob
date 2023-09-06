@@ -31,7 +31,7 @@
 using namespace mrob;
 
 EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
-        EigenFactorPlane(robust_type),
+        EigenFactorPlaneBase(robust_type),
         planeEstimationUnit_{Mat41::Zero()},
         Tcenter_(Mat4::Identity())
 {
@@ -81,9 +81,6 @@ void EigenFactorPlaneCenter::evaluate_jacobians()
 
 void EigenFactorPlaneCenter::evaluate_chi2()
 {
-    // error = lambda from eig
-    //chi2_ =  planeError_;
-
     // Point 2 plane exact error requires chi2 = pi' Q pi
     chi2_ = planeEstimation_.dot(accumulatedQ_ * planeEstimation_);
 
@@ -122,7 +119,6 @@ void EigenFactorPlaneCenter::estimate_plane()
     //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
 
-    planeError_ = es.eigenvalues()(0);
 }
 
 
