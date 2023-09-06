@@ -74,26 +74,27 @@ public:
      * Chi2 is a scaling of the plane error
      */
     void evaluate_chi2() override;
+    /**
+     * Print function with extra information + base print
+    */
+    void print() const override;
 
 
-    /**
-     * get jacobian returns the jacobian corresponding to the given node id.
-     * @return
-     */
-    MatRefConst get_jacobian(mrob::factor_id_t id = 0) const override;
-    /**
-     * get hessian returns the Hassian corresponding to the given node id.
-     * @return
-     */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0) const override;
 
     /**
-     * get hessian returns the Hassian corresponding to the given node id.
+     * Needs specific implementation, considering the dense nature of the EF
      * @return
      */
     MatRefConst get_hessian_block(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
 
+
 protected:
+    void estimate_plane() override;
+
+
+    // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
+    Mat4 Q_inv_no_kernel_;
+
     /**
      * gradient matrix = dQ/dx * pi.
      * We store the block diagonal terms, according to the indexes of the nodes

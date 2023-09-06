@@ -18,6 +18,7 @@ SET(sources
     factors/EigenFactorPlaneCoordinatesAlign.cpp
     factors/EigenFactorPlaneBase.cpp
     factors/EigenFactorPlaneDense.cpp
+    factors/BaregEFPlane.cpp
 )
 
 
@@ -38,6 +39,7 @@ SET(headers
     mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp
     mrob/factors/EigenFactorBase.hpp
     mrob/factors/EigenFactorDense.hpp
+    mrob/factors/BaregEFPlane.hpp
 )
 
 # create library
