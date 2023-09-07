@@ -149,11 +149,3 @@ MatRefConst EigenFactorPlaneDense::get_hessian_block(mrob::factor_id_t id1, mrob
     }
     return block_hessian;
 }
-
-void EigenFactorPlaneDense::print() const
-{
-    EigenFactorPlaneBase::print();
-    std::cout << "Plotting Jacobians \n";
-    for(auto &J: J_)
-        std::cout << J.transpose() << std::endl;
-}

@@ -431,7 +431,11 @@ void FGraphSolve::build_info_EF()
             // It requires previous calculation of indNodesMatrix (in build adjacency)
             gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
 
+            // get the neighboiring nodes TODO and for over them
+
+
             // Updating the Hessian
+            //Mat6 H = f->get_hessian_block(indNode,indNode);//TODO this fails for the dense
             Mat6 H = f->get_hessian(indNode);
             uint_t startingIndex = indNodesMatrix_[indNode];
             // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
