@@ -54,7 +54,6 @@ void EigenFactorPlaneBase::add_point(const Mat31& p, std::shared_ptr<Node> &node
         allPointsInformation_.emplace_back(std::deque<matData_t>());
         neighbourNodes_.push_back(node);
         node->set_connected_to_EF(true);//This function is required to properly build the L matrix
-        nodeIds_.push_back(id);
         uint_t localId = allPlanePoints_.size()-1;
         reverseNodeIds_.emplace(id, localId);
         allPlanePoints_.at(localId).push_back(p);
@@ -133,9 +132,9 @@ void EigenFactorPlaneBase::print() const
 {
     std::cout << "Plane Eigen Factor " <<  this->get_id()
               << " current plane estimated (global coord): " << planeEstimation_.transpose() << std::endl;
-    for(auto id : nodeIds_)
-        std::cout << "Node ids = "  << id << ", and its reverse in EF = "
-                  << reverseNodeIds_.at(id) << std::endl;
+    for(auto node : neighbourNodes_)
+        std::cout << "Node ids = "  << node->get_id() << ", and its reverse in EF = "
+                  << reverseNodeIds_.at(node->get_id()) << std::endl;
     /*for(auto &pc: allPlanePoints_ )
     {
         std::cout << "new pose: \n";
@@ -160,7 +159,7 @@ MatRefConst EigenFactorPlaneBase::get_jacobian(mrob::factor_id_t id) const
 
 MatRefConst EigenFactorPlaneBase::get_hessian(mrob::factor_id_t id,mrob::factor_id_t /*id_j*/) const
 {
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlanebase::get_hessian_block: element not found");
+    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneBase::get_hessian_block: element not found");
     uint_t localId = reverseNodeIds_.at(id);
     return H_.at(localId);
 }
