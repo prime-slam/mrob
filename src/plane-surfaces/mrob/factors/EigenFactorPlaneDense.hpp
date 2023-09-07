@@ -74,10 +74,6 @@ public:
      * Chi2 is a scaling of the plane error
      */
     void evaluate_chi2() override;
-    /**
-     * Print function with extra information + base print
-    */
-    void print() const override;
 
 
 

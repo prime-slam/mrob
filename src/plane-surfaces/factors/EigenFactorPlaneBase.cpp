@@ -145,6 +145,9 @@ void EigenFactorPlaneBase::print() const
     std::cout << "Plotting S \n";
     for(auto &S: S_)
         std::cout << S << std::endl;
+    std::cout << "Plotting Jacobians \n";
+    for(auto &J: J_)
+        std::cout << J.transpose() << std::endl;
 }
 
 MatRefConst EigenFactorPlaneBase::get_jacobian(mrob::factor_id_t id) const
