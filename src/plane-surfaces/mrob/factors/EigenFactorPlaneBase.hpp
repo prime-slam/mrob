@@ -114,13 +114,7 @@ public:
      * get hessian returns the Hassian corresponding to the given node id.
      * @return
      */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0) const override;
-
-    /**
-     * get hessian returns the Hassian corresponding to the given node id.
-     * @return
-     */
-    MatRefConst get_hessian_block(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
+    MatRefConst get_hessian(mrob::factor_id_t id = 0,  mrob::factor_id_t id2 = 0) const override;
 
 
 protected:

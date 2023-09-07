@@ -120,19 +120,14 @@ void EigenFactorPlaneDense::estimate_plane()
     planeEstimationCenter.head<3>() = es.eigenvectors().col(0);
     planeEstimationCenter(3) = 0.0;
 
-    // TODO need this transformation of the plane to be repeasted later for other EIGVs
-    planeEstimation_ = SE3(Tcenter).inv().transform_plane(planeEstimationCenter);
-    //planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;// this is more comprehensive
-
-    //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
-    //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
+    planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;
 
     // Calcualte almost inverse of Q for later derivatives:
     Q_inv_no_kernel_ = accumulatedQ_.inverse();//slightly inacurate solution
 
 }
 
-MatRefConst EigenFactorPlaneDense::get_hessian_block(mrob::factor_id_t id1, mrob::factor_id_t id2) const
+MatRefConst EigenFactorPlaneDense::get_hessian(mrob::factor_id_t id1, mrob::factor_id_t id2) const
 {
     assert(reverseNodeIds_.count(id1)   && "EigenFactorPlaneDense::get_hessian: element id1 not found");
     assert(reverseNodeIds_.count(id2)   && "EigenFactorPlaneDense::get_hessian: element id2 not found");
@@ -141,7 +136,8 @@ MatRefConst EigenFactorPlaneDense::get_hessian_block(mrob::factor_id_t id1, mrob
     if(id1 == id2)
     {
         uint_t localId = reverseNodeIds_.at(id1);
-        block_hessian = H_.at(localId);
+        return H_.at(localId);
+        //std::cout << "\n and solution plane = \n" <<  block_hessian << std::endl;
     }
     else
     {

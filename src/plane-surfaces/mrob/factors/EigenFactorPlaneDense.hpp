@@ -81,7 +81,7 @@ public:
      * Needs specific implementation, considering the dense nature of the EF
      * @return
      */
-    MatRefConst get_hessian_block(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
+    MatRefConst get_hessian(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
 
 
 protected:
@@ -96,6 +96,9 @@ protected:
      * We store the block diagonal terms, according to the indexes of the nodes
      */
     std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_times_pi_;
+
+    // matrix to return the reference in get_hessian_block()
+    Mat6 block_hessian_;
 
 };
 
