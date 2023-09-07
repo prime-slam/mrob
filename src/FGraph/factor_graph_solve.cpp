@@ -432,21 +432,35 @@ void FGraphSolve::build_info_EF()
             gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
 
             // get the neighboiring nodes TODO and for over them
-
-
-            // Updating the Hessian
-            Mat6 H = f->get_hessian(indNode,indNode);//TODO this fails for the dense
             uint_t startingIndex = indNodesMatrix_[indNode];
-            // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
-            for (uint_t i = 0; i < 6; i++)
+            for (auto node2 : *neighNodes)
             {
-                for (uint_t j = i; j<6; j++)
+                uint_t indNode_2 = node2->get_id();
+                Mat6 H = f->get_hessian(indNode,indNode_2);
+                uint_t cross_term_needs_reset = 1;
+                // This case returns an upper triangular view on the diagonal
+                if(indNode == indNode_2)
+                    cross_term_needs_reset = 0;
+                // This other case is a crossterm. It needs all elements of the 6x6 matrix, so it does not enable the for start in diag
+
+                uint_t startingIndex_2 = indNodesMatrix_[indNode_2];
+
+                // Updating the Hessian
+                // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
+                for (uint_t i = 0; i < 6; i++)
                 {
-                    // convert the hessian to triplets, duplicated ones will be summed
-                    // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0
-                    hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex+ j, H(i,j)));
+                    // for diagonal terms, this will start at j=i, which give the uppter triang view
+                    for (uint_t j = i*cross_term_needs_reset; j<6; j++)
+                    {
+                        // convert the hessian to triplets, duplicated ones will be summed
+                        // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0
+                        hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex_2+ j, H(i,j)));
+                    }
                 }
+
             }
+
+
         }
     }
 
