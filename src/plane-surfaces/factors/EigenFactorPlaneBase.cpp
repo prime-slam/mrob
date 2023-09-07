@@ -157,14 +157,8 @@ MatRefConst EigenFactorPlaneBase::get_jacobian(mrob::factor_id_t id) const
     return J_.at(localId);
 }
 
-MatRefConst EigenFactorPlaneBase::get_hessian(mrob::factor_id_t id) const
-{
-    assert(reverseNodeIds_.count(id)   && "EigenFactorPlaneBase::get_hessian: element not found");
-    uint_t localId = reverseNodeIds_.at(id);
-    return H_.at(localId);
-}
 
-MatRefConst EigenFactorPlaneBase::get_hessian_block(mrob::factor_id_t id,mrob::factor_id_t /*id_j*/) const
+MatRefConst EigenFactorPlaneBase::get_hessian(mrob::factor_id_t id,mrob::factor_id_t /*id_j*/) const
 {
     assert(reverseNodeIds_.count(id)   && "EigenFactorPlanebase::get_hessian_block: element not found");
     uint_t localId = reverseNodeIds_.at(id);
