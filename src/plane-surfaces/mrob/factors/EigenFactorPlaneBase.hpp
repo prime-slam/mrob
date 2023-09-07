@@ -140,12 +140,6 @@ protected:
      */
     void calculate_all_matrices_Q();
     /**
-     * A deque storing the ids in the FGraph of each of the poses
-     * This is preferred over vector due to the a priori unknown size of
-     * elements. The same applies for other structures containing matrices
-     */
-    std::deque<factor_id_t> nodeIds_;
-    /**
      * Mapping from the FG nodes IDs to the local indexes in the current EF.
      * This conversion is necessary to maintain consistency in case of
      * non-subsequent observations
