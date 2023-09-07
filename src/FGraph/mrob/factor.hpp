@@ -225,8 +225,8 @@ public:
     virtual ~EigenFactor() = default;
     virtual VectRefConst get_state() const = 0;
     virtual void add_point(const Mat31& p, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
-    virtual MatRefConst get_hessian(mrob::factor_id_t id = 0) const = 0;
-    virtual MatRefConst get_hessian_block(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const = 0;
+    //virtual MatRefConst get_hessian(mrob::factor_id_t id = 0) const = 0;
+    virtual MatRefConst get_hessian(mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const = 0;
     virtual void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
     virtual void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
 

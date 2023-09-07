@@ -435,8 +435,7 @@ void FGraphSolve::build_info_EF()
 
 
             // Updating the Hessian
-            //Mat6 H = f->get_hessian_block(indNode,indNode);//TODO this fails for the dense
-            Mat6 H = f->get_hessian(indNode);
+            Mat6 H = f->get_hessian(indNode,indNode);//TODO this fails for the dense
             uint_t startingIndex = indNodesMatrix_[indNode];
             // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
             for (uint_t i = 0; i < 6; i++)
