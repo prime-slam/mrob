@@ -157,10 +157,13 @@ MatRefConst EigenFactorPlaneBase::get_jacobian(mrob::factor_id_t id) const
 }
 
 
-bool EigenFactorPlaneBase::get_hessian(MatRef H, mrob::factor_id_t id,mrob::factor_id_t /*id_j*/) const
+bool EigenFactorPlaneBase::get_hessian(MatRef H, mrob::factor_id_t id,mrob::factor_id_t id_j) const
 {
+    if (id != id_j)
+        return false;
     if (reverseNodeIds_.count(id) == 0)
         return false;
+    
     uint_t localId = reverseNodeIds_.at(id);
     H = H_.at(localId);
     return true;
