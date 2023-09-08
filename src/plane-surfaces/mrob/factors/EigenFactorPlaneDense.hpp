@@ -81,7 +81,7 @@ public:
      * Needs specific implementation, considering the dense nature of the EF
      * @return
      */
-    bool get_hessian(MatRef H, mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
+    bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0, mrob::factor_id_t id_j = 0) const override;
 
 
 protected:
@@ -97,9 +97,7 @@ protected:
      */
     std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_times_pi_;
 
-    // matrix to return the reference in get_hessian_block()
     Mat6 block_hessian_;
-
 };
 
 }
