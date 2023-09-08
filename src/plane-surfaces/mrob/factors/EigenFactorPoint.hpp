@@ -46,10 +46,11 @@ namespace mrob{
  *  - i is the current pose,
  *  - mu_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
  *  - W_i is the weighting (information) which corresponds to the number of points.
+ *  - mu(Q_0) is the mean at the first observed PC.
  *
  * This leads to a weighted LSQ
  *
- * The Chi2 is of a different kind than the EFplane, since this is point2point
+ * The Chi2 is of a different kind than the EFplane, since this is point2point of means
  *
  *
  */
