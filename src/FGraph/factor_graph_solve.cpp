@@ -422,7 +422,7 @@ void FGraphSolve::build_info_EF()
         for (auto node : *neighNodes)
         {
             uint_t indNode = node->get_id();
-            if ( node->get_node_mode() == Node::nodeMode::ANCHOR)
+            if (node->get_node_mode() == Node::nodeMode::ANCHOR)
             {
                 continue;
             }
@@ -435,22 +435,35 @@ void FGraphSolve::build_info_EF()
             uint_t startingIndex = indNodesMatrix_[indNode];
             for (auto node2 : *neighNodes)
             {
+                // getting second index, rows in the hessian matrix
                 uint_t indNode_2 = node2->get_id();
-                Mat6 H = f->get_hessian(indNode,indNode_2);
-                uint_t cross_term_needs_reset = 1;
-                // This case returns an upper triangular view on the diagonal
-                if(indNode == indNode_2)
-                    cross_term_needs_reset = 0;
-                // This other case is a crossterm. It needs all elements of the 6x6 matrix, so it does not enable the for start in diag
-
                 uint_t startingIndex_2 = indNodesMatrix_[indNode_2];
 
-                // Updating the Hessian
+                // Check if the indexes (col,row) is in the upper triangular part or skip if not
+                if (startingIndex_2 < startingIndex)
+                    continue;
+
+                // Calculate hessian, this is a lookup
+                Mat6 H;
+                // If there is no such crosterms, the methods returns false and the block emebegin into H is skipped
+                if (!f->get_hessian(H,indNode,indNode_2))
+                    continue;
+                std::cout << "Hessian =\n" << H;
+
+                // Calculate the variable that allows to control diagonal/crossterms in the for() below
+                // If it is a crossterm, it needs all elements of the 6x6 matrix, so it does not enable the for start in diag (=0)
+                // If it is diagonal, it can start at the current row for the upper triangular view (therefore =1)
+                uint_t cross_term_reset = 0;
+                if (indNode == indNode_2)
+                    cross_term_reset = 1;
+
+
+                // Updating the Full Hessian
                 // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
                 for (uint_t i = 0; i < 6; i++)
                 {
                     // for diagonal terms, this will start at j=i, which give the uppter triang view
-                    for (uint_t j = i*cross_term_needs_reset; j<6; j++)
+                    for (uint_t j = i*cross_term_reset; j<6; j++)
                     {
                         // convert the hessian to triplets, duplicated ones will be summed
                         // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0

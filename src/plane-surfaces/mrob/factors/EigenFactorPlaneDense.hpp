@@ -81,7 +81,7 @@ public:
      * Needs specific implementation, considering the dense nature of the EF
      * @return
      */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
+    bool get_hessian(MatRef H, mrob::factor_id_t id = 0, mrob::factor_id_t id2 = 0) const override;
 
 
 protected:

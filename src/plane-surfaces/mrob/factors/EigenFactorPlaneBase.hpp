@@ -107,14 +107,12 @@ public:
 
     /**
      * get jacobian returns the jacobian corresponding to the given node id.
-     * @return
      */
     MatRefConst get_jacobian(mrob::factor_id_t id = 0) const override;
     /**
-     * get hessian returns the Hassian corresponding to the given node id.
-     * @return
+     * get hessian returns the Hessian corresponding to the given node id i and j
      */
-    MatRefConst get_hessian(mrob::factor_id_t id = 0,  mrob::factor_id_t id2 = 0) const override;
+    bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const override;
 
 
 protected:
