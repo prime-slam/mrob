@@ -127,7 +127,7 @@ void EigenFactorPlaneDense::estimate_plane()
 
 }
 
-MatRefConst EigenFactorPlaneDense::get_hessian(mrob::factor_id_t id1, mrob::factor_id_t id2) const
+bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id1, mrob::factor_id_t id2) const
 {
     assert(reverseNodeIds_.count(id1)   && "EigenFactorPlaneDense::get_hessian: element id1 not found");
     assert(reverseNodeIds_.count(id2)   && "EigenFactorPlaneDense::get_hessian: element id2 not found");
@@ -136,12 +136,14 @@ MatRefConst EigenFactorPlaneDense::get_hessian(mrob::factor_id_t id1, mrob::fact
     if(id1 == id2)
     {
         uint_t localId = reverseNodeIds_.at(id1);
-        return H_.at(localId);
+        H = H_.at(localId);
+        return true;
         //std::cout << "\n and solution plane = \n" <<  block_hessian << std::endl;
     }
     else
     {
         // fetch cross terms and return the value
+        return false;
     }
-    return block_hessian;
+    return false;
 }
