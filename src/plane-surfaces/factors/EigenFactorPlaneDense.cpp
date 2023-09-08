@@ -54,8 +54,8 @@ void EigenFactorPlaneDense::evaluate_jacobians()
 
         // calculate gradient
         Mat<4,6> grad;
-        gradQ_xi_times_pi_.push_back(grad);
         grad = gradient_Q_x_pi(Qt,planeEstimation_);
+        gradQ_xi_times_pi_.push_back(grad);
         jacobian =  grad.transpose() * planeEstimation_;
 
         // calculate hessian ONLY Upper Trianlar view
@@ -123,27 +123,32 @@ void EigenFactorPlaneDense::estimate_plane()
     planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;
 
     // Calcualte almost inverse of Q for later derivatives:
-    Q_inv_no_kernel_ = accumulatedQ_.inverse();//slightly inacurate solution
+    // option 1, full inverse: slightly inacurate solution.
+    Q_inv_no_kernel_ = accumulatedQ_.inverse();
+
+    // option 2, inverse removing the solution vector
+    //Q_inv_no_kernel_ = 
 
 }
 
-bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id1, mrob::factor_id_t id2) const
+bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::factor_id_t id_j) const
 {
-    assert(reverseNodeIds_.count(id1)   && "EigenFactorPlaneDense::get_hessian: element id1 not found");
-    assert(reverseNodeIds_.count(id2)   && "EigenFactorPlaneDense::get_hessian: element id2 not found");
+    // this condition should always hold since ids are taken from neubouring nodes, but in case useage changes.
+    if (reverseNodeIds_.count(id_i) == 0   ||  reverseNodeIds_.count(id_j) == 0)
+        return false;
 
-    Mat6 block_hessian;
-    if(id1 == id2)
+    uint_t localId1 = reverseNodeIds_.at(id_i);
+    uint_t localId2 = reverseNodeIds_.at(id_j);
+    if(id_i == id_j)
     {
-        uint_t localId = reverseNodeIds_.at(id1);
-        H = H_.at(localId);
+        H = H_.at(localId1);
         return true;
         //std::cout << "\n and solution plane = \n" <<  block_hessian << std::endl;
     }
     else
     {
-        // fetch cross terms and return the value
-        return false;
+        // cross terms as
+        H = gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_no_kernel_* gradQ_xi_times_pi_.at(localId2);
+        return true;
     }
-    return false;
 }

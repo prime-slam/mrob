@@ -447,8 +447,10 @@ void FGraphSolve::build_info_EF()
                 Mat6 H;
                 // If there is no such crosterms, the methods returns false and the block emebegin into H is skipped
                 if (!f->get_hessian(H,indNode,indNode_2))
+                {
                     continue;
-                std::cout << "Hessian =\n" << H;
+                }
+                //std::cout << "Hessian node (i,j) = (" << indNode << ", " << indNode_2 << ")\n";
 
                 // Calculate the variable that allows to control diagonal/crossterms in the for() below
                 // If it is a crossterm, it needs all elements of the 6x6 matrix, so it does not enable the for start in diag (=0)
