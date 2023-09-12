@@ -16,15 +16,14 @@
  * EigenFactorPlaneCenter.hpp
  *
  *  Created on: Oct 7 2022
- *              Sept 12 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
-// XXX this duplicate should disappear
-#ifndef EIGENFACTORPLANECENTER_HPP_
-#define EIGENFACTORPLANECENTER_HPP_
+// Secnd version of center for comparisons
+#ifndef EIGENFACTORPLANECENTER2_HPP_
+#define EIGENFACTORPLANECENTER2_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -52,14 +51,14 @@ namespace mrob{
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
  * XXX should we store all points?
  */
-class EigenFactorPlaneCenter: public EigenFactorPlaneBase{
+class EigenFactorPlaneCenter2: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlaneCenter(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCenter() = default;
+    EigenFactorPlaneCenter2(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneCenter2() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
