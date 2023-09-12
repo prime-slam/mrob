@@ -106,8 +106,6 @@ void EigenFactorPlaneDense::estimate_plane()
     Mat4 accumulatedCenterQ;
     accumulatedCenterQ = Tcenter * accumulatedQ_ * Tcenter.transpose();
 
-    //std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
-
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat3> es;
@@ -120,14 +118,54 @@ void EigenFactorPlaneDense::estimate_plane()
     planeEstimationCenter.head<3>() = es.eigenvectors().col(0);
     planeEstimationCenter(3) = 0.0;
 
+
     planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;
 
     // Calcualte almost inverse of Q for later derivatives:
     // option 1, full inverse: slightly inacurate solution.
     Q_inv_no_kernel_ = accumulatedQ_.inverse();
+    //std::cout << "Accumulated Q \n" << accumulatedQ_ <<std::endl;
+    //std::cout << "Direct Inverse\n" << Q_inv_no_kernel_ <<std::endl;
 
     // option 2, inverse removing the solution vector
-    //Q_inv_no_kernel_ = 
+    Q_inv_no_kernel_.setZero();
+    Q_inv_no_kernel_(3,3) = 1.0/accumulatedQ_(3,3);//This is the augments 4x4, zero translataion and value N
+    Mat3 Q_inv_3x3;
+    matData_t lambda_plane = es.eigenvalues()(0);
+    Mat3 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es.eigenvectors();
+    other_eigenvectors.col(0) *= 0.0;
+    //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
+    other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
+    other_eigenvectors_multiplied.col(1) = 1.0/(es.eigenvalues()(1) - lambda_plane) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(es.eigenvalues()(2) - lambda_plane) * other_eigenvectors.col(2);
+    //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
+    Q_inv_3x3 =  other_eigenvectors * other_eigenvectors_multiplied.transpose();
+    Q_inv_no_kernel_.topLeftCorner<3,3>() = Q_inv_3x3;
+    //std::cout << "Q_inv_no_kernel_ centered =\n" << Q_inv_no_kernel_ <<std::endl;
+    Q_inv_no_kernel_ = Tcenter.transpose() *Q_inv_no_kernel_* Tcenter;
+    //std::cout << "Q_inv_no_kernel_ =\n" << Q_inv_no_kernel_ <<std::endl;
+
+    // Comparison (TO REMOVE)
+    // (Q - pi'*pi )-1
+    {
+    Eigen::SelfAdjointEigenSolver<Mat4> es4;
+    es4.compute(accumulatedQ_);
+    lambda_plane = es4.eigenvalues()(0);
+    Mat4 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es4.eigenvectors();
+    other_eigenvectors.col(0) *= 0.0;
+    //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
+    other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
+    other_eigenvectors_multiplied.col(1) = 1.0/(es4.eigenvalues()(1) - lambda_plane) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(es4.eigenvalues()(2) - lambda_plane) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(3) = 1.0/(es4.eigenvalues()(3) - lambda_plane) * other_eigenvectors.col(3);
+    //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
+    //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
+    //Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
+    }
+
+
 
 }
 
@@ -143,7 +181,6 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     {
         H = H_.at(localId1);
         return true;
-        //std::cout << "\n and solution plane = \n" <<  block_hessian << std::endl;
     }
     else
     {
