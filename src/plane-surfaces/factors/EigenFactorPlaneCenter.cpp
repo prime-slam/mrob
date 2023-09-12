@@ -93,6 +93,13 @@ void EigenFactorPlaneCenter::estimate_plane()
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
 
+    // Check for empty EF (no points)
+    if (accumulatedQ_.sum()< 1e-4)
+    {
+        planeEstimation_.setZero();
+        return;
+    }
+
 
     // Center the plane requires a transformation (translation) such that
     // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
