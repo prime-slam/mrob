@@ -85,7 +85,7 @@ void EigenFactorPlaneDense::evaluate_chi2()
 {
     // Point 2 plane exact error requires chi2 = pi' Q pi
     chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
-    //chi2_ = planeError_; // this is the scaled error
+    //std::cout << "plane = " << planeEstimation_ << "\n Q = \n" << accumulatedQ_ << std::endl;
 }
 
 void EigenFactorPlaneDense::estimate_plane()
@@ -93,15 +93,23 @@ void EigenFactorPlaneDense::estimate_plane()
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
 
+    // Check for empty EF (no points)
+    if (accumulatedQ_.sum()< 1e-4)
+    {
+        planeEstimation_.setZero();
+        Q_inv_no_kernel_.setZero();
+        return;
+    }
+
+
     // Center the plane requires a transformation (translation) such that
     // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
     // This only hold for when T^{-\top} = [I, -n d].
     // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
     Mat4 Tcenter = Mat4::Identity();
     Tcenter.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
-    //std::cout << "T center = " << Tcenter_ <<  std::endl;
+    //std::cout << "T center = " << Tcenter <<  std::endl;
 
-    //std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
 
     Mat4 accumulatedCenterQ;
     accumulatedCenterQ = Tcenter * accumulatedQ_ * Tcenter.transpose();
