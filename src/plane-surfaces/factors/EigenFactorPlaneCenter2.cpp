@@ -27,6 +27,7 @@
 #include <iostream>
 #include <Eigen/Eigenvalues>
 #include "mrob/SE3.hpp"
+#include "mrob/utils_lie_differentiation.hpp"
 
 using namespace mrob;
 
@@ -51,28 +52,26 @@ void EigenFactorPlaneCenter2::evaluate_jacobians()
     {
         Mat61 jacobian = Mat61::Zero();
         Mat6 hessian = Mat6::Zero();
-        Mat4 dQ = Mat4::Zero();
-        for (uint_t i = 0 ; i < 6; i++)
-        {
-            dQ = SE3GenerativeMatrix(i)*Qt + Qt*SE3GenerativeMatrix(i).transpose();
-            Mat4 dQcenter = Tcenter_ * dQ * Tcenter_.transpose();
-            jacobian(i) = planeEstimationUnit_.dot(dQcenter*planeEstimationUnit_);
+        // calculate gradient
+        Mat<4,6> grad;
+        grad = gradient_Q_x_pi(Qt,planeEstimation_);
+        jacobian =  grad.transpose() * planeEstimation_;
 
-            //now calculate Hessian here. Upper triangular view
-            Mat4 ddQ; // second derivative of the Q matrix
-            for (uint_t j = i ; j< 6 ; ++j)
-            {
-                ddQ.setZero();
-                ddQ = SE3GenerativeMatrix(i)*SE3GenerativeMatrix(j) + SE3GenerativeMatrix(j)*SE3GenerativeMatrix(i);
-                //compound operator *= as in a*=b (this multiplies on the right: a*=b is equivalent to a = a*b)
-                ddQ *= 0.5 * Qt;
-                ddQ += SE3GenerativeMatrix(j) * dQ;//here indices should be different, later Hessian is symmetric.
-                ddQ += ddQ.transpose().eval();
-                // Transformation, translation for center the matrix derivative is applied here
-                ddQ = Tcenter_ * ddQ * Tcenter_.transpose();
-                hessian(i,j) = planeEstimationUnit_.dot(ddQ*planeEstimationUnit_);
-            }
-        }
+        // calculate hessian ONLY Upper Trianlar view
+        //tested: pi_t_x_hessian_Q_x_pi(),coincident with EFcenter-element-by-element implementation
+        Mat6 pi_t_G_time_Q_grad;
+        pi_t_G_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*pi_t_times_lie_generatives(planeEstimation_)*grad;
+
+        // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
+        // This does not do anything? we should test this variant as well
+        Mat6 grad_pi_time_Q_grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*Q_inv_no_kernel_*grad;
+
+        // sum of all terms
+        hessian.triangularView<Eigen::Upper>() =
+                pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
+                grad_pi_time_Q_grad + // crosterm due to plane x dQ
+                pi_t_G_time_Q_grad; //slihglty better than EFcenter
         J_.push_back(jacobian);
         H_.push_back(hessian);
         //std::cout << "Hessia =\n" << hessian <<std::endl;
@@ -125,6 +124,22 @@ void EigenFactorPlaneCenter2::estimate_plane()
 
     //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
+
+    // Solution for the inverse without kernel from pi solution. This is an overkill, but it is for comparisons.
+    Eigen::SelfAdjointEigenSolver<Mat4> es4;
+    es4.compute(accumulatedQ_);
+    matData_t lambda_plane = es4.eigenvalues()(0);
+    Mat4 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es4.eigenvectors();
+    other_eigenvectors.col(0) *= 0.0;
+    //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
+    other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
+    other_eigenvectors_multiplied.col(1) = 1.0/(es4.eigenvalues()(1) - lambda_plane) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(es4.eigenvalues()(2) - lambda_plane) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(3) = 1.0/(es4.eigenvalues()(3) - lambda_plane) * other_eigenvectors.col(3);
+    //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
+    //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
+    Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
 
 }
 
