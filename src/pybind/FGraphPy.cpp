@@ -45,6 +45,7 @@
 #include "mrob/factors/factor1Pose1Plane4d.hpp"
 #include "mrob/factors/nodePlane4d.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
+#include "mrob/factors/EigenFactorPlaneCenter2.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneDense.hpp"
@@ -265,6 +266,14 @@ public:
     factor_id_t add_eigen_factor_plane_center()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCenter(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
+    // Variations of EF center for comparisons
+    factor_id_t add_eigen_factor_plane_center_2()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCenter2(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
@@ -525,7 +534,7 @@ void init_FGraph(py::module &m)
                     py::arg("pointsArray"),
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
-            //.def("add_eigen_factor_plane_raw", &FGraphPy::add_align_coord)
+            .def("add_eigen_factor_plane_center_2", &FGraphPy::add_eigen_factor_plane_center_2)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             // Visual factors
