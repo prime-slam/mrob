@@ -11,8 +11,6 @@ jobs:
         os: [ubuntu-latest, macos-11, windows-2019]
     steps:
       - uses: actions/checkout@v3
-        with: 
-          submodules: recursive
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.14.1
