@@ -20,17 +20,6 @@ ENDIF(APPLE)
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_EXTENSIONS ON)
 
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}") #TODO: /Wall but disable noisy warnings
-    ADD_COMPILE_DEFINITIONS(_USE_MATH_DEFINES)
-    SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
-ELSEIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wno-inconsistent-missing-override")
-ELSE()
-ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-
 if (WIN32)
     set(BUILD_SHARED_LIBS OFF)
 else()
@@ -39,7 +28,10 @@ endif()
 
 SET(MROB_LIB_DIR ${CMAKE_BINARY_DIR}/lib)
 
-# BUILD_TESTING option handling. By default tests are turned off but the value is cached and can be changed in Cmake-GUI
+#####################################
+# Testing option
+#####################################
+# By default tests are turned off but the value is cached and can be changed in Cmake-GUI
 set(BUILD_TESTING false CACHE BOOL "Build unit tests for MROB modules")
 
 MESSAGE(STATUS "Build Tests: ${BUILD_TESTING}")
@@ -52,37 +44,13 @@ ELSE(ANDROID)
     ENDIF(BUILD_TESTING)
 ENDIF(ANDROID)
 
+#####################################
+# External dependencies
+#####################################
+add_subdirectory(external)
 
-# ===================================================================
-INCLUDE_DIRECTORIES(SYSTEM ./external/Eigen)
+#####################################
+# Sources
+#####################################
+add_subdirectory(src)
 
-# ===================================================================
-# CODE: main modules and directories are included here
-
-# MROB modules. Remove those that are not necessary, by default all are active
-INCLUDE_DIRECTORIES(./src/common)
-ADD_SUBDIRECTORY(./src/common)
-
-INCLUDE_DIRECTORIES(./src/geometry)
-ADD_SUBDIRECTORY(./src/geometry)
-
-INCLUDE_DIRECTORIES(./src/FGraph)
-ADD_SUBDIRECTORY(./src/FGraph)
-
-INCLUDE_DIRECTORIES(./src/PCRegistration)
-ADD_SUBDIRECTORY(./src/PCRegistration)
-
-INCLUDE_DIRECTORIES(./src/plane-surfaces)
-ADD_SUBDIRECTORY(./src/plane-surfaces)
-
-INCLUDE_DIRECTORIES(./src/visual)
-ADD_SUBDIRECTORY(./src/visual)
-
-
-# ===================================================================
-# New modules should be included here
-
-IF(NOT ANDROID)
-    ADD_SUBDIRECTORY(./external/pybind11)
-    ADD_SUBDIRECTORY(./src/pybind)
-ENDIF(NOT ANDROID)
