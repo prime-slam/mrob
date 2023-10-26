@@ -17,6 +17,9 @@ jobs:
         with:
           package-dir: mrobpy
 
+      - name: Check repo consistency
+        run: git diff
+
       - uses: actions/upload-artifact@v3
         with:
           name: wheels
