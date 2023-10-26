@@ -11,6 +11,7 @@
 *.project
 .settings/
 build/
+cppbuild/
 lib/
 bin/
 cmake-build*
@@ -24,8 +25,8 @@ doc/*
 __pycache__
 .*
 
-
+*.pyd
 dist/
 mrob.egg-info/
 wheelhouse/
-# .eggs
+.eggs
