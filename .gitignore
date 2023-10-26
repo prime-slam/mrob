@@ -28,3 +28,4 @@ __pycache__
 dist/
 mrob.egg-info/
 wheelhouse/
+# .eggs
