@@ -160,7 +160,7 @@ public:
      *  matrix W when building the problem.
      */
 
-    matData_t evaluate_robust_weight(matData_t u, matData_t params = 0.0);
+    virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
 
 protected:
     factor_id_t id_;

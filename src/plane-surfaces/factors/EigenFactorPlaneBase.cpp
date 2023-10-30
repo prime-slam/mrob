@@ -33,7 +33,8 @@ using namespace mrob;
 EigenFactorPlaneBase::EigenFactorPlaneBase(Factor::robustFactorType robust_type):
         EigenFactor(robust_type),
         planeEstimation_{Mat41::Zero()},
-        numberPoints_{0}
+        numberPoints_{0},
+        total_information_from_points_{0.0}
 {
 }
 
@@ -84,7 +85,7 @@ void EigenFactorPlaneBase::add_points_S_matrix(const Mat4 &S, std::shared_ptr<No
 
 void EigenFactorPlaneBase::calculate_all_matrices_S()
 {
-    // processed only once TODO incremetnal additions, if this is ever going to be used?
+    // processed only once TODO incremental additions, if this is ever going to be used?
     if (S_.empty())
     {
         for (auto &vectorPoints: allPlanePoints_)
@@ -99,8 +100,18 @@ void EigenFactorPlaneBase::calculate_all_matrices_S()
             S_.emplace_back(S);
         }
         // XXX at this point, we could remove all the points stored, since they will not be used again.
-        // Let's keep them for now in case we re-evaluate things or filter, it's just memory.
+        // Let's keep them for now in case we re-evaluate things or filter?, it's just memory.
         allPlanePoints_.clear();
+
+        // evaluate the mean of W for robust
+        total_information_from_points_ = 0.0;
+        for (auto sliceInformation: allPointsInformation_)
+        {
+            for (matData_t w : sliceInformation)
+            {
+                total_information_from_points_ += w;
+            }
+        }
     }
 }
 
@@ -167,4 +178,12 @@ bool EigenFactorPlaneBase::get_hessian(MatRef H, mrob::factor_id_t id,mrob::fact
     uint_t localId = reverseNodeIds_.at(id);
     H = H_.at(localId);
     return true;
+}
+
+// input not used, we can add later to set proper thresholds
+matData_t EigenFactorPlaneBase::evaluate_robust_weight(matData_t, matData_t)
+{
+    // calculate the current information as the average of info W (inv covs)
+    //this needs some more logic later to check the threshold (1-sgima now)
+    return Factor::evaluate_robust_weight(std::sqrt(this->get_chi2()), std::sqrt(total_information_from_points_));
 }

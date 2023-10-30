@@ -435,11 +435,12 @@ void FGraphSolve::build_info_EF()
             //        (wH)^-1* wgrad
             // When using the aggregated matrix of all EFs, this operation is not trivila (for one EF is trival, it cancels out ofc)
             matData_t robust_weight = 1.0;
-            robust_weight = f->evaluate_robust_weight(std::sqrt(f->get_chi2()));//This is not general
+            // The vlaue needs to be normalized by
+            robust_weight = f->evaluate_robust_weight();
             J *= robust_weight;
 
             // It requires previous calculation of indNodesMatrix (in build adjacency)
-            gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
+            gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;
 
             // get the neighboiring nodes TODO and for over them
             uint_t startingIndex = indNodesMatrix_[indNode];
