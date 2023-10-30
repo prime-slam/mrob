@@ -114,6 +114,14 @@ public:
      */
     bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const override;
 
+    /**
+     * Robust factor, adapted from factors. It needs extra methods to consider the nature of EF.
+     * The current error is the sum of error s.t.:
+     *          /sum w_i
+     */
+
+    virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
+
 
 protected:
     /**
@@ -178,6 +186,8 @@ protected:
     std::deque<std::deque<Mat31, Eigen::aligned_allocator<Mat31>> > allPlanePoints_;
     std::deque<std::deque<matData_t> > allPointsInformation_;
     uint_t numberPoints_;
+    // total info of all points. This is used for the robust factor
+    matData_t total_information_from_points_;
 
 
 

@@ -39,14 +39,15 @@ Factor::~Factor()
 }
 
 
-matData_t Factor::evaluate_robust_weight(matData_t u, matData_t params)
+matData_t Factor::evaluate_robust_weight(matData_t u, matData_t threshold)
 {
+    matData_t params;
     switch(robust_type_)
     {
         case HUBER:
             // p(u) = 1/2u^2    if u < d
             //        d(u-1/2d)
-            if (u < 1.0) //XXX should this be set param?
+            if (u < threshold)
             {
                 robust_weight_ = 1.0;
             }
@@ -63,6 +64,14 @@ matData_t Factor::evaluate_robust_weight(matData_t u, matData_t params)
             robust_weight_ = 1.0/params/params;
             break;
         case RANSAC:
+            if (u < threshold)
+            {
+                robust_weight_ = 1.0;
+            }
+            else
+            {
+                robust_weight_ = 0.0;
+            }
             break;
         case QUADRATIC:
         default:
