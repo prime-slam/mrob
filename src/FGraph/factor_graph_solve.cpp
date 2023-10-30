@@ -360,6 +360,7 @@ void FGraphSolve::build_adjacency()
             {
                 uint_t iRow = indFactorsMatrix[i] + l;
                 uint_t iCol = indFactorsMatrix[i] + k;
+                // Weights are then applied both to the residual and the Hessian by modifying the information matrix.
                 robust_weight = f->evaluate_robust_weight(std::sqrt(f->get_chi2()));
                 W_.insert(iRow,iCol) = robust_weight * f->get_information_matrix()(l,k);
             }
@@ -428,6 +429,15 @@ void FGraphSolve::build_info_EF()
             }
             // Updating Jacobian, b should has been previously calculated
             Mat61 J = f->get_jacobian(indNode);
+
+            // Calculate the robust factor contribution, similar than in the adjacency
+            // Now the weight fator should be introduced in the Hessian block and in the gradient s.t.
+            //        (wH)^-1* wgrad
+            // When using the aggregated matrix of all EFs, this operation is not trivila (for one EF is trival, it cancels out ofc)
+            matData_t robust_weight = 1.0;
+            robust_weight = f->evaluate_robust_weight(std::sqrt(f->get_chi2()));//This is not general
+            J *= robust_weight;
+
             // It requires previous calculation of indNodesMatrix (in build adjacency)
             gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
 
@@ -445,12 +455,16 @@ void FGraphSolve::build_info_EF()
 
                 // Calculate hessian, this is a lookup
                 Mat6 H;
-                // If there is no such crosterms, the methods returns false and the block emebegin into H is skipped
+                // If there is no such crosterms, the methods returns false and the block embeding into H is skipped
                 if (!f->get_hessian(H,indNode,indNode_2))
                 {
                     continue;
                 }
                 //std::cout << "Hessian node (i,j) = (" << indNode << ", " << indNode_2 << ")\n";
+
+                // Robust factors, for the same EF, we must account for the weight factor in the block hessian as well:
+                H *= robust_weight;
+                
 
                 // Calculate the variable that allows to control diagonal/crossterms in the for() below
                 // If it is a crossterm, it needs all elements of the 6x6 matrix, so it does not enable the for start in diag (=0)
