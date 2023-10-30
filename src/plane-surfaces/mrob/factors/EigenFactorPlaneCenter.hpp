@@ -22,7 +22,6 @@
  *              Mobile Robotics Lab.
  */
 
-// XXX this duplicate should disappear
 #ifndef EIGENFACTORPLANECENTER_HPP_
 #define EIGENFACTORPLANECENTER_HPP_
 
