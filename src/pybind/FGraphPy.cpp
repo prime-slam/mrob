@@ -407,6 +407,12 @@ void init_FGraph(py::module &m)
             .def("get_chi2_array", &FGraphSolve::get_chi2_array,
                     "Returns the vector of chi2 values for each factor. It requires to be calculated -> solved the problem",
                     py::return_value_policy::copy)
+            .def("get_eigen_factors_robust_mask", &FGraphSolve::get_eigen_factors_robust_mask,
+                    "Returns a vector (python list) of Eigen factors robust functions: - True if the robust mask was applied - False if the robust factor had not effect",
+                    py::return_value_policy::copy)
+            .def("get_factors_robust_mask", &FGraphSolve::get_factors_robust_mask,
+                    "Returns a vector (python list) of factors robust functions: - True if the robust mask was applied - False if the robust factor had not effect",
+                    py::return_value_policy::copy)
             .def("number_nodes", &FGraphSolve::number_nodes, "Returns the number of nodes")
             .def("number_factors", &FGraphSolve::number_factors, "Returns the number of factors")
             .def("print", &FGraph::print, "By default False: does not print all the information on the Fgraph", py::arg("completePrint") = false)

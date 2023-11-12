@@ -162,6 +162,13 @@ public:
 
     virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
 
+    /**
+     * Return the mask if the Robust factor used:
+     *  - False if the function was not used (inlier)
+     *  - True if the threshold was exceed and the function was applied (outlier)
+    */
+    bool get_robust_mask() const {return robust_mask_;}
+
 protected:
     factor_id_t id_;
     /**
@@ -176,6 +183,7 @@ protected:
     // Robust factor weighting the "iteratively weighted LSQ"
     robustFactorType robust_type_;
     matData_t robust_weight_; // dp/du 1/u or influence by the inverse of the distance u
+    bool robust_mask_;// mask set to true if the robust function is used to clip.
 
     /**
      * TODO: for ransac factors, we can think of the problem as an hypothesis rejection test
