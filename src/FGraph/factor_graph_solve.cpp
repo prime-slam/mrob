@@ -581,3 +581,36 @@ MatX1 FGraphSolve::get_chi2_array()
 
     return results;
 }
+
+
+std::vector<bool> FGraphSolve::get_eigen_factors_robust_mask()
+{
+    // it will create a copy on the python side, that is why scope here is just defined in here
+    // XXX:one day we should improve the interface with python...
+    std::vector<bool> results;
+    results.reserve(eigen_factors_.size());
+
+    bool mask;
+    for (auto ef : eigen_factors_)
+    {
+        mask = ef->get_robust_mask();
+        results.push_back(mask);
+    }
+
+    return results;
+}
+
+std::vector<bool> FGraphSolve::get_factors_robust_mask()
+{
+    std::vector<bool> results;
+    results.reserve(factors_.size());
+
+    bool mask;
+    for (auto f : factors_)
+    {
+        mask = f->get_robust_mask();
+        results.push_back(mask);
+    }
+
+    return results;
+}

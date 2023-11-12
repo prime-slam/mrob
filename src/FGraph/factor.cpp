@@ -27,7 +27,8 @@
 using namespace mrob;
 
 Factor::Factor(uint_t dim, uint_t allNodesDim, robustFactorType factor_type, uint_t potNumberNodes):
-		id_(0), dim_(dim), allNodesDim_(allNodesDim), chi2_(0), robust_type_(factor_type), robust_weight_(0.0)
+		id_(0), dim_(dim), allNodesDim_(allNodesDim), chi2_(0), robust_type_(factor_type), robust_weight_(0.0),
+        robust_mask_(false)
 {
     // Child factor must specify dimensions
     neighbourNodes_.reserve( potNumberNodes );
@@ -50,32 +51,39 @@ matData_t Factor::evaluate_robust_weight(matData_t u, matData_t threshold)
             if (u < threshold)
             {
                 robust_weight_ = 1.0;
+                robust_mask_ = false;
             }
             else
             {
                 robust_weight_ = 1.0/u;
+                robust_mask_ = true;
             }
             break;
         case CAUCHY:
             robust_weight_ = 1.0/(1+u*u);
+            robust_mask_ = true;//TODO this would require a check on the threshold?
             break;
         case MCCLURE:
             params = 1+u*u;
             robust_weight_ = 1.0/params/params;
+            robust_mask_ = true;
             break;
         case RANSAC:
             if (u < threshold)
             {
                 robust_weight_ = 1.0;
+                robust_mask_ = false;
             }
             else
             {
                 robust_weight_ = 0.0;
+                robust_mask_ = true;
             }
             break;
         case QUADRATIC:
         default:
             robust_weight_ = 1.0;
+            robust_mask_ = false;
             break;
     }
     return robust_weight_;
