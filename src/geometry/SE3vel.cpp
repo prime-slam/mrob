@@ -23,6 +23,9 @@
  */
 
 #include "mrob/SE3vel.hpp"
+#include "mrob/SE3.hpp"
+
+#include <iostream>
 
 using namespace mrob;
 
@@ -131,57 +134,6 @@ Mat91 vee9(const Mat4 &xi_hat)
 }
 
 
-Mat3 SE3vel::left_jacobian(const Mat31& phi)
-{
-    Mat3 V = Mat3::Identity();
-    Mat3 phi_hat = hat3(phi);
-    double o = phi.norm();
-    double o2 = phi.squaredNorm();
-    // If rotation is not zero
-    matData_t c2, c3;
-    if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
-        c2 = (1 - std::cos(o))/o2;
-        c3 = (o - std::sin(o))/o2/o;
-    }
-    else
-    {
-        // second order Taylor (first order is zero since this is an even function)
-        c2 = 0.5 - o2/24;
-        // Second order Taylor
-        c3 = 1.0/6.0 - o2/120;
-    }
-    V += c2*phi_hat + c3*phi_hat*phi_hat;
-
-    return V;
-}
-
-
-Mat3 SE3vel::inv_left_jacobian(const Mat31 &phi)
-{
-    Mat3 Vinv = Mat3::Identity();
-    double k1;
-    double o = phi.norm();
-    double o2 = phi.squaredNorm();
-    Mat3 phi_hat = hat3(phi);
-    // 5e-3 bound provided on numerical_test.cpp, smaller than this k1 becomes degradated
-    if (o > 5e-3)
-    {
-        double c1 = std::sin(o); //sin(o)/o, we remove the o in both coeficients
-        double c2 = (1 - std::cos(o))/o; // (1 - std::cos(o))/o/o
-        k1 = 1/o2*(1 - 0.5*c1/c2);
-    }
-    //Taylor expansion for small o.
-    else
-    {
-        // f(o) = 1/12 + 1/2*f''*o^2
-        // f'' = 1/360
-        k1 = 1.0/12 + o2/720;
-    }
-    Vinv += -0.5*phi_hat + k1* phi_hat*phi_hat;
-
-    // v = V^-1 t
-    return Vinv;
-}
 
 void SE3vel::Exp(const Mat91& xi)  
 {
@@ -195,7 +147,7 @@ void SE3vel::Exp(const Mat91& xi)
 
     result.topLeftCorner<3,3>() << tmp.R();
 
-    Mat3 jac = this->left_jacobian(phi);
+    Mat3 jac = left_jacobian(phi);
 
     result.block<3,1>(0,3) << jac*v;
     result.block<3,1>(0,4) << jac*t;
@@ -213,7 +165,7 @@ Mat91 SE3vel::Ln() const
 
     SO3 tmp(R);
     Mat31 log_R_vee = tmp.ln_vee();
-    Mat3 jac = SE3vel::inv_left_jacobian(log_R_vee);
+    Mat3 jac = inv_left_jacobian(log_R_vee);
 
     result.head(3) << log_R_vee;
     result.segment<3>(3) << jac*v;

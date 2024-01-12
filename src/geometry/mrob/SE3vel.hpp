@@ -25,10 +25,8 @@
 #ifndef SE3VEL_HPP_
 #define SE3VEL_HPP_
 
-#include <iostream>
 
 #include "mrob/matrix_base.hpp"
-#include "mrob/SO3.hpp"
 
 namespace mrob{
 
@@ -61,9 +59,6 @@ class SE3vel{
         Mat<3,5> T_compact() const;
 
         Mat9 adj() const;
-
-        static Mat3 left_jacobian(const Mat31 &phi);
-        static Mat3 inv_left_jacobian(const Mat31 &phi);
 
         void Exp(const Mat91 &xi);
         Mat91 Ln(void) const;
