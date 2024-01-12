@@ -37,12 +37,12 @@ SE3vel::SE3vel(const Mat91 &xi)
  
 Mat31 SE3vel::t() const
 {
-    return T_.topRightCorner<3,1>();
+    return T_.block<3,1>(0,3);
 }
 
 Mat31 SE3vel::v() const
 {
-    return T_.block<3,1>(0,3);
+    return T_.topRightCorner<3,1>();
 }
 
 Mat3 SE3vel::R() const
@@ -55,13 +55,18 @@ Mat5 SE3vel::T(void) const
     return this->T_;
 }
 
+Mat<3,5> SE3vel::T_compact() const
+{
+    return T_.topLeftCorner<3,5>();
+}
+
 SE3vel SE3vel::inv(void) const
 {
     Mat5 inv(Mat5::Zero());
     Mat3 R = this->R();
     R.transposeInPlace();
 
-    inv << R, -R*this->v(), -R*this->t(),
+    inv << R, -R*this->t(), -R*this->v(),
             0,0,0,1,0,
             0,0,0,0,1;
 
@@ -84,8 +89,8 @@ Mat9 SE3vel::adj() const
     res.block<3,3>(3,3) = R;
     res.block<3,3>(6,6) = R;
 
-    res.block<3,3>(3,0) = hat3(v)*R;
-    res.block<3,3>(6,0) = hat3(t)*R;
+    res.block<3,3>(3,0) = hat3(t)*R;
+    res.block<3,3>(6,0) = hat3(v)*R;
 
     return res;
 }

@@ -32,6 +32,17 @@
 
 namespace mrob{
 
+/**
+ *  \brief Extended Special Euclidean (group) in 3d
+ *  Is the group representing rotations, vel and translations:
+ *  SE3vel = {T = [R  t  v]  |  R \in SO3 , t \in Re^3, v \in Re^3 }
+ *                [0   I  ]
+ *  The Lie Algebra associated to this group is expressed by the coordinates
+ *      xi =[theta , pho, vel] \in Re^9, where theta \in Re^3 represents the rotation
+ *  and pho the translation and vel the velocity.
+ *  We will preserve this order in this class.
+ */
+
 class SE3vel{
     public:
         SE3vel(const Mat5 &T = Mat5::Identity());
@@ -46,6 +57,8 @@ class SE3vel{
         Mat31 v() const;
         Mat3 R() const;
         Mat5 T() const;
+
+        Mat<3,5> T_compact() const;
 
         Mat9 adj() const;
 
