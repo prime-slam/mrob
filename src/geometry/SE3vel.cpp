@@ -33,6 +33,13 @@ SE3vel::SE3vel(const Mat5 &T) : T_(T) {}
 
 SE3vel::SE3vel(const SE3vel &T) : T_(T.T()){}
 
+SE3vel::SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v)
+{
+    T_.topLeftCorner<3,3>() = R.R();
+    T_.block<3,1>(0,3) = t;
+    T_.topRightCorner<3,1>() = v;
+}
+
 SE3vel::SE3vel(const Mat91 &xi)
 {
     this->Exp(xi);
@@ -76,9 +83,18 @@ SE3vel SE3vel::inv(void) const
     return SE3vel(inv);
 }
 
-SE3vel operator*(const SE3vel& lhs, const SE3vel& rhs)
+SE3vel SE3vel::operator*(const SE3vel& rhs)
 {
-    return SE3vel(Mat5(lhs.T()*rhs.T()));
+    return SE3vel(Mat5(T_*rhs.T()));
+}
+
+SE3vel& SE3vel::operator=(const SE3vel& rhs)
+{
+    // check for self assignment TODO
+    if (this == &rhs)
+        return *this;
+    T_ = rhs.T();
+    return *this;
 }
 
 Mat9 SE3vel::adj() const
@@ -98,9 +114,9 @@ Mat9 SE3vel::adj() const
     return res;
 }
 
-std::ostream& operator<<(std::ostream &os, const SE3vel& obj)
+std::ostream& SE3vel::operator<<(std::ostream &os)
     {
-        os << obj.T();
+        os << T_;
         return os;
     }
 
@@ -178,4 +194,10 @@ void SE3vel::regenerate()
 {
     Mat91 xi = this->Ln();
     this->Exp(xi);
+}
+
+
+void SE3vel::print() const
+{
+    std::cout << T_ << std::endl;
 }

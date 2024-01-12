@@ -29,6 +29,7 @@
 #include "mrob/SE3.hpp"
 #include "mrob/SO3.hpp"
 #include "mrob/SE3cov.hpp"
+#include "mrob/SE3vel.hpp"
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 //#include <pybind11/stl.h>
@@ -101,7 +102,7 @@ void init_geometry(py::module &m) {
         .def("__mul__", &SE3::operator*, py::is_operator())
         .def("__str__", &SE3::toString, "Generates string representation of the SE3 object for print() output")
         .def("__repr__", &SE3::toString, "Generates string representation of the SE3 object for console output");
-;
+
     m.def("isSE3", &mrob::isSE3, "Returns True is the matrix is a valid transformation and False if not");
 
     py::class_<SO3>(m, "SO3")
@@ -136,7 +137,7 @@ void init_geometry(py::module &m) {
         .def("__mul__", &SO3::operator*, py::is_operator())
         .def("__str__", &SO3::toString, "Generates string representation of the SO3 object for print() output")
         .def("__repr__", &SO3::toString, "Generates string representation of the SO3 object for console output");
-        ;
+
     m.def("isSO3", &mrob::isSO3, "Returns True is the matrix is a valid rotation and False if not");
 
     m.def("hat3", &mrob::hat3, "Returns a skew symmetric matrix 3x3 from a 3-vector", py::return_value_policy::copy);
@@ -183,5 +184,43 @@ void init_geometry(py::module &m) {
             .def("__str__", &SE3Cov::toString, "Generates string representation of the SE3cov object for print() output")
             .def("__repr__", &SE3Cov::toString, "Generates string representation of the SE3cov object for console output");
         m.def("curley_wedge", &mrob::curly_wedge, "Returns 6-by-6 matrix, the output of curley wedge operator.", py::return_value_policy::copy);
+
+        py::class_<SE3vel>(m, "SE3vel")
+            .def(py::init<>(),
+                 "Default construct a new SE3vel object",
+                 py::return_value_policy::copy)
+            .def(py::init<const SO3 &, const Mat31 &, const Mat31 &>(),
+                 "Construtor of SE3vel object with given Rotation, translation and velocity",
+                 py::return_value_policy::copy)
+            .def(py::init<const Mat91 &>(),
+                "Given a vector xi in R^9, creates a tranformation with the exponential mapping. Order is [rot, tran, vel]",
+                py::return_value_policy::copy)
+            .def(py::init<const SE3vel &>(),
+                 "Copy constructor",
+                 py::return_value_policy::copy)
+            .def("t", &SE3vel::t,
+                 "returns current covariance matrix state",
+                 py::return_value_policy::copy)
+            .def("T", &SE3vel::T,
+                "Outputs a 4x4 array with the transformation",
+                py::return_value_policy::copy)
+             .def("R",&SE3vel::R,
+                "Outputs the Rotation array 3x3 component of the transformation",
+                py::return_value_policy::copy)
+              .def("v", &SE3vel::v,
+                "Outputs the velocity array 3D component of the transformation",
+                py::return_value_policy::copy)
+             .def("T_compact", &SE3vel::T_compact,
+                "Outputs the 3x5 (compact) transformation [R,t,v]",
+                py::return_value_policy::copy)
+             .def("adj", &SE3vel::adj,
+                "Outputs the adjoint of T a 9x9 matrix",
+                py::return_value_policy::copy)
+            .def("print",
+                 &SE3vel::print,
+                 "Prints current state of pose.")
+            .def("__mul__", &SE3vel::operator*, py::is_operator())
+            .def("__str__", &SE3vel::operator<<, "Generates string representation of the SE3vel object for print() output")
+            .def("__repr__", &SE3vel::operator<<, "Generates string representation of the SE3vel object for console output");
 }
 

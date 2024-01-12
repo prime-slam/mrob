@@ -27,6 +27,7 @@
 
 
 #include "mrob/matrix_base.hpp"
+#include "mrob/SO3.hpp"
 
 namespace mrob{
 
@@ -47,6 +48,8 @@ class SE3vel{
 
         SE3vel(const SE3vel &T);
 
+        SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v);
+
         SE3vel(const Mat91 &xi);
 
         SE3vel inv(void) const;
@@ -55,8 +58,8 @@ class SE3vel{
         Mat31 v() const;
         Mat3 R() const;
         Mat5 T() const;
-
         Mat<3,5> T_compact() const;
+
 
         Mat9 adj() const;
 
@@ -64,6 +67,11 @@ class SE3vel{
         Mat91 Ln(void) const;
 
         void regenerate();
+        SE3vel operator*(const mrob::SE3vel& rhs);
+        SE3vel& operator=(const SE3vel& rhs);
+        std::ostream& operator<<(std::ostream &os);
+
+        void print() const;
      
     protected:
         Mat5 T_;
@@ -75,7 +83,5 @@ Mat91 vee9(const Mat5 &xi_hat);
 
 }// end namespace
 
-mrob::SE3vel operator*(const mrob::SE3vel& lhs, const mrob::SE3vel& rhs);
-std::ostream& operator<<(std::ostream &os, const mrob::SE3vel &obj);
 
 #endif /* SE3VEL_HPP_ */
