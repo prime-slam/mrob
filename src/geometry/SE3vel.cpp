@@ -177,8 +177,8 @@ Mat91 SE3vel::Ln() const
     Mat3 jac = inv_left_jacobian(log_R_vee);
 
     result.head(3) << log_R_vee;
-    result.segment<3>(3) << jac*v;
-    result.tail(3) << jac*t;
+    result.segment<3>(3) << jac*t;
+    result.tail(3) << jac*v;
 
     return result;
 }

@@ -202,20 +202,23 @@ void init_geometry(py::module &m) {
                 "returns current covariance matrix state",
                 py::return_value_policy::copy)
         .def("T", &SE3vel::T,
-        "Outputs a 4x4 array with the transformation",
-        py::return_value_policy::copy)
+                "Outputs a 4x4 array with the transformation",
+                py::return_value_policy::copy)
         .def("R",&SE3vel::R,
-        "Outputs the Rotation array 3x3 component of the transformation",
-        py::return_value_policy::copy)
+                "Outputs the Rotation array 3x3 component of the transformation",
+                py::return_value_policy::copy)
         .def("v", &SE3vel::v,
-        "Outputs the velocity array 3D component of the transformation",
-        py::return_value_policy::copy)
+                "Outputs the velocity array 3D component of the transformation",
+                py::return_value_policy::copy)
         .def("T_compact", &SE3vel::T_compact,
-        "Outputs the 3x5 (compact) transformation [R,t,v]",
-        py::return_value_policy::copy)
+                "Outputs the 3x5 (compact) transformation [R,t,v]",
+                py::return_value_policy::copy)
+        .def("Ln", &SE3vel::Ln,
+                "Logarithm + vee operator, returns 9D coordinates of the tangent space around the identity",
+                py::return_value_policy::copy)
         .def("adj", &SE3vel::adj,
-        "Outputs the adjoint of T a 9x9 matrix",
-        py::return_value_policy::copy)
+                "Outputs the adjoint of T a 9x9 matrix",
+                py::return_value_policy::copy)
         .def("print",
                 &SE3vel::print,
                 "Prints current state of pose.")
