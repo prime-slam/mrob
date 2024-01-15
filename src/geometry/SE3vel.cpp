@@ -33,7 +33,7 @@ SE3vel::SE3vel(const Mat5 &T) : T_(T) {}
 
 SE3vel::SE3vel(const SE3vel &T) : T_(T.T()){}
 
-SE3vel::SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v)
+SE3vel::SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v) : T_(Mat5::Identity())
 {
     T_.topLeftCorner<3,3>() = R.R();
     T_.block<3,1>(0,3) = t;
@@ -114,13 +114,6 @@ Mat9 SE3vel::adj() const
     return res;
 }
 
-std::ostream& SE3vel::operator<<(std::ostream &os)
-    {
-        os << T_;
-        return os;
-    }
-
-
 Mat5 hat9(const Mat91 &xi)
 {
     Mat5 result(Mat5::Zero());
@@ -200,4 +193,18 @@ void SE3vel::regenerate()
 void SE3vel::print() const
 {
     std::cout << T_ << std::endl;
+}
+
+std::ostream& SE3vel::operator<<(std::ostream &os)
+{
+    os << T_;
+    return os;
+}
+
+
+std::string SE3vel::toString() const
+{
+    std::stringstream ss;
+    ss << this->T_;
+    return ss.str();
 }

@@ -70,6 +70,12 @@ class SE3vel{
         SE3vel operator*(const mrob::SE3vel& rhs);
         SE3vel& operator=(const SE3vel& rhs);
         std::ostream& operator<<(std::ostream &os);
+        /**
+         * @brief Generates string representation of the object
+         *
+         * @return std::string object to print
+         */
+        std::string toString() const;
 
         void print() const;
      

@@ -149,78 +149,78 @@ void init_geometry(py::module &m) {
     m.def("rpy_to_so3",  &rpy_to_so3,"Suport function from roll pitch yaw to a rotation");
 
     py::class_<SE3Cov, SE3>(m, "SE3Cov")
-            .def(py::init<>(),
-                 "Default construct a new SE3Cov object",
-                 py::return_value_policy::copy)
-            .def(py::init<const SE3 &, const Mat6 &>(),
-                 "Construtor of SE3Cov object with given pose and covariance",
-                 py::return_value_policy::copy)
-            .def(py::init<const SE3Cov &>(),
-                 "Copy constructor",
-                 py::return_value_policy::copy)
-            .def("cov", &SE3Cov::cov,
-                 "returns current covariance matrix state",
-                 py::return_value_policy::copy)
-            .def("compound_2nd_order",
-                 py::overload_cast<const SE3Cov &>(&SE3Cov::compound_2nd_order, py::const_),
-                 "Pose uncertainty compounding of the second order.")
-            .def("compound_2nd_order",
-                 py::overload_cast<const SE3 &, const Mat6 &>(&SE3Cov::compound_2nd_order, py::const_),
-                 "Pose uncertainty compounding of the second order.")
-            .def("compound_4th_order",
-                 py::overload_cast<const SE3Cov &>(&SE3Cov::compound_4th_order, py::const_),
-                 "SE3pose uncertainy compounding of the fourth order.")
-            .def("compound_4th_order",
-                 py::overload_cast<const SE3 &, const Mat6 &>(&SE3Cov::compound_4th_order, py::const_),
-                 "SE3pose uncertainy compounding of the fourth order.")
-            .def("print",
-                 &SE3Cov::print,
-                 "Prints current state of pose and covariance.")
-            .def("mul",
-                 py::overload_cast<const SE3Cov &>(&SE3Cov::mul, py::const_),
-                 "Multiplication method mul() as an interface for compounding.",
-                 py::return_value_policy::copy)
-            .def("__mul__", &SE3Cov::operator*, py::is_operator())
-            .def("__str__", &SE3Cov::toString, "Generates string representation of the SE3cov object for print() output")
-            .def("__repr__", &SE3Cov::toString, "Generates string representation of the SE3cov object for console output");
-        m.def("curley_wedge", &mrob::curly_wedge, "Returns 6-by-6 matrix, the output of curley wedge operator.", py::return_value_policy::copy);
+        .def(py::init<>(),
+                "Default construct a new SE3Cov object",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3 &, const Mat6 &>(),
+                "Construtor of SE3Cov object with given pose and covariance",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3Cov &>(),
+                "Copy constructor",
+                py::return_value_policy::copy)
+        .def("cov", &SE3Cov::cov,
+                "returns current covariance matrix state",
+                py::return_value_policy::copy)
+        .def("compound_2nd_order",
+                py::overload_cast<const SE3Cov &>(&SE3Cov::compound_2nd_order, py::const_),
+                "Pose uncertainty compounding of the second order.")
+        .def("compound_2nd_order",
+                py::overload_cast<const SE3 &, const Mat6 &>(&SE3Cov::compound_2nd_order, py::const_),
+                "Pose uncertainty compounding of the second order.")
+        .def("compound_4th_order",
+                py::overload_cast<const SE3Cov &>(&SE3Cov::compound_4th_order, py::const_),
+                "SE3pose uncertainy compounding of the fourth order.")
+        .def("compound_4th_order",
+                py::overload_cast<const SE3 &, const Mat6 &>(&SE3Cov::compound_4th_order, py::const_),
+                "SE3pose uncertainy compounding of the fourth order.")
+        .def("print",
+                &SE3Cov::print,
+                "Prints current state of pose and covariance.")
+        .def("mul",
+                py::overload_cast<const SE3Cov &>(&SE3Cov::mul, py::const_),
+                "Multiplication method mul() as an interface for compounding.",
+                py::return_value_policy::copy)
+        .def("__mul__", &SE3Cov::operator*, py::is_operator())
+        .def("__str__", &SE3Cov::toString, "Generates string representation of the SE3cov object for print() output")
+        .def("__repr__", &SE3Cov::toString, "Generates string representation of the SE3cov object for console output");
+    m.def("curley_wedge", &mrob::curly_wedge, "Returns 6-by-6 matrix, the output of curley wedge operator.", py::return_value_policy::copy);
 
-        py::class_<SE3vel>(m, "SE3vel")
-            .def(py::init<>(),
-                 "Default construct a new SE3vel object",
-                 py::return_value_policy::copy)
-            .def(py::init<const SO3 &, const Mat31 &, const Mat31 &>(),
-                 "Construtor of SE3vel object with given Rotation, translation and velocity",
-                 py::return_value_policy::copy)
-            .def(py::init<const Mat91 &>(),
-                "Given a vector xi in R^9, creates a tranformation with the exponential mapping. Order is [rot, tran, vel]",
+    py::class_<SE3vel>(m, "SE3vel")
+        .def(py::init<>(),
+                "Default construct a new SE3vel object",
                 py::return_value_policy::copy)
-            .def(py::init<const SE3vel &>(),
-                 "Copy constructor",
-                 py::return_value_policy::copy)
-            .def("t", &SE3vel::t,
-                 "returns current covariance matrix state",
-                 py::return_value_policy::copy)
-            .def("T", &SE3vel::T,
-                "Outputs a 4x4 array with the transformation",
+        .def(py::init<const SO3 &, const Mat31 &, const Mat31 &>(),
+                "Construtor of SE3vel object with given Rotation, translation and velocity",
                 py::return_value_policy::copy)
-             .def("R",&SE3vel::R,
-                "Outputs the Rotation array 3x3 component of the transformation",
+        .def(py::init<const Mat91 &>(),
+        "Given a vector xi in R^9, creates a tranformation with the exponential mapping. Order is [rot, tran, vel]",
+        py::return_value_policy::copy)
+        .def(py::init<const SE3vel &>(),
+                "Copy constructor",
                 py::return_value_policy::copy)
-              .def("v", &SE3vel::v,
-                "Outputs the velocity array 3D component of the transformation",
+        .def("t", &SE3vel::t,
+                "returns current covariance matrix state",
                 py::return_value_policy::copy)
-             .def("T_compact", &SE3vel::T_compact,
-                "Outputs the 3x5 (compact) transformation [R,t,v]",
-                py::return_value_policy::copy)
-             .def("adj", &SE3vel::adj,
-                "Outputs the adjoint of T a 9x9 matrix",
-                py::return_value_policy::copy)
-            .def("print",
-                 &SE3vel::print,
-                 "Prints current state of pose.")
-            .def("__mul__", &SE3vel::operator*, py::is_operator())
-            .def("__str__", &SE3vel::operator<<, "Generates string representation of the SE3vel object for print() output")
-            .def("__repr__", &SE3vel::operator<<, "Generates string representation of the SE3vel object for console output");
+        .def("T", &SE3vel::T,
+        "Outputs a 4x4 array with the transformation",
+        py::return_value_policy::copy)
+        .def("R",&SE3vel::R,
+        "Outputs the Rotation array 3x3 component of the transformation",
+        py::return_value_policy::copy)
+        .def("v", &SE3vel::v,
+        "Outputs the velocity array 3D component of the transformation",
+        py::return_value_policy::copy)
+        .def("T_compact", &SE3vel::T_compact,
+        "Outputs the 3x5 (compact) transformation [R,t,v]",
+        py::return_value_policy::copy)
+        .def("adj", &SE3vel::adj,
+        "Outputs the adjoint of T a 9x9 matrix",
+        py::return_value_policy::copy)
+        .def("print",
+                &SE3vel::print,
+                "Prints current state of pose.")
+        .def("__mul__", &SE3vel::operator*, py::is_operator())
+        .def("__str__", &SE3vel::toString, "Generates string representation of the SE3vel object for print() output")
+        .def("__repr__", &SE3vel::toString, "Generates string representation of the SE3vel object for console output");
 }
 
