@@ -133,7 +133,7 @@ void SO3::exp(const Mat3 &w_hat)
     R_ << Mat3::Identity() + c1 * w_hat + c2 * w_hat *w_hat;
 }
 
-Mat3 SO3::ln(double *ro) const
+Mat3 SO3::ln() const
 {
     // Logarithmic mapping of the rotations
     Mat3 res;
@@ -236,7 +236,6 @@ Mat3 SO3::ln(double *ro) const
             // Note that o is the absolute value of the angle of rotation (don't flip)
         }
     }
-    if (ro != nullptr) *ro = o;
     return res;
 }
 

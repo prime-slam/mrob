@@ -110,7 +110,7 @@ public:
      *
      * Special cases for 0 and +-pi
      */
-    Mat3 ln(double *o = nullptr) const;
+    Mat3 ln() const;
     /**
      * Logarithm of R and then the vee operator to get the coordinates w of the Lie Algebra
      */

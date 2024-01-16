@@ -118,28 +118,10 @@ void SE3::exp(const Mat4 &xi_hat)
     Mat31 w = xi.head<3>();
     Mat31 v = xi.tail<3>();
     SO3 rotation(w);
-    Mat3 w_hat = xi_hat.topLeftCorner<3,3>();
+    //Mat3 w_hat = xi_hat.topLeftCorner<3,3>();
 
     // Calculate the closed form of V
-    // V = I + c2*(w^) + c3*(w^)^2   ,
-    // where o = norm(w), c2 = (1 - cos(o))/o^2, c3 = (o- sin(o) / o^3
-    Mat3 V = Mat3::Identity();
-    double o = w.norm();
-    double o2 = w.squaredNorm();
-    // If rotation is not zero
-    matData_t c2, c3;
-    if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
-        c2 = (1 - std::cos(o))/o2;
-        c3 = (o - std::sin(o))/o2/o;
-    }
-    else
-    {
-        // second order Taylor (first order is zero since this is an even function)
-        c2 = 0.5 - o2/24;
-        // Second order Taylor
-        c3 = 1.0/6.0 - o2/120;
-    }
-    V += c2*w_hat + c3*w_hat*w_hat;
+    Mat3 V = left_jacobian(w);
 
     // Calculate the translation component t = Vv
     Mat31 t = V*v;
@@ -155,29 +137,10 @@ Mat4 SE3::ln(void) const
 {
     SO3 rotation(this->R());
     // Logarithmic mapping of the rotations
-    double o; // This is absolute value of angle
-    Mat3 w_hat = rotation.ln(&o);
+    Mat3 w_hat = rotation.ln();
 
     // calculate v = V^1 t
-    // V^-1 = I - 0.5w^ + k1 (w^)^2
-    // k1 = 1/o^2 * (1 - c1/(2c2) ) ,    c1 =sin(o)/o and c2 = (1 - cos(o))/o^2 from so3_exp
-    Mat3 Vinv = Mat3::Identity();
-    double k1;
-    // 5e-3 bound provided on numerical_test.cpp, smaller than this k1 becomes degradated
-    if (o > 5e-3)
-    {
-        double c1 = std::sin(o); //sin(o)/o, we remove the o in both coeficients
-        double c2 = (1 - std::cos(o))/o; // (1 - std::cos(o))/o/o
-        k1 = 1/o/o*(1 - 0.5*c1/c2);
-    }
-    //Taylor expansion for small o.
-    else
-    {
-        // f(o) = 1/12 + 1/2*f''*o^2
-        // f'' = 1/360
-        k1 = 1.0/12 + o*o/720;
-    }
-    Vinv += -0.5*w_hat + k1* w_hat*w_hat;
+    Mat3 Vinv = inv_left_jacobian(vee3(w_hat));
 
     // v = V^-1 t
     Mat31 v = Vinv * T_.topRightCorner<3,1>();
@@ -301,6 +264,59 @@ bool mrob::isSE3(const Mat4 &T)
 Mat41 SE3::transform_plane(const Mat41 &pi)
 {
     return this->inv().T().transpose() * pi;
+}
+
+
+Mat3 mrob::left_jacobian(const Mat31& phi)
+{
+    Mat3 V = Mat3::Identity();
+    Mat3 phi_hat = hat3(phi);
+    double o = phi.norm();
+    double o2 = phi.squaredNorm();
+    // If rotation is not zero
+    matData_t c2, c3;
+    if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
+        c2 = (1 - std::cos(o))/o2;
+        c3 = (o - std::sin(o))/o2/o;
+    }
+    else
+    {
+        // second order Taylor (first order is zero since this is an even function)
+        c2 = 0.5 - o2/24;
+        // Second order Taylor
+        c3 = 1.0/6.0 - o2/120;
+    }
+    V += c2*phi_hat + c3*phi_hat*phi_hat;
+
+    return V;
+}
+
+
+Mat3 mrob::inv_left_jacobian(const Mat31 &phi)
+{
+    Mat3 Vinv = Mat3::Identity();
+    double k1;
+    double o = phi.norm();
+    double o2 = phi.squaredNorm();
+    Mat3 phi_hat = hat3(phi);
+    // 5e-3 bound provided on numerical_test.cpp, smaller than this k1 becomes degradated
+    if (o > 5e-3)
+    {
+        double c1 = std::sin(o); //sin(o)/o, we remove the o in both coeficients
+        double c2 = (1 - std::cos(o))/o; // (1 - std::cos(o))/o/o
+        k1 = 1/o2*(1 - 0.5*c1/c2);
+    }
+    //Taylor expansion for small o.
+    else
+    {
+        // f(o) = 1/12 + 1/2*f''*o^2
+        // f'' = 1/360
+        k1 = 1.0/12 + o2/720;
+    }
+    Vinv += -0.5*phi_hat + k1* phi_hat*phi_hat;
+
+    // v = V^-1 t
+    return Vinv;
 }
 
 // Here we deine a global variable inside the file of this class, to be copied

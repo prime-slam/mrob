@@ -40,8 +40,8 @@
  *             [0  1]
  *  Associated to the groups of RBT, there is the Lie algebra se3
  *  representing the same transformation in the tangent space around the identity.
- *  Particularly, xi =[w , v] \in Re^6, where w \in Re^3 represents the rotation
- *  and v the translation.
+ *  Particularly, xi =[theta , pho] \in Re^6, where theta \in Re^3 represents the rotation
+ *  and pho the translation.
  *  We will preserve this order in this class.
  */
 namespace mrob{
@@ -217,6 +217,10 @@ Mat4 hat6(const Mat61 &xi);
 Mat61 vee6(const Mat4 &xi_hat);
 
 bool isSE3(const Mat4 &T);
+
+
+Mat3 left_jacobian(const Mat31 &phi);
+Mat3 inv_left_jacobian(const Mat31 &phi);
 
 /**
  * Returns the generative matrix given the coordinate,
