@@ -13,8 +13,8 @@ print(T)
 theta = np.random.randn(3)
 R = SO3(theta)
 print(R)
-T = SE3vel(R, np.random.randn(3), np.random.randn(3))
-T.print()
+T1 = SE3vel(R, 0*np.random.randn(3), np.random.randn(3))
+T1.print()
 
 
 xi = np.random.randn(9)
@@ -46,21 +46,19 @@ print('full matrix compact: \n', T.T_compact())
 
 
 # -------------------------------------------------------------------------
-# 3 Testing Adjoint
-# -------------------------------------------------------------------------
-print(T.adj())
-
-
-
-
-
-
-# -------------------------------------------------------------------------
 # 4 Testing Operations
 # -------------------------------------------------------------------------
+print('testing inverse', T1*T1.inv())
 
 
 
-
+# -------------------------------------------------------------------------
+# 3 Testing Adjoint
+# -------------------------------------------------------------------------
+#print(T.adj())
+# create a T exp(xi) = Exp( adj_T xi ) T
+xi = np.random.randn(9)
+print(T * SE3vel(xi))
+print(SE3vel(T.adj() @ xi) * T)
 
 

@@ -219,8 +219,10 @@ void init_geometry(py::module &m) {
         .def("adj", &SE3vel::adj,
                 "Outputs the adjoint of T a 9x9 matrix",
                 py::return_value_policy::copy)
-        .def("print",
-                &SE3vel::print,
+        .def("inv", &SE3vel::inv,
+                "Outputs the inverse of T",
+                py::return_value_policy::copy)
+        .def("print", &SE3vel::print,
                 "Prints current state of pose.")
         .def("__mul__", &SE3vel::operator*, py::is_operator())
         .def("__str__", &SE3vel::toString, "Generates string representation of the SE3vel object for print() output")

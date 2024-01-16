@@ -32,6 +32,11 @@ namespace mrob
 {
     class SE3velCov : public mrob::SE3vel
     {
+    // TODO: this class needs deep review, since the parent class has been modified, on reversing the order of the 
+    // Lie coodinates to be [theta,t,v]. This affected:
+    //  - Contructor
+    //  - Ln, Exp
+    //  - Adjoint
     public:
         SE3velCov(void);
         SE3velCov(const SE3vel &pose, const Mat9 &covariance);
