@@ -4,11 +4,13 @@
 # extra source files
 SET(sources
     factors/nodeInertial3d.cpp
+    filter_lidar_inertial.cpp
 )
 
 # extra header files
 SET(headers
     mrob/factors/nodeInertial3d.hpp
+    mrob/filter_lidar_inertial.hpp
 )
 
 # create library
