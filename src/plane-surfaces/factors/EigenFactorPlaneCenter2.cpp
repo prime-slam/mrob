@@ -70,8 +70,8 @@ void EigenFactorPlaneCenter2::evaluate_jacobians()
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
                 pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
-                grad_pi_time_Q_grad + // crosterm due to plane x dQ
-                pi_t_G_time_Q_grad; //slihglty better than EFcenter
+                grad_pi_time_Q_grad +
+                pi_t_G_time_Q_grad;
         J_.push_back(jacobian);
         H_.push_back(hessian);
         //std::cout << "Hessia =\n" << hessian <<std::endl;
@@ -134,9 +134,9 @@ void EigenFactorPlaneCenter2::estimate_plane()
     other_eigenvectors.col(0) *= 0.0;
     //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
     other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
-    other_eigenvectors_multiplied.col(1) = 1.0/(es4.eigenvalues()(1) - lambda_plane) * other_eigenvectors.col(1);
-    other_eigenvectors_multiplied.col(2) = 1.0/(es4.eigenvalues()(2) - lambda_plane) * other_eigenvectors.col(2);
-    other_eigenvectors_multiplied.col(3) = 1.0/(es4.eigenvalues()(3) - lambda_plane) * other_eigenvectors.col(3);
+    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es4.eigenvalues()(1) ) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es4.eigenvalues()(2) ) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(3) = 1.0/(lambda_plane - es4.eigenvalues()(3) ) * other_eigenvectors.col(3);
     //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
     //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
     Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
