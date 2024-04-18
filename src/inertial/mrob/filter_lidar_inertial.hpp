@@ -32,18 +32,71 @@
 
 namespace mrob
 {
+struct orientation {
+    double x;
+    double y;
+    double z;
+    double w;
+}; 
+struct angular_vel {
+    double x;
+    double y;
+    double z;
+};
 
+struct linear_acc {
+    double x;
+    double y;
+    double z;
+};
+struct Imu_msg {
+    double stamp;
+    orientation orientation;
+    angular_vel angular_velocity;
+    linear_acc linear_acceleration;
+
+    Mat19 orientation_covariance;
+    Mat19 angular_velocity_covariance;
+    Mat19 linear_acceleration_covariance;
+};
+
+struct LidarPoint
+{
+  LidarPoint() // constructor 
+  {
+    point(0,0) = 0.0;
+    point(1,0) = 0.0;
+    point(2,0) = 0.0; 
+    stamp = 0.0; 
+    intensity = 0.0 ;
+  };
+  Mat31 point; 
+  float stamp;  // time in nanosec 
+  float intensity;
+};
+
+struct InertialData
+{
+  InertialData()
+  {
+    
+  };
+  std::vector<Imu_msg> imu_buffer; 
+  std::vector<LidarPoint> pointcloud;
+};
 class FilterLidarInertial
 {
+  private: 
+    InertialData Data;
   public:
     // Here constructor shou,d have all covariances values and hyperparams.
     FilterLidarInertial();
     ~FilterLidarInertial();
-
-    void read_observations();
+    void read_observations(InertialData LaodingData);
     void solve();
 
 };
+
 }//namespace
 
 

@@ -38,7 +38,8 @@ FilterLidarInertial::~FilterLidarInerial()
 
 }
 
-void FilterLidarInertial::read_observations()
+void FilterLidarInertial::read_observations(InertialData LaodingData)
 {
+  this-> Data = LaodingData;
   // fill in the function and change the heather.
 }
