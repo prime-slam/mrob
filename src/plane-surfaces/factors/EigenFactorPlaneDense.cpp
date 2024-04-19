@@ -132,35 +132,11 @@ void EigenFactorPlaneDense::estimate_plane()
     // Calcualte almost inverse of Q for later derivatives:
     // option 1, full inverse: slightly inacurate solution.
     //Q_inv_no_kernel_ = accumulatedQ_.inverse();
-    //std::cout << "Accumulated Q \n" << accumulatedQ_ <<std::endl;
-    //std::cout << "Direct Inverse\n" << Q_inv_no_kernel_ <<std::endl;
 
-    // option 2, inverse removing the solution vector
-    Q_inv_no_kernel_.setZero();
-    Q_inv_no_kernel_(3,3) = 1.0/accumulatedQ_(3,3);//This is the augments 4x4, zero translataion and value N
-    Mat3 Q_inv_3x3;
-    matData_t lambda_plane = es.eigenvalues()(0);
-    Mat3 other_eigenvectors, other_eigenvectors_multiplied;
-    other_eigenvectors = es.eigenvectors();
-    other_eigenvectors.col(0) *= 0.0;
-    //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
-    other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
-    //XXX: this should be the opposite, check!
-    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es.eigenvalues()(1)) * other_eigenvectors.col(1);
-    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es.eigenvalues()(2)) * other_eigenvectors.col(2);
-    //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
-    Q_inv_3x3 =  other_eigenvectors * other_eigenvectors_multiplied.transpose();
-    Q_inv_no_kernel_.topLeftCorner<3,3>() = Q_inv_3x3;
-    //std::cout << "Q_inv_no_kernel_ centered =\n" << Q_inv_no_kernel_ <<std::endl;
-    Q_inv_no_kernel_ = Tcenter.transpose() *Q_inv_no_kernel_* Tcenter;
-    //std::cout << "Q_inv from eigs + Tc =\n" << Q_inv_no_kernel_ <<std::endl;
-
-    // Comparison
-    // (Q - pi'*pi )-1
-    {
+    // Option 2. Direct eig decomposition and inverse
     Eigen::SelfAdjointEigenSolver<Mat4> es4;
     es4.compute(accumulatedQ_);
-    lambda_plane = es4.eigenvalues()(0);
+    matData_t lambda_plane = es4.eigenvalues()(0);
     Mat4 other_eigenvectors, other_eigenvectors_multiplied;
     other_eigenvectors = es4.eigenvectors();
     other_eigenvectors.col(0) *= 0.0;
@@ -173,7 +149,6 @@ void EigenFactorPlaneDense::estimate_plane()
     //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
     Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
     //std::cout << "Difference  =\n" << (other_eigenvectors * other_eigenvectors_multiplied.transpose()-Q_inv_no_kernel_).squaredNorm() <<std::endl;
-    }
 
 
 
