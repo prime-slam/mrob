@@ -65,7 +65,7 @@ void EigenFactorPlaneCenter2::evaluate_jacobians()
         // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
         // This does not do anything? we should test this variant as well
         Mat6 grad_pi_time_Q_grad;
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*Q_inv_no_kernel_*grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_no_kernel_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =

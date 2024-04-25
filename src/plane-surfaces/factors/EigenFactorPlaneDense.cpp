@@ -63,9 +63,9 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         Mat6 pi_t_G_time_Q_grad;
         pi_t_G_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*pi_t_times_lie_generatives(planeEstimation_)*grad;
 
-        // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
+        // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi. Due to symetry, both temrs are equal and sum (-> 2.0*)
         Mat6 grad_pi_time_Q_grad;
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*Q_inv_no_kernel_*grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_no_kernel_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -170,7 +170,7 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     else
     {
         // cross terms as
-        H = gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_no_kernel_* gradQ_xi_times_pi_.at(localId2);
+        H = 2.0*gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_no_kernel_* gradQ_xi_times_pi_.at(localId2);
         return true;
     }
 }
