@@ -541,6 +541,10 @@ void init_FGraph(py::module &m)
                     py::arg("W"))
             .def("add_eigen_factor_plane_center", &FGraphPy::add_eigen_factor_plane_center)
             .def("add_eigen_factor_plane_center_2", &FGraphPy::add_eigen_factor_plane_center_2)
+            // New names, more accurate with the methods. TODO depreate methods above
+            .def("add_eigen_factor_plane_dense", &FGraphPy::add_eigen_factor_plane_dense)
+            .def("add_eigen_factor_plane_alternating_approx", &FGraphPy::add_eigen_factor_plane_center)
+            .def("add_eigen_factor_plane_alternating", &FGraphPy::add_eigen_factor_plane_center_2)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             // Visual factors
