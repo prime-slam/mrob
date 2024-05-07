@@ -149,6 +149,22 @@ public:
      * Returns a vector of chi2 values for each of the factors.
      */
     MatX1 get_chi2_array();
+    /**
+     * Returns a vector (python list) of Eigen factors robust functions:
+     * - True if the robust mask was applied
+     * - False if the robust factor had not effect.
+     *
+     * The index in the graph is the Eigen Factor Id.
+    */
+    std::vector<bool> get_eigen_factors_robust_mask();
+    /**
+     * Returns a vector (python list)
+     * - True if the robust mask was applied
+     * - False if the robust factor had not effect.
+     *
+     * The index in the graph is the factor Id
+    */
+    std::vector<bool> get_factors_robust_mask();
 
 protected:
     /**

@@ -160,7 +160,14 @@ public:
      *  matrix W when building the problem.
      */
 
-    matData_t evaluate_robust_weight(matData_t u, matData_t params = 0.0);
+    virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
+
+    /**
+     * Return the mask if the Robust factor used:
+     *  - False if the function was not used (inlier)
+     *  - True if the threshold was exceed and the function was applied (outlier)
+    */
+    bool get_robust_mask() const {return robust_mask_;}
 
 protected:
     factor_id_t id_;
@@ -176,6 +183,7 @@ protected:
     // Robust factor weighting the "iteratively weighted LSQ"
     robustFactorType robust_type_;
     matData_t robust_weight_; // dp/du 1/u or influence by the inverse of the distance u
+    bool robust_mask_;// mask set to true if the robust function is used to clip.
 
     /**
      * TODO: for ransac factors, we can think of the problem as an hypothesis rejection test
@@ -225,7 +233,15 @@ public:
     virtual ~EigenFactor() = default;
     virtual VectRefConst get_state() const = 0;
     virtual void add_point(const Mat31& p, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
-    virtual MatRefConst get_hessian(mrob::factor_id_t id = 0) const = 0;
+    /**
+     * Function that calcualtes the block Hessian of the EF, corresponding to nodes i and j
+     *    Output: - bool flag indicating if there is such block matrix
+     *            - By reference matrix H, with the value
+     * 
+     *    Input:  - index i and j corresponding to the node id's the the EF is pointing to
+     * 
+    */
+    virtual bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0,mrob::factor_id_t id_j = 0) const = 0;
     virtual void add_points_array(const MatX &P, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
     virtual void add_points_S_matrix(const Mat4 &S, std::shared_ptr<Node> &node, mrob::matData_t &W) = 0;
 

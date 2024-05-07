@@ -360,6 +360,7 @@ void FGraphSolve::build_adjacency()
             {
                 uint_t iRow = indFactorsMatrix[i] + l;
                 uint_t iCol = indFactorsMatrix[i] + k;
+                // Weights are then applied both to the residual and the Hessian by modifying the information matrix.
                 robust_weight = f->evaluate_robust_weight(std::sqrt(f->get_chi2()));
                 W_.insert(iRow,iCol) = robust_weight * f->get_information_matrix()(l,k);
             }
@@ -422,28 +423,74 @@ void FGraphSolve::build_info_EF()
         for (auto node : *neighNodes)
         {
             uint_t indNode = node->get_id();
-            if ( node->get_node_mode() == Node::nodeMode::ANCHOR)
+            if (node->get_node_mode() == Node::nodeMode::ANCHOR)
             {
                 continue;
             }
             // Updating Jacobian, b should has been previously calculated
             Mat61 J = f->get_jacobian(indNode);
-            // It requires previous calculation of indNodesMatrix (in build adjacency)
-            gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;//TODO robust weight would go here
 
-            // Updating the Hessian
-            Mat6 H = f->get_hessian(indNode);
+            // Calculate the robust factor contribution, similar than in the adjacency
+            // Now the weight fator should be introduced in the Hessian block and in the gradient s.t.
+            //        (wH)^-1* wgrad
+            // When using the aggregated matrix of all EFs, this operation is not trivila (for one EF is trival, it cancels out ofc)
+            matData_t robust_weight = 1.0;
+            // The vlaue needs to be normalized by
+            robust_weight = f->evaluate_robust_weight();
+            J *= robust_weight;
+
+            // It requires previous calculation of indNodesMatrix (in build adjacency)
+            gradientEF_.block<6,1>(indNodesMatrix_[indNode],0) += J;
+
+            // get the neighboiring nodes TODO and for over them
             uint_t startingIndex = indNodesMatrix_[indNode];
-            // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
-            for (uint_t i = 0; i < 6; i++)
+            for (auto node2 : *neighNodes)
             {
-                for (uint_t j = i; j<6; j++)
+                // getting second index, rows in the hessian matrix
+                uint_t indNode_2 = node2->get_id();
+                uint_t startingIndex_2 = indNodesMatrix_[indNode_2];
+
+                // Check if the indexes (col,row) is in the upper triangular part or skip if not
+                if (startingIndex_2 < startingIndex)
+                    continue;
+
+                // Calculate hessian, this is a lookup
+                Mat6 H;
+                // If there is no such crosterms, the methods returns false and the block embeding into H is skipped
+                if (!f->get_hessian(H,indNode,indNode_2))
                 {
-                    // convert the hessian to triplets, duplicated ones will be summed
-                    // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0
-                    hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex+ j, H(i,j)));
+                    continue;
                 }
+                //std::cout << "Hessian node (i,j) = (" << indNode << ", " << indNode_2 << ")\n";
+
+                // Robust factors, for the same EF, we must account for the weight factor in the block hessian as well:
+                H *= robust_weight;
+                
+
+                // Calculate the variable that allows to control diagonal/crossterms in the for() below
+                // If it is a crossterm, it needs all elements of the 6x6 matrix, so it does not enable the for start in diag (=0)
+                // If it is diagonal, it can start at the current row for the upper triangular view (therefore =1)
+                uint_t cross_term_reset = 0;
+                if (indNode == indNode_2)
+                    cross_term_reset = 1;
+
+
+                // Updating the Full Hessian
+                // XXX if EF ever connected a node that is not 6D, then this will not hold. TODO
+                for (uint_t i = 0; i < 6; i++)
+                {
+                    // for diagonal terms, this will start at j=i, which give the uppter triang view
+                    for (uint_t j = i*cross_term_reset; j<6; j++)
+                    {
+                        // convert the hessian to triplets, duplicated ones will be summed
+                        // https://eigen.tuxfamily.org/dox/classEigen_1_1SparseMatrix.html#a8f09e3597f37aa8861599260af6a53e0
+                        hessianData.emplace_back(Triplet(startingIndex+ i, startingIndex_2+ j, H(i,j)));
+                    }
+                }
+
             }
+
+
         }
     }
 
@@ -530,6 +577,39 @@ MatX1 FGraphSolve::get_chi2_array()
     {
         auto f = factors_[i];
         results(i) = f->get_chi2();
+    }
+
+    return results;
+}
+
+
+std::vector<bool> FGraphSolve::get_eigen_factors_robust_mask()
+{
+    // it will create a copy on the python side, that is why scope here is just defined in here
+    // XXX:one day we should improve the interface with python...
+    std::vector<bool> results;
+    results.reserve(eigen_factors_.size());
+
+    bool mask;
+    for (auto ef : eigen_factors_)
+    {
+        mask = ef->get_robust_mask();
+        results.push_back(mask);
+    }
+
+    return results;
+}
+
+std::vector<bool> FGraphSolve::get_factors_robust_mask()
+{
+    std::vector<bool> results;
+    results.reserve(factors_.size());
+
+    bool mask;
+    for (auto f : factors_)
+    {
+        mask = f->get_robust_mask();
+        results.push_back(mask);
     }
 
     return results;

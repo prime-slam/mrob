@@ -16,14 +16,13 @@
  * EigenFactorPlanceCenter.cpp
  *
  *  Created on: Oct 7, 2022
- *              Sept 12, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
 
-#include "mrob/factors/EigenFactorPlaneCenter.hpp"
+#include "mrob/factors/EigenFactorPlaneCenter2.hpp"
 
 #include <iostream>
 #include <Eigen/Eigenvalues>
@@ -32,19 +31,19 @@
 
 using namespace mrob;
 
-EigenFactorPlaneCenter::EigenFactorPlaneCenter(Factor::robustFactorType robust_type):
+EigenFactorPlaneCenter2::EigenFactorPlaneCenter2(Factor::robustFactorType robust_type):
         EigenFactorPlaneBase(robust_type),
         planeEstimationUnit_{Mat41::Zero()},
         Tcenter_(Mat4::Identity())
 {
 }
 
-void EigenFactorPlaneCenter::evaluate_residuals()
+void EigenFactorPlaneCenter2::evaluate_residuals()
 {
     this->estimate_plane();
 }
 
-void EigenFactorPlaneCenter::evaluate_jacobians()
+void EigenFactorPlaneCenter2::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
     J_.clear();
@@ -65,21 +64,21 @@ void EigenFactorPlaneCenter::evaluate_jacobians()
 
         // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
         // This does not do anything? we should test this variant as well
-        //Mat6 grad_pi_time_Q_grad;
-        //grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*Q_inv_no_kernel_*grad;
+        Mat6 grad_pi_time_Q_grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_no_kernel_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
                 pi_t_x_hessian_Q_x_pi(Qt,planeEstimation_) +
-                //grad_pi_time_Q_grad + // crosterm due to plane x dQ
-                pi_t_G_time_Q_grad; //slihglty better than EFcenter
+                grad_pi_time_Q_grad +
+                pi_t_G_time_Q_grad;
         J_.push_back(jacobian);
         H_.push_back(hessian);
         //std::cout << "Hessia =\n" << hessian <<std::endl;
     }
 }
 
-void EigenFactorPlaneCenter::evaluate_chi2()
+void EigenFactorPlaneCenter2::evaluate_chi2()
 {
     // Point 2 plane exact error requires chi2 = pi' Q pi
     chi2_ = planeEstimation_.dot(accumulatedQ_ * planeEstimation_);
@@ -88,7 +87,7 @@ void EigenFactorPlaneCenter::evaluate_chi2()
 }
 
 
-void EigenFactorPlaneCenter::estimate_plane()
+void EigenFactorPlaneCenter2::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
@@ -125,6 +124,22 @@ void EigenFactorPlaneCenter::estimate_plane()
 
     //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
+
+    // Solution for the inverse without kernel from pi solution. This is an overkill, but it is for comparisons.
+    Eigen::SelfAdjointEigenSolver<Mat4> es4;
+    es4.compute(accumulatedQ_);
+    matData_t lambda_plane = es4.eigenvalues()(0);
+    Mat4 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es4.eigenvectors();
+    other_eigenvectors.col(0) *= 0.0;
+    //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
+    other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
+    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es4.eigenvalues()(1) ) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es4.eigenvalues()(2) ) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(3) = 1.0/(lambda_plane - es4.eigenvalues()(3) ) * other_eigenvectors.col(3);
+    //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
+    //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
+    Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
 
 }
 

@@ -43,24 +43,24 @@ class Factor1Pose1Plane4d : public Factor
     Factor1Pose1Plane4d(const Mat41 &observation, std::shared_ptr<Node> &nodePose,
             std::shared_ptr<Node> &nodePlane, const Mat4 &obsInf,
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1Pose1Plane4d() override = default;
+    ~Factor1Pose1Plane4d() = default;
 
     /**
      * Jacobians are not evaluated, just the residuals
      */
-    virtual void evaluate_residuals() override;
+    void evaluate_residuals() override;
     /**
      * Evaluates the Jacobians
      */
-    virtual void evaluate_jacobians() override;
-    virtual void evaluate_chi2() override;
+    void evaluate_jacobians() override;
+    void evaluate_chi2() override;
 
-    virtual void print() const;
+    void print() const override;
 
     MatRefConst get_obs() const override {return obs_;};
     VectRefConst get_residual() const override {return r_;};
     MatRefConst get_information_matrix() const override {return W_;};
-    MatRefConst get_jacobian([[maybe_unused]] mrob::factor_id_t id = 0) const override {return J_;};
+    MatRefConst get_jacobian(mrob::factor_id_t /*id*/) const override {return J_;};
 
 
   private:

@@ -84,6 +84,7 @@ using Mat = Eigen::Matrix<matData_t, Rw, Col, Eigen::RowMajor>;
 //we might need this for aligment requirements: Eigen::Ref<const MatX1, Eigen::AlignmentType::Aligned16>
 using VectRefConst = const Eigen::Ref<const MatX1>;
 using MatRefConst = const Eigen::Ref<const MatX>;
+using MatRef = Eigen::Ref<MatX>;
 
 }//end of namespace
 

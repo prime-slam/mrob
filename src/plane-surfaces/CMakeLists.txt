@@ -7,15 +7,18 @@ SET(sources
     plane_registration.cpp
     create_points.cpp
     estimate_plane.cpp
+    utils_lie_differentiation.cpp
     factors/nodePlane4d.cpp
     factors/factor1Pose1Plane4d.cpp
-    factors/EigenFactorPlane.cpp
     factors/EigenFactorPlaneCenter.cpp
-    factors/EigenFactorPlaneRaw.cpp
     factors/EigenFactorPoint.cpp
     factors/PiFactorPlane.cpp
-    factors/EigenFactorPlaneCoordinatesAlign.cpp
+    factors/EigenFactorPlaneBase.cpp
+    factors/EigenFactorPlaneDense.cpp
+    factors/BaregEFPlane.cpp
+    factors/EigenFactorPlaneCenter2.cpp
 )
+
 
 # extra header files
 SET(headers
@@ -23,14 +26,16 @@ SET(headers
     mrob/plane_registration.hpp
     mrob/create_points.hpp
     mrob/estimate_plane.hpp
+    mrob/utils_lie_differentiation.hpp
     mrob/factors/nodePlane4d.hpp
     mrob/factors/factor1Pose1plane4d.hpp
-    mrob/factors/EigenFactorPlane.hpp
     mrob/factors/EigenFactorPlaneCenter.hpp
-    mrob/factors/EigenFactorPlaneRaw.hpp
     mrob/factors/EigenFactorPoint.hpp
     mrob/factors/PiFactorPlane.hpp
-    mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp
+    mrob/factors/EigenFactorBase.hpp
+    mrob/factors/EigenFactorDense.hpp
+    mrob/factors/BaregEFPlane.hpp
+    mrob/factors/EigenFactorPlaneCenter2.hpp
 )
 
 # create library

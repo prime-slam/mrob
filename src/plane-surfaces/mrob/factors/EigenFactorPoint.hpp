@@ -26,7 +26,7 @@
 
 
 #include "mrob/factor.hpp"
-#include "mrob/factors/EigenFactorPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneBase.hpp"
 #include <unordered_map>
 #include <deque>
 #include <Eigen/StdVector>
@@ -46,20 +46,21 @@ namespace mrob{
  *  - i is the current pose,
  *  - mu_i is the centroid of points observed ONLY in the current frame mu_i = col3(T*S_i*T')
  *  - W_i is the weighting (information) which corresponds to the number of points.
+ *  - mu(Q_0) is the mean at the first observed PC.
  *
  * This leads to a weighted LSQ
  *
- * The Chi2 is of a different kind than the EFplane, since this is point2point
+ * The Chi2 is of a different kind than the EFplane, since this is point2point of means
  *
  *
  */
-class EigenFactorPoint: public EigenFactorPlane{
+class EigenFactorPoint: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor point.
      */
     EigenFactorPoint(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPoint() override = default;
+    ~EigenFactorPoint() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -77,6 +78,7 @@ public:
 
 
 protected:
+    void estimate_plane() override {};
     //vector of residuals, and T*mu_i follows the same indexing than Jacobian and Hessian
     std::deque<Mat31, Eigen::aligned_allocator<Mat31>> r_,transformed_mu_;
     SE3 T_ini_inv_;

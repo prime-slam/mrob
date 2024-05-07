@@ -13,24 +13,21 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlaneCoordinatesAlign.hpp
+ * BaregEFPlane.hpp
  *
- *  Created on: Oct 31 2022
+ *  Created on: Oct 31 2022 (old EigenFactorPlaneCoorinatesAlign)
+ *              Sept 6 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
 // XXX this duplicate should disappear
-#ifndef EIGENFACTORPLANECOORDINATEALIGN_HPP_
-#define EIGENFACTORPLANECOORDINATEALIGN_HPP_
+#ifndef BAREGEFPLANE_HPP_
+#define BAREGEFPLANE_HPP_
 
 
-#include "mrob/factor.hpp"
-#include "mrob/factors/EigenFactorPlaneCenter.hpp"
-#include <unordered_map>
-#include <deque>
-#include <Eigen/StdVector>
+#include "mrob/factors/EigenFactorPlaneBase.hpp"
 
 
 namespace mrob{
@@ -41,14 +38,14 @@ namespace mrob{
  * It requires the estimation of planes from one side and then the matching of these parameters with
  * the accumulated matrix S. The EF strucutre is very convenient to use here
  */
-class EigenFactorPlaneCoordinatesAlign: public EigenFactorPlaneCenter{
+class BaregEFPlane: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlaneCoordinatesAlign(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCoordinatesAlign() override = default;
+    BaregEFPlane(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~BaregEFPlane() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -66,11 +63,15 @@ public:
 
 
 protected:
+    void estimate_plane() override;
     Mat31 get_estimate_normal() const;
 
     Mat31 get_estimate_mean() const;
 
     void estimate_planes_at_poses();
+
+    // unit plane estiamtion (center)
+    Mat41 planeEstimationUnit_;
 
     // These are the vectors of the eigenV for each pose of the plane, to be later used
     std::deque<matData_t> lambda_1_,lambda_2_;//eigen values where l1 > l2> l3, to follow their notation

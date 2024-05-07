@@ -13,16 +13,17 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlaneCoordinatesAlign.cpp
+ * BaregEFPlane.cpp
  *
  *  Created on: Oct 31, 2022
+ *              Sept 6, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
 
-#include "mrob/factors/EigenFactorPlaneCoordinatesAlign.hpp"
+#include "mrob/factors/BaregEFPlane.hpp"
 
 #include <iostream>
 #include <Eigen/Eigenvalues>
@@ -30,14 +31,56 @@
 
 using namespace mrob;
 
-EigenFactorPlaneCoordinatesAlign::EigenFactorPlaneCoordinatesAlign(Factor::robustFactorType robust_type):
-        EigenFactorPlaneCenter(robust_type)
+BaregEFPlane::BaregEFPlane(Factor::robustFactorType robust_type):
+        EigenFactorPlaneBase(robust_type)
 {
 }
 
-void EigenFactorPlaneCoordinatesAlign::evaluate_residuals()
+void BaregEFPlane::estimate_plane()
 {
-    this->EigenFactorPlaneCenter::estimate_plane();
+    calculate_all_matrices_S();
+    calculate_all_matrices_Q();
+
+    // Check for empty EF (no points)
+    if (accumulatedQ_.sum()< 1e-4)
+    {
+        planeEstimation_.setZero();
+        return;
+    }
+
+    // Center the plane requires a transformation (translation) such that
+    // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
+    // This only hold for when T^{-\top} = [I, -n d].
+    // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
+    Mat4 Tcenter = Mat4::Identity();
+    Tcenter.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
+    //std::cout << "T center = " << Tcenter_ <<  std::endl;
+
+    //std::cout << "Q= \n" << accumulatedQ_ <<  std::endl;
+
+    Mat4 accumulatedCenterQ;
+    accumulatedCenterQ = Tcenter * accumulatedQ_ * Tcenter.transpose();
+
+    //std::cout << "new function Q= \n" << accumulatedCenterQ_ <<  std::endl;
+
+
+    // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
+    Eigen::SelfAdjointEigenSolver<Mat3> es;
+    es.computeDirect(accumulatedCenterQ.topLeftCorner<3,3>());
+    // This plane center is more stable when calcualating a solution than its counterpart in 4d
+    // Most likely it is how the error leaks from the distance componet and breaks the normal component,
+    // that needs to be projected (regenerated) on the 4x4 case. this way, we make sure it is a unit vector by construction.
+    // Right after the calcuation, we convert back to the correct reference frame.
+    planeEstimationUnit_.head<3>() = es.eigenvectors().col(0);
+    planeEstimationUnit_(3) = 0.0;
+
+    planeEstimation_ = SE3(Tcenter).inv().transform_plane(planeEstimationUnit_);
+
+}
+
+void BaregEFPlane::evaluate_residuals()
+{
+    this->estimate_plane();
 
     // calculate V's and lambda's for each pose St
     this->estimate_planes_at_poses();
@@ -67,7 +110,7 @@ void EigenFactorPlaneCoordinatesAlign::evaluate_residuals()
     }
 }
 
-void EigenFactorPlaneCoordinatesAlign::evaluate_jacobians()
+void BaregEFPlane::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
     J_.clear();
@@ -119,9 +162,10 @@ void EigenFactorPlaneCoordinatesAlign::evaluate_jacobians()
     }
 }
 
-void EigenFactorPlaneCoordinatesAlign::evaluate_chi2()
+void BaregEFPlane::evaluate_chi2()
 {
     chi2_ = 0.0;
+    //std::cout << "plane bareg = " << planeEstimation_ << "\n Q = \n" << accumulatedQ_ << std::endl;
     uint_t nodeIdLocal = 0;
     for (auto r1 : r1_)
     {
@@ -133,17 +177,17 @@ void EigenFactorPlaneCoordinatesAlign::evaluate_chi2()
     chi2_ *= 0.5;
 }
 
-Mat31 EigenFactorPlaneCoordinatesAlign::get_estimate_normal() const
+Mat31 BaregEFPlane::get_estimate_normal() const
 {
     return planeEstimationUnit_.head<3>();
 }
 
-Mat31 EigenFactorPlaneCoordinatesAlign::get_estimate_mean() const
+Mat31 BaregEFPlane::get_estimate_mean() const
 {
     return accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
 }
 
-void EigenFactorPlaneCoordinatesAlign::estimate_planes_at_poses()
+void BaregEFPlane::estimate_planes_at_poses()
 {
     if(lambda_1_.empty())
     {
