@@ -49,7 +49,7 @@ FGraphSolve::~FGraphSolve() = default;
 
 
 uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters,
-        matData_t lambda, matData_t solutionTolerance, bool verbose)
+        matData_t lambdaParam, matData_t solutionTolerance, bool verbose)
 {
     /**
      * 2800 2D nodes on M3500
@@ -60,7 +60,7 @@ uint_t FGraphSolve::solve(optimMethod method, uint_t maxIters,
      *               1.3959 % update values,
      *
      */
-    lambda_ = lambda;
+    lambda_ = lambdaParam;
     solutionTolerance_ = solutionTolerance;
     verbose_ = verbose;
     time_profiles_.reset();
@@ -168,7 +168,7 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
     // LM trust region as described in Bertsekas (p.105)
 
     // 0) parameter initialization
-    lambda_ = 1e-5;
+    //lambda_ = 1e-5;
     // sigma reference to the fidelity of the model at the proposed solution \in [0,1]
     matData_t sigma1(0.25), sigma2(0.8);// 0 < sigma1 < sigma2 < 1
     matData_t beta1(2.0), beta2(0.25); // lambda updates multiplier values, beta1 > 1 > beta2 >0
@@ -206,7 +206,7 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         }
 
         // 1.3) check for convergence
-        if (deltaChi2 < solutionTolerance_)
+        if (deltaChi2/currentChi2 < solutionTolerance_) //in ratio
         {
             if (verbose_)
                 std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: Converged Successfully" << std::endl;
@@ -218,9 +218,14 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         // f = chi2(x_k) - chi2(x_k + dx)
         //     chi2(x_k) - m_k(dx)
         // where m_k is the quadratized model = ||r||^2 - dx'*J' r + 0.5 dx'(J'J + lambda*D2)dx
-        modelFidelity = deltaChi2 / (dx_.dot(b_) - 0.5*dx_.dot(L_* dx_));
+        //modelFidelity = deltaChi2 / (dx_.dot(b_) - 0.5*dx_.dot(L_* dx_));
+        // Update, according to H.B. Nielson, Damping Parameter In Marquardt’s Method, Technical Report IMM-REP-1999-05, Dept. of Mathematical Modeling, Technical University Denmark
+        // (J'J ) dx = J'r , so this is substituted.
+        modelFidelity = 2.0 * deltaChi2 / (dx_.dot(b_) - dx_.dot(lambda_ * diagL_* dx_));
         if (verbose_)
+        {
             std::cout << "model fidelity = " << modelFidelity << " and m_k = " << dx_.dot(b_) << std::endl;
+        }
 
         //3) update lambda
         if (modelFidelity < sigma1)

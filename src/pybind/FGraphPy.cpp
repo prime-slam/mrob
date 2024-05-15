@@ -376,13 +376,13 @@ void init_FGraph(py::module &m)
                     "Options:\n method = mrob.GN (Gauss Newton). It carries out a SINGLE iteration.\n"
                     "                  = mrob.LM (Levenberg-Marquard), default option,it has several parameters:\n"
                     " - marIters = 20 (by default). Only for LM\n"
-                    " - lambda = 1-6, LM paramter for the size of the update\n"
+                    " - lambda = 1-5, LM paramter for the size of the update\n"
                     " - solutionTolerance: convergence criteria\n"
                     " - verbose: by default false. If you want output on optim, set to true.",
                     py::arg("method") =  FGraphSolve::optimMethod::LM,
                     py::arg("maxIters") = 20,
-                    py::arg("lambda") = 1e-6,
-                    py::arg("solutionTolerance") = 1e-2,
+                    py::arg("lambdaParam") = 1e-5,
+                    py::arg("solutionTolerance") = 1e-6,
                     py::arg("verbose") = false)
             .def("chi2", &FGraphSolve::chi2,
                     "Calculated the chi2 of the problem.\n"
