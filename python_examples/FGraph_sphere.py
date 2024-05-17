@@ -161,7 +161,7 @@ if 1:
     # uncomment for visualization
     #print_3d_graph(graph)
     start = time.time()
-    graph.solve(mrob.LM,20)
+    graph.solve(mrob.LM,20, verbose=True)
     end = time.time()
     print(', chi2 = ', graph.chi2() , ', time on calculation [s] = ', 1e0*(end - start))
     # uncomment for visualization
