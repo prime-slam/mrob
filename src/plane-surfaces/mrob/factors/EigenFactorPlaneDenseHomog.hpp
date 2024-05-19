@@ -21,8 +21,8 @@
  *              Mobile Robotics Lab.
  */
 
-#ifndef EIGENFACTORPLANEDENSE_HPP_
-#define EIGENFACTORPLANEDENSE_HPP_
+#ifndef EIGENFACTORPLANEDENSEHOMOG_HPP_
+#define EIGENFACTORPLANEDENSEHOMOG_HPP_
 
 
 #include "mrob/factors/EigenFactorPlaneBase.hpp"
@@ -52,14 +52,14 @@ namespace mrob{
  *
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
  */
-class EigenFactorPlaneDense: public EigenFactorPlaneBase{
+class EigenFactorPlaneDenseHomog: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlaneDense(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneDense() = default;
+    EigenFactorPlaneDenseHomog(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneDenseHomog() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -89,19 +89,16 @@ protected:
 
 
     // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat3 Q_center_3x3_inv_no_kernel_;
-
-    Mat4 Tcenter_;
+    Mat4 Q_inv_no_kernel_;
 
     /**
      * gradient matrix = dQ/dx * pi.
      * We store the block diagonal terms, according to the indexes of the nodes
      */
     std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_times_pi_;
-    std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_Tcenter_times_pi_;
 
     Mat6 block_hessian_;
 };
 
 }
-#endif /* EigenFactorPlaneDense_HPP_ */
+#endif /* EigenFactorPlaneDenseHOMOG_HPP_ */
