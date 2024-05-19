@@ -26,7 +26,6 @@
 #include "mrob/utils_lie_differentiation.hpp"
 
 
-
 using namespace mrob;
 
 
@@ -166,7 +165,6 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ += dQ.transpose().eval();
     dQ = T_center * dQ;
     jacobian.col(5) = dQ*pi;
-
 
     return jacobian.topLeftCorner<3,6>();
 }

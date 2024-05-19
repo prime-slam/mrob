@@ -46,7 +46,6 @@ void EigenFactorPlaneDense::evaluate_jacobians()
     // Assumes residuals evaluated beforehand
     J_.clear();
     H_.clear();
-    gradQ_xi_times_pi_.clear();
     gradQ_xi_Tcenter_times_pi_.clear();
     for (auto &Qt: Q_)
     {
@@ -54,9 +53,8 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         Mat6 hessian = Mat6::Zero();
 
         // calculate gradient
-        Mat<4,6> grad, grad_plane_center;
+        Mat<4,6> grad;
         grad = gradient_Q_x_pi(Qt,planeEstimation_);
-        gradQ_xi_times_pi_.push_back(grad);
         jacobian =  grad.transpose() * planeEstimation_;
 
 
@@ -64,24 +62,11 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         // 1) derivative of the normal, corresponding to 3 first rows
         std::cout << "Q_center_3x3_inv_no_kernel_ =\n" << Q_center_3x3_inv_no_kernel_ <<std::endl;
         std::cout << "Tcenter_ =\n" << Tcenter_ <<std::endl;
-        std::cout << "gradient_ =\n" << gradient_Tcenter_Q_x_pi(Tcenter_,Qt,planeEstimation_)<< std::endl;
        
-        grad_plane_center.topLeftCorner<3,6>() = Q_center_3x3_inv_no_kernel_ * gradient_Tcenter_Q_x_pi(Tcenter_,Qt,planeEstimation_);
+        Mat<3,6> grad_plane_center;
+        grad_plane_center = gradient_Tcenter_Q_x_pi(Tcenter_,Qt,planeEstimation_);
         // 2) derivative of d, wich correspondos to the last row.
         std::cout << "grad_plane_center =\n" << grad_plane_center <<std::endl;
-        Mat16 grad_plane_center_d;
-        Mat31 qt = Qt.topRightCorner<3,1>();
-        double invN = 1.0/accumulatedQ_(3,3);
-        // d pi(d)/dx = q' * d eta/dx + dq'/dx eta
-        Mat<3,6> jacobian_sum_point_t;
-        jacobian_sum_point_t.topLeftCorner<3,3>() = -hat3(qt);
-        jacobian_sum_point_t.bottomLeftCorner<3,3>() = Mat3::Identity();
-        grad_plane_center_d = accumulatedQ_.bottomLeftCorner<1,3>() * grad_plane_center.topLeftCorner<3,6>();
-        //std::cout << "grad_plane_center d =\n" << grad_plane_center_d <<std::endl;
-        Mat13 eta = planeEstimation_.head(3);
-        grad_plane_center_d +=  eta * jacobian_sum_point_t;
-        grad_plane_center.row(4) = -invN * grad_plane_center_d;
-        //std::cout << "grad_plane_center second time =\n" << grad_plane_center <<std::endl;
         gradQ_xi_Tcenter_times_pi_.push_back(grad_plane_center);
 
         // calculate hessian ONLY Upper Trianlar view
@@ -93,8 +78,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         Mat6 grad_pi_time_Q_grad;
 
         // Not symetric
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = grad.transpose()*grad_plane_center +
-                                            grad_plane_center.transpose()*grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad_plane_center.transpose()*Q_center_3x3_inv_no_kernel_*grad_plane_center;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -188,16 +172,8 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     {
         // cross terms as. Now terms are not symetric.
         // How to select indexes?? they should be symteric ij=ji?
-        H = gradQ_xi_times_pi_.at(localId2).transpose() * gradQ_xi_Tcenter_times_pi_.at(localId1) + 
-                     gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * gradQ_xi_times_pi_.at(localId2);
-        std::cout << "Testing symetry =\n"
-                  << gradQ_xi_times_pi_.at(localId1).transpose() * gradQ_xi_Tcenter_times_pi_.at(localId2) + 
-                     gradQ_xi_Tcenter_times_pi_.at(localId2).transpose() * gradQ_xi_times_pi_.at(localId1)
-                  << "\n versus reverse"
-                  //<< gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * gradQ_xi_times_pi_.at(localId2)
-                  << gradQ_xi_times_pi_.at(localId2).transpose() * gradQ_xi_Tcenter_times_pi_.at(localId1) + 
-                     gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * gradQ_xi_times_pi_.at(localId2)
-                  << std::endl;
+        H = 2.0* gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * Q_center_3x3_inv_no_kernel_ * gradQ_xi_Tcenter_times_pi_.at(localId2);
+        //std::cout << "Testing symetry =\n"  << std::endl;
         return true;
     }
 }
