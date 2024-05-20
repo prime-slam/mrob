@@ -89,7 +89,6 @@ protected:
 
 
     // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat3 Q_center_3x3_inv_minus_plane_;
     Mat4 Q_inv_minus_plane_;
 
     Mat4 Tcenter_;
@@ -99,7 +98,6 @@ protected:
      * We store the block diagonal terms, according to the indexes of the nodes
      */
     std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_times_pi_;
-    std::deque<Mat<3,6>, Eigen::aligned_allocator<Mat<3,6>>> gradQ_xi_Tcenter_times_pi_;
 
     Mat6 block_hessian_;
 };

@@ -87,7 +87,7 @@ protected:
     Mat4 Tcenter_;
 
     // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat4 Q_inv_no_kernel_;
+    Mat4 Q_inv_minus_plane_;
 
 };
 
