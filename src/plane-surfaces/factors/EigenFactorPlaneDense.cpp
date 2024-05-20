@@ -47,6 +47,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
     J_.clear();
     H_.clear();
     gradQ_xi_Tcenter_times_pi_.clear();
+    gradQ_xi_times_pi_.clear();
     for (auto &Qt: Q_)
     {
         Mat61 jacobian = Mat61::Zero();
@@ -55,6 +56,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         // calculate gradient
         Mat<4,6> grad;
         grad = gradient_Q_x_pi(Qt,planeEstimation_);
+        gradQ_xi_times_pi_.push_back(grad);
         jacobian =  grad.transpose() * planeEstimation_;
 
 
@@ -78,7 +80,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         Mat6 grad_pi_time_Q_grad;
 
         // Not symetric
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad_plane_center.transpose()*Q_center_3x3_inv_minus_plane_*grad_plane_center;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_minus_plane_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -152,7 +154,12 @@ void EigenFactorPlaneDense::estimate_plane()
     other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es.eigenvalues()(2)) * other_eigenvectors.col(2);
     //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
     Q_center_3x3_inv_minus_plane_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
-
+    Q_inv_minus_plane_.setZero();
+    Q_inv_minus_plane_.topLeftCorner<3,3>() = Q_center_3x3_inv_minus_plane_;
+    Q_inv_minus_plane_(3,3)= -1.0/accumulatedQ_(3,3);
+    std::cout << "Q_inv_minus_plane_ \n" << Q_inv_minus_plane_ << std::endl;
+    Q_inv_minus_plane_ = Tcenter_.transpose() * Q_inv_minus_plane_ * Tcenter_;
+    std::cout << "Q_inv_minus_plane_ after inverse centering?\n" << Q_inv_minus_plane_ << std::endl;
 
 }
 
@@ -173,7 +180,8 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     {
         // cross terms as. Now terms are not symetric.
         // How to select indexes?? they should be symteric ij=ji?
-        H = 2.0* gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * Q_center_3x3_inv_minus_plane_ * gradQ_xi_Tcenter_times_pi_.at(localId2);
+        //H = 2.0* gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * Q_center_3x3_inv_minus_plane_ * gradQ_xi_Tcenter_times_pi_.at(localId2);
+        H = 2.0* gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_minus_plane_ * gradQ_xi_times_pi_.at(localId2);
         //std::cout << "Testing symetry =\n"  << std::endl;
         return true;
     }

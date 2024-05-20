@@ -112,8 +112,8 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_eta(const Mat4 &T_center, const Mat4 &Q, con
     dQ.row(1) << -Q.row(2);
     dQ.row(2) <<  Q.row(1);
     dQ += dQ.transpose().eval();
-    std::cout << "dQ \n" << dQ <<std::endl;
-    std::cout << "dQ left \n" << T_center*dQ <<std::endl;
+    //std::cout << "dQ \n" << dQ <<std::endl;
+    //std::cout << "dQ left \n" << T_center*dQ <<std::endl;
 
     dQ = T_center * dQ * T_center.transpose();
     std::cout << "dQ left right \n" << dQ <<std::endl;
