@@ -45,9 +45,9 @@ Mat<4,6> gradient_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
 
 
 /**Similar function than before, but now considering the tranformation t_center
- * for centering the matrix Q
+ * for centering the matrix Q and the centered plane [eta 0]
 */
-Mat<3,6> gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, const Mat41 &pi);
+Mat<3,6> gradient_Tcenter_Q_x_eta(const Mat4 &T_center, const Mat4 &Q, const Mat31 &eta);
 
 /**
  * Returns the expression: H_l(i,j) =  pi' * d^2Q/dx_j*dx_i * pi

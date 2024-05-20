@@ -60,11 +60,11 @@ void EigenFactorPlaneDense::evaluate_jacobians()
 
         // derivative of the plane requires two parts:
         // 1) derivative of the normal, corresponding to 3 first rows
-        std::cout << "Q_center_3x3_inv_no_kernel_ =\n" << Q_center_3x3_inv_no_kernel_ <<std::endl;
+        std::cout << "Q_center_3x3_inv_no_kernel_ =\n" << Q_center_3x3_inv_minus_plane_ <<std::endl;
         std::cout << "Tcenter_ =\n" << Tcenter_ <<std::endl;
        
         Mat<3,6> grad_plane_center;
-        grad_plane_center = gradient_Tcenter_Q_x_pi(Tcenter_,Qt,planeEstimation_);
+        grad_plane_center = gradient_Tcenter_Q_x_eta(Tcenter_,Qt,planeEstimation_.head(3));
         // 2) derivative of d, wich correspondos to the last row.
         std::cout << "grad_plane_center =\n" << grad_plane_center <<std::endl;
         gradQ_xi_Tcenter_times_pi_.push_back(grad_plane_center);
@@ -78,7 +78,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         Mat6 grad_pi_time_Q_grad;
 
         // Not symetric
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad_plane_center.transpose()*Q_center_3x3_inv_no_kernel_*grad_plane_center;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad_plane_center.transpose()*Q_center_3x3_inv_minus_plane_*grad_plane_center;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -108,7 +108,8 @@ void EigenFactorPlaneDense::estimate_plane()
     if (accumulatedQ_.sum()< 1e-4)
     {
         planeEstimation_.setZero();
-        Q_center_3x3_inv_no_kernel_.setZero();
+        Q_center_3x3_inv_minus_plane_.setZero();
+        Q_inv_minus_plane_.setZero();
         return;
     }
 
@@ -150,7 +151,7 @@ void EigenFactorPlaneDense::estimate_plane()
     other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es.eigenvalues()(1)) * other_eigenvectors.col(1);
     other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es.eigenvalues()(2)) * other_eigenvectors.col(2);
     //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
-    Q_center_3x3_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
+    Q_center_3x3_inv_minus_plane_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
 
 
 }
@@ -172,7 +173,7 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     {
         // cross terms as. Now terms are not symetric.
         // How to select indexes?? they should be symteric ij=ji?
-        H = 2.0* gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * Q_center_3x3_inv_no_kernel_ * gradQ_xi_Tcenter_times_pi_.at(localId2);
+        H = 2.0* gradQ_xi_Tcenter_times_pi_.at(localId1).transpose() * Q_center_3x3_inv_minus_plane_ * gradQ_xi_Tcenter_times_pi_.at(localId2);
         //std::cout << "Testing symetry =\n"  << std::endl;
         return true;
     }

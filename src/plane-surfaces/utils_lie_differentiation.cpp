@@ -25,6 +25,7 @@
 
 #include "mrob/utils_lie_differentiation.hpp"
 
+#include <iostream>
 
 using namespace mrob;
 
@@ -97,9 +98,9 @@ Mat<4,6> mrob::gradient_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
 }
 
 
-Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, const Mat41 &pi)
+Mat<3,6> mrob::gradient_Tcenter_Q_x_eta(const Mat4 &T_center, const Mat4 &Q, const Mat31 &eta)
 {
-    Mat<4,6> jacobian;
+    Mat<3,6> jacobian;
     Mat4 dQ;
 
 
@@ -111,8 +112,12 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.row(1) << -Q.row(2);
     dQ.row(2) <<  Q.row(1);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(0) = dQ*pi;
+    std::cout << "dQ \n" << dQ <<std::endl;
+    std::cout << "dQ left \n" << T_center*dQ <<std::endl;
+
+    dQ = T_center * dQ * T_center.transpose();
+    std::cout << "dQ left right \n" << dQ <<std::endl;
+    jacobian.col(0) = dQ.topLeftCorner<3,3>()*eta;
 
     // dQ / d xi(1) = [q3
     //                 0
@@ -122,8 +127,8 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.row(0) <<  Q.row(2);
     dQ.row(2) << -Q.row(0);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(1) = dQ*pi;
+    dQ = T_center * dQ * T_center.transpose();
+    jacobian.col(1) = dQ.topLeftCorner<3,3>()*eta;
 
     // dQ / d xi(2) = [-q2
     //                 q1
@@ -133,8 +138,8 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.row(0) << -Q.row(1);
     dQ.row(1) <<  Q.row(0);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(2) = dQ*pi;
+    dQ = T_center * dQ * T_center.transpose();
+    jacobian.col(2) = dQ.topLeftCorner<3,3>()*eta;
 
     // dQ / d xi(3) = [q4
     //                 0
@@ -143,8 +148,8 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.setZero();
     dQ.row(0) << Q.row(3);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(3) = dQ*pi;
+    dQ = T_center * dQ * T_center.transpose();
+    jacobian.col(3) = dQ.topLeftCorner<3,3>()*eta;
 
     // dQ / d xi(4) = [0
     //                 q4
@@ -153,8 +158,8 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.setZero();
     dQ.row(1) << Q.row(3);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(4) = dQ*pi;
+    dQ = T_center * dQ * T_center.transpose();
+    jacobian.col(4) = dQ.topLeftCorner<3,3>()*eta;
 
     // dQ / d xi(5) = [0
     //                 0
@@ -163,10 +168,10 @@ Mat<3,6> mrob::gradient_Tcenter_Q_x_pi(const Mat4 &T_center, const Mat4 &Q, cons
     dQ.setZero();
     dQ.row(2) << Q.row(3);
     dQ += dQ.transpose().eval();
-    dQ = T_center * dQ;
-    jacobian.col(5) = dQ*pi;
+    dQ = T_center * dQ * T_center.transpose();
+    jacobian.col(5) = dQ.topLeftCorner<3,3>()*eta;
 
-    return jacobian.topLeftCorner<3,6>();
+    return jacobian;
 }
 
 Mat6 mrob::pi_t_x_hessian_Q_x_pi(const Mat4 &Q, const Mat41 &pi)

@@ -89,7 +89,8 @@ protected:
 
 
     // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat3 Q_center_3x3_inv_no_kernel_;
+    Mat3 Q_center_3x3_inv_minus_plane_;
+    Mat4 Q_inv_minus_plane_;
 
     Mat4 Tcenter_;
 
