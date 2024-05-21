@@ -27,37 +27,37 @@
 #define FILTERLIDARINERTIAL_HPP_
 
 
-#include "mrob/matrix_base.hpp"
+#include "/home/mars_ugv/mrob/src/common/mrob/matrix_base.hpp"
 
 
 namespace mrob
 {
-struct orientation {
+struct Orientation {
     double x;
     double y;
     double z;
     double w;
 }; 
-struct angular_vel {
+struct Angular_vel {
     double x;
     double y;
     double z;
 };
 
-struct linear_acc {
+struct Linear_acc {
     double x;
     double y;
     double z;
 };
 struct Imu_msg {
     double stamp;
-    orientation orientation;
-    angular_vel angular_velocity;
-    linear_acc linear_acceleration;
+    Orientation orientation;
+    Angular_vel angular_velocity;
+    Linear_acc linear_acceleration;
 
-    Mat19 orientation_covariance;
-    Mat19 angular_velocity_covariance;
-    Mat19 linear_acceleration_covariance;
+    Mat3 orientation_covariance;
+    Mat3 angular_velocity_covariance;
+    Mat3 linear_acceleration_covariance;
 };
 
 struct LidarPoint
@@ -92,8 +92,11 @@ class FilterLidarInertial
     // Here constructor shou,d have all covariances values and hyperparams.
     FilterLidarInertial();
     ~FilterLidarInertial();
-    void read_observations(InertialData LaodingData);
+    void read_observations(const InertialData *LaodingData);
+    void print_data();
+    void propagate();
     void solve();
+    void init_state();
 
 };
 
