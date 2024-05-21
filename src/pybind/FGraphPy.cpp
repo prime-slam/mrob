@@ -44,12 +44,13 @@
 
 #include "mrob/factors/factor1Pose1Plane4d.hpp"
 #include "mrob/factors/nodePlane4d.hpp"
+#include "mrob/factors/BaregEFPlane.hpp"
+#include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter.hpp"
 #include "mrob/factors/EigenFactorPlaneCenter2.hpp"
 #include "mrob/factors/EigenFactorPoint.hpp"
-#include "mrob/factors/PiFactorPlane.hpp"
 #include "mrob/factors/EigenFactorPlaneDense.hpp"
-#include "mrob/factors/BaregEFPlane.hpp"
+#include "mrob/factors/EigenFactorPlaneDenseHomog.hpp"
 
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
@@ -243,6 +244,13 @@ public:
     factor_id_t add_eigen_factor_plane_dense()
     {
         std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneDense(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_eigen_factor_plane_dense_homog()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneDenseHomog(robust_type_));
         this->add_eigen_factor(f);
         return f->get_id();
     }
@@ -542,7 +550,9 @@ void init_FGraph(py::module &m)
                     py::arg("W"))
             // New names, more accurate with the methods. TODO depreate methods above
             .def("add_eigen_factor_plane_dense", &FGraphPy::add_eigen_factor_plane_dense)
+            .def("add_eigen_factor_plane_dense_homog", &FGraphPy::add_eigen_factor_plane_dense_homog)
             .def("add_eigen_factor_plane_alternating", &FGraphPy::add_eigen_factor_plane_center)
+            .def("add_eigen_factor_plane_alternating_plane", &FGraphPy::add_eigen_factor_plane_center_2)
             .def("add_eigen_factor_point", &FGraphPy::add_eigen_factor_point)
             .def("add_bareg_plane", &FGraphPy::add_bareg_plane)
             // Visual factors

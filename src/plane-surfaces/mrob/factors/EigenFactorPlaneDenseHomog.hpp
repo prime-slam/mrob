@@ -13,27 +13,25 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlaneCenter.hpp
+ * EigenFactorPlaneDense.hpp
  *
- *  Created on: Oct 7 2022
+ *  Created on: Aug 23, 2023
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
-// Secnd version of center for comparisons
-#ifndef EIGENFACTORPLANECENTER2_HPP_
-#define EIGENFACTORPLANECENTER2_HPP_
+#ifndef EIGENFACTORPLANEDENSEHOMOG_HPP_
+#define EIGENFACTORPLANEDENSEHOMOG_HPP_
 
 
-#include "mrob/factor.hpp"
 #include "mrob/factors/EigenFactorPlaneBase.hpp"
+#include "mrob/utils_lie_differentiation.hpp"
 
 
 namespace mrob{
 
 /**
- * This is a copy of EF Plane for comparison
  * Eigen factor Plane is a vertex that complies with the Fgraph standards
  * and inherits from base EigenFactor.hpp
  *
@@ -45,20 +43,23 @@ namespace mrob{
  * meaning we need to create a constructor PLUS an additional method
  *  - add_point()
  *
+ * This result is DENSE from the fact that the  hessian matrix is dense in
+ * the sense that cross terms are not zero,
+ * whereas the alternating EF obtained a block diagonal hessian.
+ * 
  * In order to build the problem we would follow the interface specifications by FGraph
  * but we need extra methods and variables to keep track of the neighbours
  *
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
- * XXX should we store all points?
  */
-class EigenFactorPlaneCenter2: public EigenFactorPlaneBase{
+class EigenFactorPlaneDenseHomog: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlaneCenter2(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCenter2() = default;
+    EigenFactorPlaneDenseHomog(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneDenseHomog() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -70,26 +71,34 @@ public:
      */
     void evaluate_jacobians() override;
     /**
-     * Chi2 is a scaling of the plane error from lambda_min
+     * Chi2 is a scaling of the plane error
      */
     void evaluate_chi2() override;
 
 
-protected:
+
     /**
-     * Estimates the plane parameters: v = [n', d]'_{4x1}, where v is unit, (due to the Eigen solution)
-     * although for standard plane estimation we could enforce unit on the normal vector n.
+     * Needs specific implementation, considering the dense nature of the EF
+     * @return
      */
+    bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0, mrob::factor_id_t id_j = 0) const override;
+
+
+protected:
     void estimate_plane() override;
 
-    Mat4 accumulatedCenterQ_;//Q matrix of accumulated values for the incremental update of the error.
-    Mat41 planeEstimationUnit_;
-    Mat4 Tcenter_;
 
     // This matrix is calculated when estiamting the plane, as a byproduct of the eigiendecompsition
-    Mat4 Q_inv_minus_plane_;
+    Mat4 Q_inv_no_kernel_;
 
+    /**
+     * gradient matrix = dQ/dx * pi.
+     * We store the block diagonal terms, according to the indexes of the nodes
+     */
+    std::deque<Mat<4,6>, Eigen::aligned_allocator<Mat<4,6>>> gradQ_xi_times_pi_;
+
+    Mat6 block_hessian_;
 };
 
 }
-#endif /* EigenFactorPlaneCenter_HPP_ */
+#endif /* EigenFactorPlaneDenseHOMOG_HPP_ */

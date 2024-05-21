@@ -65,7 +65,7 @@ void EigenFactorPlaneCenter2::evaluate_jacobians()
         // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi.
         // This does not do anything? we should test this variant as well
         Mat6 grad_pi_time_Q_grad;
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_no_kernel_*grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_minus_plane_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -117,30 +117,29 @@ void EigenFactorPlaneCenter2::estimate_plane()
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
     Eigen::SelfAdjointEigenSolver<Mat3> es;
     es.computeDirect(accumulatedCenterQ_.topLeftCorner<3,3>());
-    planeEstimationUnit_.head<3>() = es.eigenvectors().col(0);
-    planeEstimationUnit_(3) = 0.0;
 
-    planeEstimation_ = SE3(Tcenter_).inv().transform_plane(planeEstimationUnit_);
+    Mat41 planeEstimationCenter;
+    planeEstimationCenter.head<3>() = es.eigenvectors().col(0);
+    planeEstimationCenter(3) = 0.0;
+    planeEstimation_ = Tcenter_.transpose() * planeEstimationCenter;
 
     //std::cout << "\n and solution plane = \n" << planeEstimationUnit_ <<  std::endl;
     //std::cout << "plane estimation error (0): " << es.eigenvalues() <<  std::endl;
 
-    // Solution for the inverse without kernel from pi solution. This is an overkill, but it is for comparisons.
-    Eigen::SelfAdjointEigenSolver<Mat4> es4;
-    es4.compute(accumulatedQ_);
-    matData_t lambda_plane = es4.eigenvalues()(0);
-    Mat4 other_eigenvectors, other_eigenvectors_multiplied;
-    other_eigenvectors = es4.eigenvectors();
+    // Calculate almost inverse for the 3x3
+    matData_t lambda_plane = es.eigenvalues()(0);
+    Mat3 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es.eigenvectors();
     other_eigenvectors.col(0) *= 0.0;
     //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
     other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
-    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es4.eigenvalues()(1) ) * other_eigenvectors.col(1);
-    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es4.eigenvalues()(2) ) * other_eigenvectors.col(2);
-    other_eigenvectors_multiplied.col(3) = 1.0/(lambda_plane - es4.eigenvalues()(3) ) * other_eigenvectors.col(3);
+    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es.eigenvalues()(1)) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es.eigenvalues()(2)) * other_eigenvectors.col(2);
     //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
-    //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
-    Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
-
+    Q_inv_minus_plane_.setZero();
+    Q_inv_minus_plane_.topLeftCorner<3,3>() = other_eigenvectors * other_eigenvectors_multiplied.transpose();
+    Q_inv_minus_plane_(3,3)= -1.0/accumulatedQ_(3,3);
+    Q_inv_minus_plane_ = Tcenter_.transpose() * Q_inv_minus_plane_ * Tcenter_;
 }
 
 

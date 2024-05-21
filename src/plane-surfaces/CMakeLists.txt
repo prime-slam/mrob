@@ -10,12 +10,13 @@ SET(sources
     utils_lie_differentiation.cpp
     factors/nodePlane4d.cpp
     factors/factor1Pose1Plane4d.cpp
+    factors/PiFactorPlane.cpp
+    factors/BaregEFPlane.cpp
+    factors/EigenFactorPlaneBase.cpp
     factors/EigenFactorPlaneCenter.cpp
     factors/EigenFactorPoint.cpp
-    factors/PiFactorPlane.cpp
-    factors/EigenFactorPlaneBase.cpp
     factors/EigenFactorPlaneDense.cpp
-    factors/BaregEFPlane.cpp
+    factors/EigenFactorPlaneDenseHomog.cpp
     factors/EigenFactorPlaneCenter2.cpp
 )
 
@@ -29,12 +30,13 @@ SET(headers
     mrob/utils_lie_differentiation.hpp
     mrob/factors/nodePlane4d.hpp
     mrob/factors/factor1Pose1plane4d.hpp
+    mrob/factors/PiFactorPlane.hpp
+    mrob/factors/BaregEFPlane.hpp
+    mrob/factors/EigenFactorBase.hpp
     mrob/factors/EigenFactorPlaneCenter.hpp
     mrob/factors/EigenFactorPoint.hpp
-    mrob/factors/PiFactorPlane.hpp
-    mrob/factors/EigenFactorBase.hpp
     mrob/factors/EigenFactorDense.hpp
-    mrob/factors/BaregEFPlane.hpp
+    mrob/factors/EigenFactorDenseHomog.hpp
     mrob/factors/EigenFactorPlaneCenter2.hpp
 )
 

@@ -25,7 +25,7 @@
 
 #include "mrob/utils_lie_differentiation.hpp"
 
-
+#include <iostream>
 
 using namespace mrob;
 
@@ -96,6 +96,7 @@ Mat<4,6> mrob::gradient_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
 
     return jacobian;
 }
+
 
 
 Mat6 mrob::pi_t_x_hessian_Q_x_pi(const Mat4 &Q, const Mat41 &pi)

@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlaneDense.cpp
+ * EigenFactorPlaneDenseHomog.cpp
  *
  *  Created on: Aug 23, 2023
  *      Author: Gonzalo Ferrer
@@ -22,7 +22,7 @@
  */
 
 
-#include "mrob/factors/EigenFactorPlaneDense.hpp"
+#include "mrob/factors/EigenFactorPlaneDenseHomog.hpp"
 
 #include <iostream>
 #include <Eigen/Eigenvalues>
@@ -31,17 +31,17 @@
 
 using namespace mrob;
 
-EigenFactorPlaneDense::EigenFactorPlaneDense(Factor::robustFactorType robust_type):
+EigenFactorPlaneDenseHomog::EigenFactorPlaneDenseHomog(Factor::robustFactorType robust_type):
         EigenFactorPlaneBase(robust_type)
 {
 }
 
-void EigenFactorPlaneDense::evaluate_residuals()
+void EigenFactorPlaneDenseHomog::evaluate_residuals()
 {
     this->estimate_plane();
 }
 
-void EigenFactorPlaneDense::evaluate_jacobians()
+void EigenFactorPlaneDenseHomog::evaluate_jacobians()
 {
     // Assumes residuals evaluated beforehand
     J_.clear();
@@ -58,8 +58,6 @@ void EigenFactorPlaneDense::evaluate_jacobians()
         gradQ_xi_times_pi_.push_back(grad);
         jacobian =  grad.transpose() * planeEstimation_;
 
-
-        
         // calculate hessian ONLY Upper Trianlar view
         //tested: pi_t_x_hessian_Q_x_pi(),coincident with EFcenter-element-by-element implementation
         Mat6 pi_t_G_time_Q_grad;
@@ -67,9 +65,7 @@ void EigenFactorPlaneDense::evaluate_jacobians()
 
         // Cross term dpi * dQ*pi, where dpi/dxi_i = Q^-1 dQ/dxi_i pi. Due to symetry, both temrs are equal and sum (-> 2.0*)
         Mat6 grad_pi_time_Q_grad;
-
-        // symetric
-        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_minus_plane_*grad;
+        grad_pi_time_Q_grad.triangularView<Eigen::Upper>() = 2.0*grad.transpose()*Q_inv_no_kernel_*grad;
 
         // sum of all terms
         hessian.triangularView<Eigen::Upper>() =
@@ -80,17 +76,19 @@ void EigenFactorPlaneDense::evaluate_jacobians()
 
         J_.push_back(jacobian);
         H_.push_back(hessian);
+        // need to store 
+        //std::cout << "Jacobian =\n" << hessian <<std::endl;
     }
 }
 
-void EigenFactorPlaneDense::evaluate_chi2()
+void EigenFactorPlaneDenseHomog::evaluate_chi2()
 {
     // Point 2 plane exact error requires chi2 = pi' Q pi
     chi2_ = planeEstimation_.dot( accumulatedQ_ * planeEstimation_ );
     //std::cout << "plane = " << planeEstimation_ << "\n Q = \n" << accumulatedQ_ << std::endl;
 }
 
-void EigenFactorPlaneDense::estimate_plane()
+void EigenFactorPlaneDenseHomog::estimate_plane()
 {
     calculate_all_matrices_S();
     calculate_all_matrices_Q();
@@ -99,7 +97,7 @@ void EigenFactorPlaneDense::estimate_plane()
     if (accumulatedQ_.sum()< 1e-4)
     {
         planeEstimation_.setZero();
-        Q_inv_minus_plane_.setZero();
+        Q_inv_no_kernel_.setZero();
         return;
     }
 
@@ -108,13 +106,13 @@ void EigenFactorPlaneDense::estimate_plane()
     // pi_centered = [n, 0], such that T^{-\top} * pi_centered = pi,
     // This only hold for when T^{-\top} = [I, -n d].
     // and n d = - sum{p} / N = -E{x}    from the centered calculation of a plane
-    Tcenter_ = Mat4::Identity();
-    Tcenter_.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
+    Mat4 Tcenter = Mat4::Identity();
+    Tcenter.topRightCorner<3,1>() =  -accumulatedQ_.topRightCorner<3,1>()/accumulatedQ_(3,3);
     //std::cout << "T center = " << Tcenter <<  std::endl;
 
 
     Mat4 accumulatedCenterQ;
-    accumulatedCenterQ = Tcenter_ * accumulatedQ_ * Tcenter_.transpose();
+    accumulatedCenterQ = Tcenter * accumulatedQ_ * Tcenter.transpose();
 
 
     // Only needs Lower View from Q (https://eigen.tuxfamily.org/dox/classEigen_1_1SelfAdjointEigenSolver.html)
@@ -129,26 +127,34 @@ void EigenFactorPlaneDense::estimate_plane()
     planeEstimationCenter(3) = 0.0;
 
 
-    planeEstimation_ = Tcenter_.transpose() * planeEstimationCenter;
+    planeEstimation_ = Tcenter.transpose() * planeEstimationCenter;
 
-    // Calculate almost inverse for the 3x3
-    matData_t lambda_plane = es.eigenvalues()(0);
-    Mat3 other_eigenvectors, other_eigenvectors_multiplied;
-    other_eigenvectors = es.eigenvectors();
+    // Calcualte almost inverse of Q for later derivatives:
+    // option 1, full inverse: slightly inacurate solution.
+    //Q_inv_no_kernel_ = accumulatedQ_.inverse();
+
+    // Option 2. Direct eig decomposition and inverse
+    Eigen::SelfAdjointEigenSolver<Mat4> es4;
+    es4.compute(accumulatedQ_);
+    matData_t lambda_plane = es4.eigenvalues()(0);
+    Mat4 other_eigenvectors, other_eigenvectors_multiplied;
+    other_eigenvectors = es4.eigenvectors();
     other_eigenvectors.col(0) *= 0.0;
     //std::cout << "other eignevect \n" << other_eigenvectors <<std::endl;
     other_eigenvectors_multiplied.col(0) = 0.0 * other_eigenvectors.col(0);
-    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es.eigenvalues()(1)) * other_eigenvectors.col(1);
-    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es.eigenvalues()(2)) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(1) = 1.0/(lambda_plane - es4.eigenvalues()(1)) * other_eigenvectors.col(1);
+    other_eigenvectors_multiplied.col(2) = 1.0/(lambda_plane - es4.eigenvalues()(2)) * other_eigenvectors.col(2);
+    other_eigenvectors_multiplied.col(3) = 1.0/(lambda_plane - es4.eigenvalues()(3)) * other_eigenvectors.col(3);
     //std::cout << "other eignevect mult \n" << other_eigenvectors_multiplied <<std::endl;
-    Q_inv_minus_plane_.setZero();
-    Q_inv_minus_plane_.topLeftCorner<3,3>() = other_eigenvectors * other_eigenvectors_multiplied.transpose();
-    Q_inv_minus_plane_(3,3)= -1.0/accumulatedQ_(3,3);
-    Q_inv_minus_plane_ = Tcenter_.transpose() * Q_inv_minus_plane_ * Tcenter_;
+    //std::cout << "Q_inv_ 4x4 inverse =\n" << other_eigenvectors * other_eigenvectors_multiplied.transpose() <<std::endl;
+    Q_inv_no_kernel_ = other_eigenvectors * other_eigenvectors_multiplied.transpose();
+    //std::cout << "Difference  =\n" << (other_eigenvectors * other_eigenvectors_multiplied.transpose()-Q_inv_no_kernel_).squaredNorm() <<std::endl;
+
+
 
 }
 
-bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::factor_id_t id_j) const
+bool EigenFactorPlaneDenseHomog::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::factor_id_t id_j) const
 {
     // this condition should always hold since ids are taken from neubouring nodes, but in case useage changes.
     if (reverseNodeIds_.count(id_i) == 0   ||  reverseNodeIds_.count(id_j) == 0)
@@ -163,9 +169,8 @@ bool EigenFactorPlaneDense::get_hessian(MatRef H, mrob::factor_id_t id_i, mrob::
     }
     else
     {
-        // cross terms as:
-        H = 2.0* gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_minus_plane_ * gradQ_xi_times_pi_.at(localId2);
-        //std::cout << "Testing symetry =\n"  << std::endl;
+        // cross terms as
+        H = 2.0*gradQ_xi_times_pi_.at(localId1).transpose() * Q_inv_no_kernel_* gradQ_xi_times_pi_.at(localId2);
         return true;
     }
 }
