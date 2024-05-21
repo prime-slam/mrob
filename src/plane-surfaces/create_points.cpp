@@ -121,7 +121,7 @@ CreatePoints::CreatePoints(uint_t numberPoints, uint_t numberPlanes, uint_t numb
         initialPose_(initial_pose),
         numberPoses_(numberPoses)
 {
-    std::cout << "samples bias = " << noiseBias_ << "\n and point noise = " << noisePerPoint_ <<  std::endl;
+    //std::cout << "samples bias = " << noiseBias_ << "\n and point noise = " << noisePerPoint_ <<  std::endl;
     // 0) initialize vectors and variables
     X_.reserve(numberPoses_);
     pointId_.reserve(numberPoses_);
