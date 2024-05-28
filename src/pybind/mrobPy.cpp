@@ -34,6 +34,7 @@ namespace py = pybind11;
 
 void init_geometry(py::module &m);
 void init_FGraph(py::module &m);
+void init_FGraphDiff(py::module &m);
 //void init_FGraphDense(py::module &m);
 void init_PCRegistration(py::module &m);
 void init_PCPlanes(py::module &m);
@@ -61,6 +62,7 @@ PYBIND11_MODULE(pybind, m) {
     // TODO Need the namespace for the enums, but the Gprah should not be on it, just directly visible
     //py::module m_fg = m.def_submodule("fgraph");
     init_FGraph(m);
+    init_FGraphDiff(m);
 
     py::module m_reg = m.def_submodule("registration");
     init_PCRegistration(m_reg);
