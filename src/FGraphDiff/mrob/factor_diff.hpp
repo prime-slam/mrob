@@ -13,11 +13,11 @@
  * limitations under the License.
  *
  *
- * factor.hpp
+ * factor_diff.hpp
  *
- *  Created on: Feb 12, 2018
- *      Author: Gonzalo Ferrer
- *              g.ferrer@skoltech.ru
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
  */
 
@@ -27,11 +27,14 @@
 #include <vector>
 #include <memory>
 
+
+#include "mrob/matrix_base.hpp"
 #include "../FGraph/mrob/factor.hpp"
 
 
 namespace mrob{
 
+class Factor;
 /**
  * DiffFactor class is a base pure abstract class defining factors,
  * the second type of vertexes on factor graphs (bipartite).
@@ -45,7 +48,6 @@ namespace mrob{
  *
  * otherwise the optimization will not work properly.
  */
-
 
 class DiffFactor : public Factor
 {
@@ -61,37 +63,10 @@ public:
      * 
      */
     virtual void evaluate_d2r_dx_dz() =0;
-};
 
-/**
- * Abstract class DiffEigenFactor. This is a factor with extra methods than DiffFactor
- * which requires a new base abstract class.
- *
- * The Eigen factor connects different poses that have observed the same geometric entity.
- * It is not required an explicit parametrization of the current state, which is a geometric entity
- * estimated a priory on each iteration, e.g. a plane. The resultant topology
- * is N nodes connecting to the eigen factor.
- *
- * Hence, the new method get state, for instance a plane, but this state is outside the FGraphDiff optimization, that
- * is why we can consider this approach non-parametric
- *  - get_state()
- *
- * NOTE: due to its nature, multiple observation can be added to the same EF,
- * meaning we need to create a constructor PLUS an additional method
- *  - add_point()
- *
- * In order to build the problem we would follow the interface specifications by FGraphDiff
- * but we need extra methods and variables to keep track of the neighbours. For instance, we need
- * to get Jacobians and Hessian matrices
- *
- * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
- * XXX should we store all points?
- */
-class DiffEigenFactor : public EigenFactor
-{
-public:
-    DiffEigenFactor(robustFactorType factor_type = QUADRATIC, uint_t potNumberNodes = 5);
-    virtual ~DiffEigenFactor() = default;
+    virtual MatRefConst get_dr_dz() const = 0;
+
+    // virtual std::vector<MatRefConst> get_d2r_dx_dz() const = 0;
 };
 
 }

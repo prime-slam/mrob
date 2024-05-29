@@ -15,8 +15,10 @@
  *
  * FGraphDiffPy.cpp
  *
- *  Created on: Apr 5, 2019
- *      Author: Gonzalo Ferrer
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
+ *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
@@ -30,22 +32,6 @@
 #include "../FGraph/mrob/factors/nodePose2d.hpp"
 #include "mrob/factors/factor1Pose2d_diff.hpp"
 #include "mrob/factors/factor2Poses2d_diff.hpp"
-
-#include "mrob/factors/factor1PosePoint2Plane.hpp"
-#include "mrob/factors/factor1PosePoint2Point.hpp"
-
-#include "mrob/factors/factor1Pose1Plane4d.hpp"
-#include "mrob/factors/nodePlane4d.hpp"
-#include "mrob/factors/BaregEFPlane.hpp"
-#include "mrob/factors/PiFactorPlane.hpp"
-#include "mrob/factors/EigenFactorPlaneCenter.hpp"
-#include "mrob/factors/EigenFactorPlaneCenter2.hpp"
-#include "mrob/factors/EigenFactorPoint.hpp"
-#include "mrob/factors/EigenFactorPlaneDense.hpp"
-#include "mrob/factors/EigenFactorPlaneDenseHomog.hpp"
-
-// #include "mrob/factors/factorCameraProj3dPoint.hpp"
-// #include "mrob/factors/factorCameraProj3dLine.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -82,13 +68,13 @@ public:
         this->add_node(n);
         return n->get_id();
     }
-    void add_factor_1pose_2d(const py::EigenDRef<const Mat31> obs, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
+    void add_factor_1pose_2d_diff(const py::EigenDRef<const Mat31> obs, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
     {
         auto n1 = this->get_node(nodeId);
         std::shared_ptr<mrob::DiffFactor> f(new mrob::Factor1Pose2d_diff(obs,n1,obsInvCov,robust_type_));
         this->add_factor(f);
     }
-    void add_factor_2poses_2d(const py::EigenDRef<const Mat31> obs, uint_t nodeOriginId, uint_t nodeTargetId,
+    void add_factor_2poses_2d_diff(const py::EigenDRef<const Mat31> obs, uint_t nodeOriginId, uint_t nodeTargetId,
             const py::EigenDRef<const Mat3> obsInvCov, bool updateNodeTarget)
     {
         auto nO = this->get_node(nodeOriginId);
@@ -110,12 +96,12 @@ private:
 
 void init_FGraphDiff(py::module &m)
 {
-    py::enum_<FGraphDiffSolve::optimMethod>(m, "FGraphDiff.optimMethod")
-        .value("GN", FGraphDiffSolve::optimMethod::GN)
-        .value("LM", FGraphDiffSolve::optimMethod::LM)
-        .value("LM_ELLIPS", FGraphDiffSolve::optimMethod::LM_ELLIPS)
-        .export_values()
-        ;
+//     py::enum_<FGraphDiffSolve::optimMethod>(m, "FGraphDiff.optimMethod")
+//         .value("GN", FGraphDiffSolve::optimMethod::GN)
+//         .value("LM", FGraphDiffSolve::optimMethod::LM)
+//         .value("LM_ELLIPS", FGraphDiffSolve::optimMethod::LM_ELLIPS)
+//         .export_values()
+//         ;
 //     py::enum_<DiffFactor::robustFactorType>(m, "FGraphDiff.robustFactorType")
 //         .value("QUADRATIC", DiffFactor::robustFactorType::QUADRATIC)
 //         .value("CAUCHY", DiffFactor::robustFactorType::CAUCHY)
@@ -171,9 +157,6 @@ void init_FGraphDiff(py::module &m)
             .def("get_chi2_array", &FGraphDiffSolve::get_chi2_array,
                     "Returns the vector of chi2 values for each factor. It requires to be calculated -> solved the problem",
                     py::return_value_policy::copy)
-            .def("get_eigen_factors_robust_mask", &FGraphDiffSolve::get_eigen_factors_robust_mask,
-                    "Returns a vector (python list) of Eigen factors robust functions: - True if the robust mask was applied - False if the robust factor had not effect",
-                    py::return_value_policy::copy)
             .def("get_factors_robust_mask", &FGraphDiffSolve::get_factors_robust_mask,
                     "Returns a vector (python list) of factors robust functions: - True if the robust mask was applied - False if the robust factor had not effect",
                     py::return_value_policy::copy)
@@ -190,8 +173,8 @@ void init_FGraphDiff(py::module &m)
                     "output, node id, for later usage",
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
-            .def("add_factor_1pose_2d", &FGraphDiffPy::add_factor_1pose_2d)
-            .def("add_factor_2poses_2d", &FGraphDiffPy::add_factor_2poses_2d,
+            .def("add_factor_1pose_2d", &FGraphDiffPy::add_factor_1pose_2d_diff)
+            .def("add_factor_2poses_2d", &FGraphDiffPy::add_factor_2poses_2d_diff,
                     "Factors connecting 2 poses. If last input set to true (by default false), also updates "
                     "the value of the target Node according to the new obs + origin node",
                     py::arg("obs"),

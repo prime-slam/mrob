@@ -13,10 +13,12 @@
  * limitations under the License.
  *
  *
- * factor.cpp
+ * factor_diff.cpp
  *
- *  Created on: Feb 27, 2018
- *      Author: Gonzalo Ferrer
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
+ *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
  */

@@ -13,10 +13,12 @@
  * limitations under the License.
  *
  *
- * factor_graph_solve.hpp
+ * factor_graph_diff_solve.hpp
  *
- *  Created on: Mar 23, 2018
- *      Author: Gonzalo Ferrer
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
+ *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
@@ -150,14 +152,6 @@ public:
      */
     MatX1 get_chi2_array();
     /**
-     * Returns a vector (python list) of Eigen factors robust functions:
-     * - True if the robust mask was applied
-     * - False if the robust factor had not effect.
-     *
-     * The index in the graph is the Eigen DiffFactor Id.
-    */
-    std::vector<bool> get_eigen_factors_robust_mask();
-    /**
      * Returns a vector (python list)
      * - True if the robust mask was applied
      * - False if the robust factor had not effect.
@@ -190,12 +184,6 @@ protected:
      * The residuals are also calculated as b = A^T * W *r
      */
     void build_info_adjacency();
-    /**
-     * Builds the information matrix directly from Eigen Factors.
-     * It follows a different approach than build adjacency, it will only create
-     * a Hessian and Jacobian when at least one EF is present.
-     */
-    void build_info_EF();
     void build_schur(); // TODO
 
     /**
@@ -282,8 +270,6 @@ protected:
 
 
     // Methods for handling Eigen factors. If not used, no problem
-    SMatCol hessianEF_;
-    MatX1 gradientEF_;
     bool buildAdjacencyFlag_;
 
     // time profiling
