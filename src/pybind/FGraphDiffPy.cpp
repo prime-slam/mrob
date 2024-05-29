@@ -96,12 +96,12 @@ private:
 
 void init_FGraphDiff(py::module &m)
 {
-//     py::enum_<FGraphDiffSolve::optimMethod>(m, "FGraphDiff.optimMethod")
-//         .value("GN", FGraphDiffSolve::optimMethod::GN)
-//         .value("LM", FGraphDiffSolve::optimMethod::LM)
-//         .value("LM_ELLIPS", FGraphDiffSolve::optimMethod::LM_ELLIPS)
-//         .export_values()
-//         ;
+    py::enum_<FGraphDiffSolve::optimMethod>(m, "FGraphDiff.optimMethod")
+        .value("FGraphDiff_GN", FGraphDiffSolve::optimMethod::GN)
+        .value("FGraphDiff_LM", FGraphDiffSolve::optimMethod::LM)
+        .value("FGraphDiff_LM_ELLIPS", FGraphDiffSolve::optimMethod::LM_ELLIPS)
+        .export_values()
+        ;
 //     py::enum_<DiffFactor::robustFactorType>(m, "FGraphDiff.robustFactorType")
 //         .value("QUADRATIC", DiffFactor::robustFactorType::QUADRATIC)
 //         .value("CAUCHY", DiffFactor::robustFactorType::CAUCHY)
