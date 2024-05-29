@@ -13,16 +13,13 @@
  * limitations under the License.
  *
  *
- * example_solver.cpp
+ * example_solver_2d.cpp
  *
- *  Created on: April 10, 2019
- *      Author: Gonzalo Ferrer
- *              g.ferrer@skoltech.ru
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
-
-
-
 
 
 #include "mrob/factor_graph_diff_solve.hpp"
@@ -72,7 +69,7 @@ int main ()
 
     // solve the Gauss Newton optimization
     graph.print(true);
-    graph.solve(mrob::FGraphDiffSolve::LM);
+    graph.solve(mrob::FGraphDiffSolve::GN);
 
     std::cout << "\nSolved, chi2 = " << graph.chi2() << std::endl;
 

@@ -13,10 +13,12 @@
  * limitations under the License.
  *
  *
- * factor_graph.cpp
+ * factor_graph_diff.cpp
  *
- *  Created on: Feb 12, 2018
- *      Author: Gonzalo Ferrer
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
+ *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
  */
@@ -45,9 +47,3 @@ factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
     return factor->get_id();
 }
 
-factor_id_t FGraphDiff::add_eigen_factor(std::shared_ptr<DiffEigenFactor> &factor)
-{
-    factor->set_id(eigen_factors_.size());
-    eigen_factors_.emplace_back(factor);
-    return factor->get_id();
-}

@@ -13,11 +13,11 @@
  * limitations under the License.
  *
  *
- *  Created on: Jan 14, 2019
- *      Author: Gonzalo Ferrer
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
+ *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
- *              konstantin.pakulev@skoltech.ru
- *              Konstantin Pakulev
  *              Mobile Robotics Lab, Skoltech
  */
 #ifndef MROB_FACTOR2POSES2D_DIFF_H
@@ -62,6 +62,8 @@ namespace mrob{
         void evaluate_chi2() override;
         void evaluate_dr_dz() override;
         void evaluate_d2r_dx_dz() override;
+        MatRefConst get_dr_dz() const override;
+        // std::vector<MatRefConst> get_d2r_dx_dz() override;
 
         MatRefConst get_obs() const override {return obs_;};
         VectRefConst get_residual() const override {return r_;};

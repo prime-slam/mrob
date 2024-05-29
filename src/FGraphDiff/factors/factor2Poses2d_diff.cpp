@@ -13,15 +13,16 @@
  * limitations under the License.
  *
  *
- *  Created on: Jan 14, 2019
- *      Author: Konstantin Pakulev
- *              konstantin.pakulev@skoltech.ru
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
  *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
 
 #include <iostream>
+#include <vector>
 #include <mrob/factors/factor2Poses2d_diff.hpp>
 
 
@@ -100,6 +101,14 @@ void mrob::Factor2Poses2d_diff::evaluate_dr_dz()
     std::cout << "mrob::Factor2Poses2d_diff::evaluate_dr_dz - not implemented!" << std::endl;
 }
 
+MatRefConst Factor2Poses2d_diff::get_dr_dz() const
+{
+    Mat3 result;
+    result = this->dr_dz_;
+
+    return result;
+}
+
 void mrob::Factor2Poses2d_diff::evaluate_d2r_dx_dz()
 {
     d2r_dx_dz_[0].setZero();
@@ -107,6 +116,17 @@ void mrob::Factor2Poses2d_diff::evaluate_d2r_dx_dz()
     d2r_dx_dz_[2].setZero();
     std::cout << "mrob::Factor2Poses2d_diff::evaluate_d2r_dx_dz - not implemented!" << std::endl;
 }
+
+// std::vector<MatRefConst> Factor2Poses2d_diff::get_d2r_dx_dz()
+// {
+//     std::vector<Mat3> result[3];
+
+//     result[0] = this->d2r_dx_dz_[0];
+//     result[1] = this->d2r_dx_dz_[1];
+//     result[2] = this->d2r_dx_dz_[2];
+
+//     return result;
+// }
 
 
 void Factor2Poses2d_diff::print() const

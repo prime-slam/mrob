@@ -13,9 +13,9 @@
  * limitations under the License.
  *
  *
- *  Created on: Jan 14, 2019
- *      Author: Konstantin Pakulev
- *              konstantin.pakulev@skoltech.ru
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
  *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
@@ -52,10 +52,30 @@ void Factor1Pose2d_diff::evaluate_chi2()
     chi2_ = 0.5 * r_.dot(W_ * r_);
 }
 
-void mrob::Factor1Pose2d_diff::evaluate_dr_dz()
+void Factor1Pose2d_diff::evaluate_dr_dz()
 {
     dr_dz_ = - Mat3::Identity();
 }
+
+MatRefConst Factor1Pose2d_diff::get_dr_dz() const
+{
+    Mat3 result;
+    result = this->dr_dz_;
+
+    return result;
+}
+
+// std::vector<MatRefConst> mrob::Factor1Pose2d_diff::get_d2r_dx_dz() const
+// {
+//     std::vector<MatRefConst> result[3];
+
+//     result[0] = MatRef(this->d2r_dx_dz_[0]);
+//     result[1] = this->d2r_dx_dz_[1];
+//     result[2] = this->d2r_dx_dz_[2];
+
+//     return result;
+// }
+
 
 void mrob::Factor1Pose2d_diff::evaluate_d2r_dx_dz()
 {

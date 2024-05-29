@@ -13,11 +13,11 @@
  * limitations under the License.
  *
  *
- * factor_graph.hpp
+ * factor_graph_diff.hpp
  *
- *  Created on: Feb 12, 2018
- *      Author: Gonzalo Ferrer
- *              g.ferrer@skoltech.ru
+ *  Created on: May 28, 2024
+ *      Author: Aleksei Panchenko
+ *              aleksei.panchenko@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
  */
 
@@ -73,13 +73,6 @@ public:
      */
     factor_id_t add_factor(std::shared_ptr<DiffFactor> &factor);
     /**
-     * Adds an Eigen Factor, the special factor that is not formulated
-     * as a sum of residuals, but directly as a real value (eigenvalue)
-     * and therefore it requires a different processing, apart from the
-     * standard residual factors from above.
-     */
-    factor_id_t add_eigen_factor(std::shared_ptr<DiffEigenFactor> &factor);
-    /**
      * get_node returns the node given the node id key, now a position on the data structure
      */
     std::shared_ptr<DiffFactor>& get_factor(factor_id_t key);
@@ -89,4 +82,4 @@ public:
 
 }
 
-#endif /* FACTOR_Graph_DIFF_HPP_ */
+#endif /* FACTOR_GRAPH_DIFF_HPP_ */

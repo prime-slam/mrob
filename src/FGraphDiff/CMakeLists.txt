@@ -1,10 +1,5 @@
-# locate the necessary dependencies, if any
-
-project(FGraphDiff)
-
 # extra header files
 SET(headers
-    ../FGraph/mrob/node.hpp
     mrob/factor_diff.hpp
     mrob/factor_graph_diff.hpp
     mrob/factor_graph_diff_solve.hpp
@@ -12,7 +7,6 @@ SET(headers
 
 # extra source files
 SET(sources
-    ../FGraph/node.cpp
     factor_diff.cpp
     factor_graph_diff.cpp
     factor_graph_diff_solve.cpp
