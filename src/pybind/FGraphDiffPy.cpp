@@ -29,7 +29,7 @@
 
 
 #include "mrob/factor_graph_diff_solve.hpp"
-#include "../FGraph/mrob/factors/nodePose2d.hpp"
+#include "mrob/factors/nodePose2d.hpp"
 #include "mrob/factors/factor1Pose2d_diff.hpp"
 #include "mrob/factors/factor2Poses2d_diff.hpp"
 

@@ -29,7 +29,7 @@
 
 
 #include "mrob/matrix_base.hpp"
-#include "../FGraph/mrob/factor.hpp"
+#include "mrob/factor.hpp"
 
 
 namespace mrob{
