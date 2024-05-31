@@ -28,7 +28,7 @@
 #include <deque>// for long allocations
 
 #include "mrob/factor_diff.hpp"
-#include "../FGraph/mrob/factor_graph.hpp"
+#include "mrob/factor_graph.hpp"
 
 namespace mrob{
 /**
