@@ -17,6 +17,6 @@ graph.add_factor_2poses_2d(np.ones(3),n1,n2,invCov)
 
 for i in range(10):
     graph.solve(mrob.FGraphDiff_GN)
-    graph.print(True)
+graph.print(True)
 
 

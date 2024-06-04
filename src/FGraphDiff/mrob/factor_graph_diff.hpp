@@ -76,6 +76,11 @@ public:
      * get_node returns the node given the node id key, now a position on the data structure
      */
     std::shared_ptr<DiffFactor>& get_factor(factor_id_t key);
+
+    factor_id_t number_diff_factors() {return diff_factors_.size();};
+
+protected:
+    std::deque<std::shared_ptr<DiffFactor> > diff_factors_; // no specific order needed
 };
 
 

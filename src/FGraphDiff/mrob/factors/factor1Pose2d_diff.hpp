@@ -53,7 +53,7 @@ namespace mrob{
         void evaluate_jacobians() override;
         void evaluate_chi2() override;
         void evaluate_dr_dz() override;
-        void evaluate_d2r_dx_dz() override;
+        // void evaluate_d2r_dx_dz() override;
         MatRefConst get_dr_dz() const override;
         // std::vector<MatRefConst> get_d2r_dx_dz() const override;
 

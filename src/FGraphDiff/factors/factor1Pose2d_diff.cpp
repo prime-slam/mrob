@@ -54,35 +54,13 @@ void Factor1Pose2d_diff::evaluate_chi2()
 
 void Factor1Pose2d_diff::evaluate_dr_dz()
 {
-    dr_dz_ = - Mat3::Identity();
+    dr_dz_.setIdentity();
+    dr_dz_ *= -1;
 }
 
 MatRefConst Factor1Pose2d_diff::get_dr_dz() const
 {
-    Mat3 result;
-    result = this->dr_dz_;
-
-    return result;
-}
-
-// std::vector<MatRefConst> mrob::Factor1Pose2d_diff::get_d2r_dx_dz() const
-// {
-//     std::vector<MatRefConst> result[3];
-
-//     result[0] = MatRef(this->d2r_dx_dz_[0]);
-//     result[1] = this->d2r_dx_dz_[1];
-//     result[2] = this->d2r_dx_dz_[2];
-
-//     return result;
-// }
-
-
-void mrob::Factor1Pose2d_diff::evaluate_d2r_dx_dz()
-{
-    d2r_dx_dz_[0].setZero();
-    d2r_dx_dz_[1].setZero();
-    d2r_dx_dz_[2].setZero();
-    std::cout << "mrob::Factor1Pose2d_diff::evaluate_d2r_dx_dz - not implemented!" << std::endl;
+    return dr_dz_;
 }
 
 void Factor1Pose2d_diff::print() const

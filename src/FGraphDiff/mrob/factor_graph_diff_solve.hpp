@@ -147,6 +147,8 @@ public:
      * TODO If true, it re-evaluates the problem
      */
     MatX1 get_vector_b() { return b_;}
+
+    MatX1 get_vector_r() {return r_;}
     /**
      * Returns a vector of chi2 values for each of the factors.
      */
