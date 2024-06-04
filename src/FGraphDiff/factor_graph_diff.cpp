@@ -34,16 +34,19 @@ FGraphDiff::FGraphDiff()
 
 FGraphDiff::~FGraphDiff()
 {
-    factors_.clear();
-    nodes_.clear();
-    eigen_factors_.clear();
+    diff_factors_.clear();
 }
 
 factor_id_t FGraphDiff::add_factor(std::shared_ptr<DiffFactor> &factor)
 {
-    factor->set_id(factors_.size());
-    factors_.emplace_back(factor);
+    factor->set_id(diff_factors_.size());
+    diff_factors_.emplace_back(factor);
     obsDim_ += factor->get_dim_obs();
     return factor->get_id();
 }
 
+std::shared_ptr<DiffFactor> &mrob::FGraphDiff::get_factor(factor_id_t key)
+{
+    assert(key < diff_factors_.size() && "FGraphDiff::get_factor: incorrect key");
+    return diff_factors_[key];
+}

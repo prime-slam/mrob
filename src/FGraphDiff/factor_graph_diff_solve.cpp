@@ -284,11 +284,11 @@ void FGraphDiffSolve::build_adjacency()
     std::vector<uint_t> reservationW;
     reservationW.reserve( obsDim_ );
     std::vector<factor_id_t> indFactorsMatrix;
-    indFactorsMatrix.reserve(factors_.size());
+    indFactorsMatrix.reserve(diff_factors_.size());
     M_ = 0;
-    for (uint_t i = 0; i < factors_.size(); ++i)
+    for (uint_t i = 0; i < diff_factors_.size(); ++i)
     {
-        auto f = factors_[i];
+        auto f = diff_factors_[i];
         f->evaluate_residuals();
         f->evaluate_jacobians();
         f->evaluate_chi2();
@@ -310,9 +310,9 @@ void FGraphDiffSolve::build_adjacency()
 
 
     // XXX This could be subject to parallelization, maybe on two steps: eval + build
-    for (factor_id_t i = 0; i < factors_.size(); ++i)
+    for (factor_id_t i = 0; i < diff_factors_.size(); ++i)
     {
-        auto f = factors_[i];
+        auto f = diff_factors_[i];
 
         // 4) Get the calculated residual
         r_.block(indFactorsMatrix[i], 0, f->get_dim_obs(), 1) <<  f->get_residual();
@@ -390,9 +390,9 @@ void FGraphDiffSolve::build_info_adjacency()
 matData_t FGraphDiffSolve::chi2(bool evaluateResidualsFlag)
 {
     matData_t totalChi2 = 0.0;
-    for (uint_t i = 0; i < factors_.size(); ++i)
+    for (uint_t i = 0; i < diff_factors_.size(); ++i)
     {
-        auto f = factors_[i];
+        auto f = diff_factors_[i];
         if (evaluateResidualsFlag)
         {
             f->evaluate_residuals();
@@ -459,11 +459,11 @@ std::vector<MatX> FGraphDiffSolve::get_estimated_state()
 
 MatX1 FGraphDiffSolve::get_chi2_array()
 {
-    MatX1 results(factors_.size());
+    MatX1 results(diff_factors_.size());
 
-    for (uint_t i = 0; i < factors_.size(); ++i)
+    for (uint_t i = 0; i < diff_factors_.size(); ++i)
     {
-        auto f = factors_[i];
+        auto f = diff_factors_[i];
         results(i) = f->get_chi2();
     }
 
@@ -473,10 +473,10 @@ MatX1 FGraphDiffSolve::get_chi2_array()
 std::vector<bool> FGraphDiffSolve::get_factors_robust_mask()
 {
     std::vector<bool> results;
-    results.reserve(factors_.size());
+    results.reserve(diff_factors_.size());
 
     bool mask;
-    for (auto f : factors_)
+    for (auto f : diff_factors_)
     {
         mask = f->get_robust_mask();
         results.push_back(mask);

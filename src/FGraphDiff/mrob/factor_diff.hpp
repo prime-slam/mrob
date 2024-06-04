@@ -62,7 +62,7 @@ public:
      * @brief evaluate 2nd order derivative of residuals with reference to state and observation
      * 
      */
-    virtual void evaluate_d2r_dx_dz() =0;
+    // virtual void evaluate_d2r_dx_dz() =0;
 
     virtual MatRefConst get_dr_dz() const = 0;
 
