@@ -16,6 +16,7 @@ target_sources(pybind PRIVATE
     PCRegistrationPy.cpp 
     PCPlanesPy.cpp 
     FGraphPy.cpp
+    FGraphDiffPy.cpp
 )
 
 #####################################
@@ -24,7 +25,8 @@ target_sources(pybind PRIVATE
 target_link_libraries(pybind PRIVATE 
     SE3 
     PCRegistration 
-    FGraph 
+    FGraph
+    FGraphDiff 
     plane-surfaces 
     visual
 )
