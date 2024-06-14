@@ -31,11 +31,11 @@
 using namespace mrob;
 
 int PCRegistration::weighted_point(MatRefConst X, MatRefConst Y,
-                                   VectRefConst weight,  SE3 &T, double tol)
+                                   VectRefConst weight,  SE3 &T, uint_t num,  double tol)
 {
-    assert(X.cols() == 3  && "PCRegistration::Gicp: Incorrect sizing, we expect Nx3");
-    assert(X.rows() >= 3  && "PCRegistration::Gicp: Incorrect sizing, we expect at least 3 correspondences (not aligned)");
-    assert(Y.rows() == X.rows()  && "PCRegistration::Gicp: Same number of correspondences");
+    assert(X.cols() == 3  && "PCRegistration::weighted_point: Incorrect sizing, we expect Nx3");
+    assert(X.rows() >= 3  && "PCRegistration::weighted_point: Incorrect sizing, we expect at least 3 correspondences (not aligned)");
+    assert(Y.rows() == X.rows()  && "PCRegistration::weighted_point: Same number of correspondences");
     uint_t N = X.rows();
     // TODO precalculation of T by reduced Arun
 
@@ -71,7 +71,7 @@ int PCRegistration::weighted_point(MatRefConst X, MatRefConst Y,
         deltaUpdate = dxi.norm();
         iters++;
 
-    }while(deltaUpdate > tol && iters < 20);
+    }while(deltaUpdate > tol && iters < num);
 
     return iters; // number of iterations
 }
