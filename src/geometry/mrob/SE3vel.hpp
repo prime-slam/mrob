@@ -62,7 +62,7 @@ class SE3vel{
 
 
         Mat9 adj() const;
-
+        void update(const SE3vel& T);
         void Exp(const Mat91 &xi);
         Mat91 Ln(void) const;
 

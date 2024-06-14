@@ -84,7 +84,7 @@ class NodeInertial3d : public Node
  *  - obs from acc and gyro (TBD)
 */
 
-void propagate_interial3d(NodeInertial3d node, const Matx &obs);
+// void propagate_interial3d(NodeInertial3d node, const Mat91 &obs);
 
 }
 
