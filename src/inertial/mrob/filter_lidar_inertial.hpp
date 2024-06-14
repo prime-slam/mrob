@@ -27,8 +27,10 @@
 #define FILTERLIDARINERTIAL_HPP_
 
 
-#include "/home/mars_ugv/mrob/src/common/mrob/matrix_base.hpp"
-
+// #include "mrob/matrix_base.hpp"
+#include <mrob/matrix_base.hpp>
+#include <mrob/SE3velCov.hpp>
+#include <mrob/SO3.hpp>
 
 namespace mrob
 {
@@ -51,10 +53,9 @@ struct Linear_acc {
 };
 struct Imu_msg {
     double stamp;
-    Orientation orientation;
-    Angular_vel angular_velocity;
-    Linear_acc linear_acceleration;
-
+    Mat41 orientation;
+    Mat31 angular_velocity;
+    Mat31 linear_acceleration;
     Mat3 orientation_covariance;
     Mat3 angular_velocity_covariance;
     Mat3 linear_acceleration_covariance;
@@ -62,13 +63,13 @@ struct Imu_msg {
 
 struct LidarPoint
 {
-  LidarPoint() // constructor 
+  LidarPoint() : point(Mat31::Zero()), stamp(0.0), intensity(0.0)// constructor 
   {
-    point(0,0) = 0.0;
+    /*point(0,0) = 0.0;
     point(1,0) = 0.0;
     point(2,0) = 0.0; 
     stamp = 0.0; 
-    intensity = 0.0 ;
+    intensity = 0.0 ;*/
   };
   Mat31 point; 
   float stamp;  // time in nanosec 
@@ -86,8 +87,6 @@ struct InertialData
 };
 class FilterLidarInertial
 {
-  private: 
-    InertialData Data;
   public:
     // Here constructor shou,d have all covariances values and hyperparams.
     FilterLidarInertial();
@@ -96,8 +95,14 @@ class FilterLidarInertial
     void print_data();
     void propagate();
     void solve();
-    void init_state();
+    // void init_state();
 
+  private: 
+    const InertialData *Data;
+    mrob::SE3vel prev_state;
+    mrob::SE3vel curr_state;
+    bool init = true; 
+    double prev_state_stamp = 0; 
 };
 
 }//namespace

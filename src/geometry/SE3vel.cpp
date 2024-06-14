@@ -49,7 +49,9 @@ Mat31 SE3vel::t() const
 {
     return T_.block<3,1>(0,3);
 }
-
+void SE3vel::update(const SE3vel& T){
+    this->T_ = T.T_;
+}
 Mat31 SE3vel::v() const
 {
     return T_.topRightCorner<3,1>();

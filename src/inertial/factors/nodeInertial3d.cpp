@@ -37,7 +37,7 @@ NodeInertial3d::NodeInertial3d(const Mat<3,7> state,
 
 void NodeInertial3d::update(VectRefConst &dx)
 {
-    Vect<15> dxf = dx;
+    //Vect<15> dxf = dx;
 }
 
 
