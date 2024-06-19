@@ -68,7 +68,7 @@ class SE3vel{
 
         void regenerate();
         SE3vel operator*(const mrob::SE3vel& rhs);
-        SE3vel& operator=(const SE3vel& rhs);
+        SE3vel& operator=(const SE3vel& rhs); //hfre
         std::ostream& operator<<(std::ostream &os);
         /**
          * @brief Generates string representation of the object
