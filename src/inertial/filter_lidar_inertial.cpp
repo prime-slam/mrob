@@ -77,12 +77,11 @@ void  FilterLidarInertial::propagate(){
         Mat31 v = prev_state.v() + a * dt;
         Mat31 t = prev_state.t()+ v * dt;
         if (imu_msg.angular_velocity.size() != 3) continue;
-        Mat3 omega;
-        // chek: hat3()
-        omega << 0, -imu_msg.angular_velocity(2), imu_msg.angular_velocity(1),
-        imu_msg.angular_velocity(2), 0, -imu_msg.angular_velocity(0),
-        -imu_msg.angular_velocity(1), imu_msg.angular_velocity(0), 0 ;
-
+        Mat31 omega;
+        // omega << 0, -imu_msg.angular_velocity(2), imu_msg.angular_velocity(1),
+        // imu_msg.angular_velocity(2), 0, -imu_msg.angular_velocity(0),
+        // -imu_msg.angular_velocity(1), imu_msg.angular_velocity(0), 0;
+        omega = imu_msg.angular_velocity; // check biases
         SO3 dR(prev_state.R());
         dR.update_rhs(omega*dt);
         //Mat3 dR = Mat3::Identity() + omega * dt + 0.5 * omega * omega * dt * dt;
