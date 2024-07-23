@@ -54,7 +54,7 @@ void Factor1Pose2d_diff::evaluate_chi2()
 
 void Factor1Pose2d_diff::evaluate_dr_dz()
 {
-    dr_dz_.setIdentity();
+    dr_dz_.setIdentity(3,3);
     dr_dz_ *= -1;
 }
 

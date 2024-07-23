@@ -50,3 +50,22 @@ std::shared_ptr<DiffFactor> &mrob::FGraphDiff::get_factor(factor_id_t key)
     assert(key < diff_factors_.size() && "FGraphDiff::get_factor: incorrect key");
     return diff_factors_[key];
 }
+
+void FGraphDiff::print(bool complete) const
+{
+    std::cout << "Status of graph: " <<
+            " Nodes = " << nodes_.size()  <<
+            ", Factors = " << factors_.size() <<
+            ", Diff Factors = " << diff_factors_.size() <<
+            ", Eigen Factors = " << eigen_factors_.size() << std::endl;
+
+    if(complete)
+    {
+        for (auto &&n : nodes_)
+            n->print();
+        for (auto &&f : factors_)
+            f->print();
+        for (auto &&f : diff_factors_)
+            f->print();
+    }
+}
