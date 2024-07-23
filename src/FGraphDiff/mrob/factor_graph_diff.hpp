@@ -79,6 +79,7 @@ public:
 
     factor_id_t number_diff_factors() {return diff_factors_.size();};
 
+    void print(bool complete = false) const override;
 protected:
     std::deque<std::shared_ptr<DiffFactor> > diff_factors_; // no specific order needed
 };

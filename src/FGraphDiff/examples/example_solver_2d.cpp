@@ -64,6 +64,9 @@ int main ()
         std::shared_ptr<mrob::DiffFactor> f2(new mrob::Factor2Poses2d_diff(obs,n2,n1,obsInformation));
         diff_factor_idx.emplace_back(graph.add_factor(f2));
 
+        obs << 1, 1, 0;
+        std::shared_ptr<mrob::DiffFactor> gnss_2(new mrob::Factor1Pose2d_diff(obs,n2, obsInformation*1e4));
+        diff_factor_idx.emplace_back(graph.add_factor(gnss_2));
 
         std::shared_ptr<mrob::Node> n3(new mrob::NodePose2d(x));
         graph.add_node(n3);
@@ -71,6 +74,10 @@ int main ()
         obs << -1 , -1 , 0;
         std::shared_ptr<mrob::DiffFactor> f3(new mrob::Factor2Poses2d_diff(obs,n3,n2,obsInformation));
         diff_factor_idx.emplace_back(graph.add_factor(f3));
+
+        obs << 2, 2, 0;
+        std::shared_ptr<mrob::DiffFactor> gnss_3(new mrob::Factor1Pose2d_diff(obs,n3,obsInformation*1e4));
+        diff_factor_idx.emplace_back(graph.add_factor(gnss_3));
     }
 
     // solve the Gauss Newton optimization
@@ -108,48 +115,30 @@ int main ()
 
     Eigen::SimplicialLDLT<mrob::SMatCol,Eigen::UpLoType::Lower, Eigen::AMDOrdering<mrob::SMatCol::StorageIndex>> alpha_solve;
     alpha_solve.compute(A.transpose()*W*A);
-    SMatCol rhs(A.rows(),A.cols());
+    SMatCol rhs(A.cols(),A.cols());
     rhs.setIdentity();
     std::cout << rhs << std::endl;
 
-    MatX alpha = alpha_solve.solve(rhs); //
-    std::cout << "\n alpha =\n" << alpha << std::endl;
+    MatX alpha = alpha_solve.solve(rhs); // get information matrix graph - should be the same #TODO
+    std::cout << "\nalpha =\n" << alpha << std::endl;
 
+    MatX info_matrix = graph.get_information_matrix();
+    std::cout << "\ninfo matrix =\n" << info_matrix << std::endl;
+
+    std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
+
+    graph.build_dr_dz();
+
+    std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
+
+
+    SMatRow dr_dz_full = graph.get_dr_dz();
+    std::cout << "\nMatrix B aka dr_dz matrix =\n" << MatX(dr_dz_full) << std::endl;
 
     MatX errors_grads;
     errors_grads.resize(graph.get_dimension_state(), graph.get_dimension_obs());
 
-    int f_index = 0;
-
-    for (uint_t i = 0; i < diff_factor_idx.size(); ++i)
-    {
-        auto f = graph.get_factor(diff_factor_idx[i]);
-        f->evaluate_jacobians();
-        f->evaluate_residuals();
-        f->evaluate_dr_dz();
-
-        auto dr_dz = f->get_dr_dz();
-        std::cout<< "\ndr_dz = " << dr_dz << std::endl;
-
-        auto dr_dx = Mat3(f->get_jacobian().block(0,0,3,3));
-        std::cout << "\ndr_dx = " << dr_dx << std::endl;
-
-        auto Wf = f->get_information_matrix();
-        std::cout << "\nW = " << Wf << std::endl;
-
-        auto r = f->get_residual();
-        std::cout << "\nresidual = " << r << std::endl;
-
-        std::cout << dr_dx*Wf*dr_dz << std::endl;
-
-        auto error = MatX(dr_dx*Wf*dr_dz);
-        std::cout << "\nError value: " << error << std::endl; 
-
-        errors_grads.block(f_index, f_index, f->get_dim_obs(), f->get_dim_obs()) <<  error;
-        f_index += f->get_dim_obs();
-    }
-
-    errors_grads = -alpha*errors_grads;
+    errors_grads = -alpha*dr_dz_full.transpose()*W*dr_dz_full;
 
     std::cout << "\nError_grads = \n" << errors_grads << std::endl;
 

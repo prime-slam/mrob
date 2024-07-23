@@ -255,6 +255,100 @@ void FGraphDiffSolve::build_index_nodes_matrix()
     }
 }
 
+void FGraphDiffSolve::build_dr_dz()
+{
+
+    indNodesMatrix_.clear();
+    this->build_index_nodes_matrix();
+    assert(N_ == stateDim_ && "FGraphDiffSolve::buildAdjacency: State Dimensions are not coincident\n");
+
+
+    // 2.1) Check for consistency. With 0 observations the problem does not need to be build, EF may still build it
+    if (obsDim_ == 0)
+    {
+        buildAdjacencyFlag_ = false;
+        return;
+    }
+    buildAdjacencyFlag_ = true;
+
+    // 2) resize properly matrices (if needed)
+    // r_.resize(obsDim_,1);//dense vector TODO is it better to reserve and push_back??
+    // A_.resize(obsDim_, stateDim_);//Sparse matrix clears data, but keeps the prev reserved space
+    // W_.resize(obsDim_, obsDim_);//TODO should we reinitialize this all the time? an incremental should be fairly easy
+    //===============================================
+    B_.resize(obsDim_, stateDim_);
+
+    std::vector<uint_t> reservationB;
+    reservationB.reserve( obsDim_ );
+    std::vector<uint_t> reservationW;
+    // reservationW.reserve( obsDim_ );
+    std::vector<factor_id_t> indFactorsMatrix;
+    indFactorsMatrix.reserve(diff_factors_.size());
+    M_ = 0;
+
+    for (uint_t i = 0; i < diff_factors_.size(); ++i)
+    {
+        auto f = diff_factors_[i];
+        f->evaluate_residuals();
+        f->evaluate_jacobians();
+        f->evaluate_chi2();
+        f->evaluate_dr_dz();
+
+        // calculate dimensions for reservation and bookeping vector
+        uint_t dim = f->get_dim_obs();
+        uint_t allDim = f->get_all_nodes_dim();
+        for (uint_t j = 0; j < dim; ++j)
+        {
+            reservationB.push_back(allDim);
+            // reservationW.push_back(dim-j);//XXX this might be allocating more elements than necessary, check
+        }
+        indFactorsMatrix.push_back(M_);
+        M_ += dim;
+    }
+    assert(M_ == obsDim_ && "FGraphDiffSolve::buildAdjacency: Observation dimensions are not coincident\n");
+    B_.reserve(reservationB); //Exact allocation for elements.
+    // W_.reserve(reservationW); //same
+
+    for (factor_id_t i = 0; i < diff_factors_.size(); ++i)
+    {
+        auto f = diff_factors_[i];
+
+        // 4) Get the calculated residual
+        r_.block(indFactorsMatrix[i], 0, f->get_dim_obs(), 1) <<  f->get_residual();
+
+        // 5) build Adjacency matrix as a composition of rows
+        // 5.1) Get the number of nodes involved. It is a vector of nodes
+        auto neighNodes = f->get_neighbour_nodes();
+        // Iterates over the Jacobian row
+        for (uint_t l=0; l < f->get_dim_obs() ; ++l)
+        {
+            uint_t totalK = 0;
+            // Iterates over the number of neighbour Nodes (ordered by construction)
+            for (uint_t j=0; j < neighNodes->size(); ++j)
+            {
+                uint_t dimNode = (*neighNodes)[j]->get_dim();
+                // check for node if it is an anchor node, then skip emplacement of Jacobian in the Adjacency
+                if ((*neighNodes)[j]->get_node_mode() == Node::nodeMode::ANCHOR)
+                {
+                    totalK += dimNode;// we need to account for the dim in the Jacobian, to read the next block
+                    continue;//skip this loop
+                }
+                factor_id_t id = (*neighNodes)[j]->get_id();
+                for(uint_t k = 0; k < dimNode; ++k)
+                {
+                    // order according to the permutation vector
+                    uint_t iRow = indFactorsMatrix[i] + l;
+                    // In release mode, indexes outside will not trigger an exception
+                    uint_t iCol = indNodesMatrix_[id] + k;
+                    // This is an ordered insertion
+                    B_.insert(iRow,iCol) = f->get_dr_dz()(l, k);
+                }
+                totalK += dimNode;
+            }
+        }
+    }
+}
+
 void FGraphDiffSolve::build_adjacency()
 {
     // 1) Node indexes bookkept. We use a map to ensure the index from nodes to the current active_node
@@ -275,12 +369,13 @@ void FGraphDiffSolve::build_adjacency()
     r_.resize(obsDim_,1);//dense vector TODO is it better to reserve and push_back??
     A_.resize(obsDim_, stateDim_);//Sparse matrix clears data, but keeps the prev reserved space
     W_.resize(obsDim_, obsDim_);//TODO should we reinitialize this all the time? an incremental should be fairly easy
-
-
+    B_.resize(obsDim_, stateDim_);
 
     // 3) Evaluate every factor given the current state and bookeeping of DiffFactor indices
     std::vector<uint_t> reservationA;
     reservationA.reserve( obsDim_ );
+    std::vector<uint_t> reservationB;
+    reservationB.reserve( obsDim_ );
     std::vector<uint_t> reservationW;
     reservationW.reserve( obsDim_ );
     std::vector<factor_id_t> indFactorsMatrix;
@@ -292,6 +387,7 @@ void FGraphDiffSolve::build_adjacency()
         f->evaluate_residuals();
         f->evaluate_jacobians();
         f->evaluate_chi2();
+        f->evaluate_dr_dz();
 
         // calculate dimensions for reservation and bookeping vector
         uint_t dim = f->get_dim_obs();
@@ -299,6 +395,7 @@ void FGraphDiffSolve::build_adjacency()
         for (uint_t j = 0; j < dim; ++j)
         {
             reservationA.push_back(allDim);
+            reservationB.push_back(allDim);
             reservationW.push_back(dim-j);//XXX this might be allocating more elements than necessary, check
         }
         indFactorsMatrix.push_back(M_);
@@ -306,6 +403,7 @@ void FGraphDiffSolve::build_adjacency()
     }
     assert(M_ == obsDim_ && "FGraphDiffSolve::buildAdjacency: Observation dimensions are not coincident\n");
     A_.reserve(reservationA); //Exact allocation for elements.
+    B_.reserve(reservationB);
     W_.reserve(reservationW); //same
 
 
@@ -343,6 +441,7 @@ void FGraphDiffSolve::build_adjacency()
                     uint_t iCol = indNodesMatrix_[id] + k;
                     // This is an ordered insertion
                     A_.insert(iRow,iCol) = f->get_jacobian()(l, k + totalK);
+                    B_.insert(iRow,iCol) = f->get_dr_dz()(l, k);
                 }
                 totalK += dimNode;
             }
@@ -365,8 +464,6 @@ void FGraphDiffSolve::build_adjacency()
             }
         }
     } //end factors loop
-
-
 }
 
 void FGraphDiffSolve::build_info_adjacency()

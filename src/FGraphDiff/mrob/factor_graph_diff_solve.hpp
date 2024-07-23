@@ -136,6 +136,9 @@ public:
      * TODO If true, it re-evaluates the problem
      */
     SMatCol get_adjacency_matrix() { return A_;}
+    void build_dr_dz();
+    SMatRow get_dr_dz() {return B_;} 
+
     /**
      * Returns a copy to the W matrix.
      * There is a conversion (implies copy) from Row to Col-convention (which is what np.array needs)
@@ -187,7 +190,6 @@ protected:
      */
     void build_info_adjacency();
     void build_schur(); // TODO
-
     /**
      * Once the matrix L is generated, it solves the linearized LSQ
      * by using the Gauss-Newton algorithm
@@ -256,6 +258,7 @@ protected:
     std::unordered_map<factor_id_t, factor_id_t > indNodesMatrix_;
 
     SMatRow A_; //Adjacency matrix, as a Row sparse matrix. The reason is for filling in row-fashion for each factor
+    SMatRow B_; // block matrix for dr_dz jacobians of factors
     SMatRow W_; //A block diagonal information matrix. For types Adjacency it calculates its block transposed squared root
     MatX1 r_; // Residuals as given by the factors
 
