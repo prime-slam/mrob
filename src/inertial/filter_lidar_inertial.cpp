@@ -26,11 +26,16 @@
 
 #include "mrob/filter_lidar_inertial.hpp"
 #include "mrob/estimate_plane.hpp"
+#include "mrob/SO3.hpp"
 #include <fstream> 
 #include <iostream>
 #include <Eigen/Dense>
 
 using namespace mrob;
+
+
+
+
 FilterLidarInertial::FilterLidarInertial()
 : Data_(nullptr), prev_state_stamp_(0.0)
 {
@@ -63,7 +68,76 @@ void  FilterLidarInertial::print_data(){
 
 
 }
+Mat3 FilterLidarInertial::calculatA(const Mat31 & u){
+  //note that u here = omega*dt
+  Mat3 A;
+  Mat3 skew = hat3(u);
+  double norm_u = u.norm();
+  double alpha_u = (norm_u / 2.0) * (1.0 / tan(norm_u / 2.0));
+  A = Mat3::Identity() - 0.5 * skew + ((1-alpha_u)/(norm_u * norm_u))*skew*skew; 
+  return A.inverse(); 
+}
 
+Mat<18,18> FilterLidarInertial::calculateF(const Mat31 & omega, const Mat31 & a, const Mat3 & R, const double & dt){
+
+  Mat<18,18> Fx = Mat<18,18>::Identity(); 
+  Mat3 expW = SO3(-omega*dt).R(); 
+  Mat3 A = calculatA(omega*dt); 
+  Mat3 skew_a = hat3(a); 
+
+  Fx.block<3,3>(0,0) = expW; 
+  Fx.block<3,3>(0,3) = Mat3::Zero(); 
+  Fx.block<3,3>(0,6) = Mat3::Zero(); 
+  Fx.block<3,3>(0,9) = -A.transpose() * dt;
+  Fx.block<3,3>(0,12) = Mat3::Zero(); 
+  Fx.block<3,3>(0,15) = Mat3::Zero();
+  // -----
+  Fx.block<3,3>(3,0) = Mat3::Zero();
+  Fx.block<3,3>(3,3) = Mat3::Identity(); 
+  Fx.block<3,3>(3,6) = Mat3::Identity() * dt; 
+  Fx.block<3,3>(3,9) = Mat3::Zero();
+  Fx.block<3,3>(3,12) = Mat3::Zero(); 
+  Fx.block<3,3>(3,15) = Mat3::Zero();
+  // ---
+  Fx.block<3,3>(6,0) = - R * skew_a * dt;
+  Fx.block<3,3>(6,3) = Mat3::Zero(); 
+  Fx.block<3,3>(6,6) = Mat3::Identity(); 
+  Fx.block<3,3>(6,9) = Mat3::Zero();
+  Fx.block<3,3>(6,12) = - R * dt; 
+  Fx.block<3,3>(6,15) = Mat3::Identity() * dt;
+  // -- 
+  // Fx.block<3,3>(9,0) = Mat3::Zero();
+  // Fx.block<3,3>(9,3) = Mat3::Zero(); 
+  // Fx.block<3,3>(9,6) = Mat3::Zero(); 
+  // Fx.block<3,3>(9,9) = Mat3::Identity();
+  // Fx.block<3,3>(9,12) = Mat3::Zero(); 
+  // Fx.block<3,3>(9,15) = Mat3::Zero();
+  // //---
+  // Fx.block<3,3>(12,0) = Mat3::Zero();
+  // Fx.block<3,3>(12,3) = Mat3::Zero(); 
+  // Fx.block<3,3>(12,6) = Mat3::Zero(); 
+  // Fx.block<3,3>(12,9) = Mat3::Zero();
+  // Fx.block<3,3>(12,12) = Mat3::Identity();
+  // Fx.block<3,3>(12,15) = Mat3::Zero();
+  // //--
+  // Fx.block<3,3>(15,0) = Mat3::Zero();
+  // Fx.block<3,3>(15,3) = Mat3::Zero(); 
+  // Fx.block<3,3>(15,6) = Mat3::Zero(); 
+  // Fx.block<3,3>(15,9) = Mat3::Zero();
+  // Fx.block<3,3>(15,12) = Mat3::Zero();
+  // Fx.block<3,3>(15,15) = Mat3::Identity();
+return Fx; 
+}
+
+Mat<18,12> FilterLidarInertial::calculateG(const Mat31 & omega, const Mat31 & a, const Mat3 & R, const double & dt){
+  Mat<18,12> G = Mat<18,12>::Zero(); 
+  Mat3 A = calculatA(omega*dt);
+  G.block<3,3>(0,0) = -A.transpose() * dt; 
+  G.block<3,3>(6,3) = R * dt; 
+  G.block<3,3>(9,6) = Mat3::Identity() *dt; 
+  G.block<3,3>(12,9) = Mat3::Identity() *dt; 
+  return G;
+  }
 void  FilterLidarInertial::propagate(){
   //  if (init) {
   //       if (Data && !Data->imu_buffer.empty()) {
@@ -89,8 +163,8 @@ void  FilterLidarInertial::propagate(){
         double dt = imu_msg.stamp - prev_state_stamp_; 
         if (dt <= 0) continue;
         Mat31 a = ( prev_state_.inv().R() * Global_frame_.inv().R() * imu_msg.linear_acceleration) - ab_ + gravity_; 
-        Mat31 v = prev_state_.v() + prev_a_ * dt;
-        Mat31 t = prev_state_.t()+ prev_state_.v() * dt;
+        Mat31 v = prev_state_.v() + prev_a_ * dt; //transform it 
+        Mat31 t = prev_state_.t()+ prev_state_.v() * dt ; //add acc:  0.5*prev_a_*dt*dt;
         if (imu_msg.angular_velocity.size() != 3) continue;
         Mat31 omega;
         omega = imu_msg.angular_velocity - gb_ ; 
@@ -98,6 +172,7 @@ void  FilterLidarInertial::propagate(){
         dR.update_rhs(omega*dt);
         prev_state_.update(mrob::SE3vel(dR, t, v)); 
         prev_state_stamp_ = imu_msg.stamp; 
+        prev_a_ = a;
       }
     } 
 
@@ -138,6 +213,12 @@ Mat31 FilterLidarInertial::estimate_gravity_vector(const std::vector<Imu_msg>& i
 void FilterLidarInertial::solve(){
 
   mrob::FGraphSolve graph(mrob::FGraphSolve::ADJ);
+  // TODO 
+  //! creat a state <3x7> 
+  //! update node to NodeInertial3d 
+  //! update get_state
+  //! update jacobians 
+
   std::shared_ptr<mrob::Node> n0(new mrob::NodePose3d(mrob::SE3(prev_state_.T()), mrob::Node::ANCHOR));
   mrob::factor_id_t id0 = graph.add_node(n0);
   std::shared_ptr<mrob::Node> n1(new mrob::NodePose3d(mrob::SE3(curr_state_.T())));

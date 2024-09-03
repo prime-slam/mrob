@@ -165,7 +165,16 @@ void SE3vel::Exp(const Mat91& xi)
 
     this->T_ = result;
 }
+void SE3vel::update_lhs(const Mat91 &dxi){
 
+    SE3vel dT(dxi);
+    T_ = dT.T()*T_; 
+}
+void SE3vel::update_rhs(const Mat91 &dxi){
+
+    SE3vel dT(dxi);
+    T_ = T_ * dT.T(); 
+}
 Mat91 SE3vel::Ln() const
 {
     Mat91 result;

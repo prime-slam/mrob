@@ -27,6 +27,7 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp"
+#include "mrob/SE3vel.hpp"
 //#include "mrob/SE3_extended.hpp"
 #include "mrob/node.hpp"
 
@@ -50,7 +51,7 @@ namespace mrob{
 class NodeInertial3d : public Node
 {
   public:
-    NodeInertial3d(const Mat<3,7> state,
+    NodeInertial3d(const Mat<3,8> state,
             Node::nodeMode mode = STANDARD);
     ~NodeInertial3d() = default;
 
@@ -63,11 +64,11 @@ class NodeInertial3d : public Node
     void print() const override;
 
   protected:
-    // joint state including s = [rotation(3x3), position, velocity, gyrro_bias, acc_bias]
-    Mat<3,7> state_;
-    Mat<3,7> auxiliary_state_;
+    // joint state including s = [rotation(3x3), position, velocity, gyrro_bias, acc_bias, gravity]
+    Mat<3,8> state_;
+    Mat<3,8> auxiliary_state_;
     //SE3extened pose;//TODO needs to approve first the extended SE3 MR
-    Mat31 gyro_bias_, acc_bias_;
+    Mat31 gyro_bias_, acc_bias_, gravity_;
 
 
   public:

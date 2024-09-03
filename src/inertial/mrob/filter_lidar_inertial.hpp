@@ -33,6 +33,7 @@
 #include <mrob/SO3.hpp>
 #include "mrob/factor_graph_solve.hpp"
 #include "mrob/factors/nodePose3d.hpp"
+// #include "mrob/inertial/nodeinertial3d.hpp"
 #include "mrob/factors/factor1Pose3d.hpp"
 #include "mrob/factors/factor2Poses3d.hpp"
 #include "mrob/factors/factor2PosesPoint2PlaneInterpolated.hpp"
@@ -100,9 +101,12 @@ class FilterLidarInertial
     void evaluate_chi2();
     void set_extrinsics(const mrob::Mat3 R, const mrob::Mat31 T); 
     Mat31 estimate_gravity_vector(const std::vector<Imu_msg>& imu_buffer); 
+    Mat<18,18> calculateF(const Mat31 & omega, const Mat31 & a, const Mat3 & R, const double & dt);
+    Mat<18,12> calculateG(const Mat31 & omega, const Mat31 & a, const Mat3 & R, const double & dt);
+    Mat3 calculatA(const Mat31 & u); 
     mrob::SE3 lidar_to_imu_; 
     mrob::SO3 Global_frame_;
-    mrob::SE3vel prev_state_;
+    mrob::SE3vel prev_state_; 
     mrob::SE3vel curr_state_;
     Mat31 gravity_ = Mat31(0, 0, 9.81);
     bool init_ = true; 

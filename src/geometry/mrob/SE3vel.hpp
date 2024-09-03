@@ -63,8 +63,11 @@ class SE3vel{
 
         Mat9 adj() const;
         void update(const SE3vel& T);
+        void update_lhs(const Mat91 &dxi); 
+        void update_rhs(const Mat91 &dxi);
         void Exp(const Mat91 &xi);
         Mat91 Ln(void) const;
+
 
         void regenerate();
         SE3vel operator*(const mrob::SE3vel& rhs);

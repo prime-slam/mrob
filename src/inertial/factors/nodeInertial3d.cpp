@@ -26,50 +26,51 @@
 
 using namespace mrob;
 
-NodeInertial3d::NodeInertial3d(const Mat<3,7> state,
+NodeInertial3d::NodeInertial3d(const Mat<3,8> state,
                 Node::nodeMode mode):
             Node(15,mode), state_(state), auxiliary_state_(state)
 {
     //ass000ert
     gyro_bias_ = state.col(5);
     acc_bias_ = state.col(6);
+    gravity_ = state.col(7); 
 }
 
 void NodeInertial3d::update(VectRefConst &dx)
 {
-    Vect<15> dxf = dx;
-    SE3 T (SO3(state_.block<3, 3>(0, 0)), Mat31(state_.block<3, 1>(0, 3)));
-    T.update_lhs(dxf.head<6>()); 
-    Mat31 V = state_.col(4)+dxf.segment<3>(6); 
+    Vect<18> dxf = dx;
+    SE3vel T (SO3(state_.block<3, 3>(0, 0)), Mat31(state_.block<3, 1>(0, 3)), Mat31(state_.block<3, 1>(0, 4)));
+    T.update_lhs(dxf.head<9>()); 
     gyro_bias_ += dxf.segment<3>(9); 
-    acc_bias_ += dxf.tail<3>();  
-    state_<<T.R(), T.t(), V, gyro_bias_, acc_bias_; 
+    acc_bias_ += dxf.segment<3>(12); 
+    gravity_ +=dxf.tail<3>();
+    state_<<T.R(), T.t(), T.v(), gyro_bias_, acc_bias_, gravity_; 
 }
 
 
 void NodeInertial3d::update_from_auxiliary(VectRefConst &dx)
 {
-    Vect<15> dxf = dx;
+    Vect<18> dxf = dx;
     state_ = auxiliary_state_;
-    SE3 T (SO3(state_.block<3, 3>(0, 0)), Mat31(state_.block<3, 1>(0, 3)));
-    T.update_lhs(dxf.head<6>()); 
-    Mat31 V = state_.col(4)+dxf.segment<3>(6); 
+    SE3vel T (SO3(state_.block<3, 3>(0, 0)), Mat31(state_.block<3, 1>(0, 3)), Mat31(state_.block<3, 1>(0, 4)));
+    T.update_lhs(dxf.head<9>()); 
     gyro_bias_ += dxf.segment<3>(9); 
-    acc_bias_ += dxf.tail<3>();  
-    state_<<T.R(), T.t(), V, gyro_bias_, acc_bias_;  
+    acc_bias_ += dxf.segment<3>(12); 
+    gravity_ +=dxf.tail<3>();
+    state_<<T.R(), T.t(), T.v(), gyro_bias_, acc_bias_, gravity_; 
 }
 
 
 void NodeInertial3d::set_state(MatRefConst &x)
 {
-    Mat<3,7> new_state = x;
+    Mat<3,8> new_state = x;
     state_ = new_state;
     // Needs to update intermediate vars we are saving
 }
 
 void NodeInertial3d::set_auxiliary_state(MatRefConst &x)
 {
-    Mat<3,7> new_state = x;
+    Mat<3,8> new_state = x;
     auxiliary_state_ = new_state; 
 }
 
