@@ -3,7 +3,7 @@ build = "cp*"
 archs = "auto64"
 before-build = "bash tools/unix-wheels.sh"
 build-verbosity = 1
-test-requires = "pytest<=6.2.5 numpy<2.0.0"
+test-requires = ["pytest", "numpy==1.24.4"]
 test-command = "pytest {package}/tests"
 
 [tool.cibuildwheel.linux]
