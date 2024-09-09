@@ -33,10 +33,10 @@ SE3vel::SE3vel(const Mat5 &T) : T_(T) {}
 
 SE3vel::SE3vel(const SE3vel &T) : T_(T.T()){}
 
-SE3vel::SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v) : T_(Mat5::Identity())
+SE3vel::SE3vel(const SO3 &R, const Mat31 &p, const Mat31 &v) : T_(Mat5::Identity())
 {
     T_.topLeftCorner<3,3>() = R.R();
-    T_.block<3,1>(0,3) = t;
+    T_.block<3,1>(0,3) = p;
     T_.topRightCorner<3,1>() = v;
 }
 
@@ -45,6 +45,11 @@ SE3vel::SE3vel(const Mat91 &xi)
     this->Exp(xi);
 }
  
+Mat31 SE3vel::p() const
+{
+    return T_.block<3,1>(0,3);
+}
+
 Mat31 SE3vel::t() const
 {
     return T_.block<3,1>(0,3);
@@ -76,7 +81,7 @@ SE3vel SE3vel::inv(void) const
     Mat3 R = this->R();
     R.transposeInPlace();
 
-    inv << R, -R*this->t(), -R*this->v(),
+    inv << R, -R*this->p(), -R*this->v(),
             0,0,0,1,0,
             0,0,0,0,1;
 
@@ -102,13 +107,13 @@ Mat9 SE3vel::adj() const
     Mat9 res(Mat9::Zero());
     Mat3 R = this->R();
     Mat31 v = this->v();
-    Mat31 t = this->t();
+    Mat31 p = this->p();
 
     res.block<3,3>(0,0) = R;
     res.block<3,3>(3,3) = R;
     res.block<3,3>(6,6) = R;
 
-    res.block<3,3>(3,0) = hat3(t)*R;
+    res.block<3,3>(3,0) = hat3(p)*R;
     res.block<3,3>(6,0) = hat3(v)*R;
 
     return res;
@@ -149,8 +154,8 @@ void SE3vel::Exp(const Mat91& xi)
     Mat5 result(Mat5::Identity());
 
     Mat31 phi = xi.head(3);
-    Mat31 v = xi.segment<3>(3);
-    Mat31 t = xi.tail(3);
+    Mat31 p = xi.segment<3>(3);
+    Mat31 v = xi.tail(3);
 
     SO3 tmp(phi);
 
@@ -159,7 +164,7 @@ void SE3vel::Exp(const Mat91& xi)
     Mat3 jac = left_jacobian(phi);
 
     result.block<3,1>(0,3) << jac*v;
-    result.block<3,1>(0,4) << jac*t;
+    result.block<3,1>(0,4) << jac*p;
 
     this->T_ = result;
 }
@@ -170,14 +175,14 @@ Mat91 SE3vel::Ln() const
 
     Mat3 R = this->R();
     Mat31 v = this->v();
-    Mat31 t = this->t();
+    Mat31 p = this->p();
 
     SO3 tmp(R);
     Mat31 log_R_vee = tmp.ln_vee();
     Mat3 jac = inv_left_jacobian(log_R_vee);
 
     result.head(3) << log_R_vee;
-    result.segment<3>(3) << jac*t;
+    result.segment<3>(3) << jac*p;
     result.tail(3) << jac*v;
 
     return result;

@@ -13,63 +13,65 @@
  * limitations under the License.
  *
  *
- * SE3vel.hpp
+ * SE3tc.hpp
  *
- *  Created on: June 12, 2021
- *      Author: Aleksei Panchenko
- *              Gonzalo Ferrer
+ *  Created on: September 9, 2024
+ *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech
  */
 
-#ifndef SE3VEL_HPP_
-#define SE3VEL_HPP_
+
+#ifndef SE3TC_HPP_
+#define SE3TC_HPP_
 
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SO3.hpp"
 
+
 namespace mrob{
 
 /**
- *  \brief Extended Special Euclidean (group) in 3d
+ *  \brief Extended Special Euclidean (group) in 3d Time Constrained
  *  Is the group representing rotations, vel and translations:
- *  SE3vel = {T = [R  p  v]  |  R \in SO3 , p \in Re^3, v \in Re^3 }
- *                [0   I  ]
+ *  SE3tc = {T = [R  p  v]  |  R \in SO3 , p \in Re^3, v \in Re^3 , time t \in Re+}
+ *                [0 1  0]
+ *                [0 t  1]
+ *        s.t. dot{p} = v, for any time t.
  *  The Lie Algebra associated to this group is expressed by the coordinates
- *      xi =[theta , pho, vel] \in Re^9, where theta \in Re^3 represents the rotation
- *  and pho the translation and vel the velocity.
+ *      xi =[omega , acc] \in Re^6, where omega \in Re^3 represents the angular velocity
+ *  and acc is the acceleration.
  *  We will preserve this order in this class.
  */
 
-class SE3vel{
+class SE3tc{
     public:
-        SE3vel(const Mat5 &T = Mat5::Identity());
+        SE3tc(const Mat5 &T = Mat5::Identity());
 
-        SE3vel(const SE3vel &T);
+        SE3tc(const SE3tc &T);
 
-        SE3vel(const SO3 &R, const Mat31 &p, const Mat31 &v);
+        SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t);
 
-        SE3vel(const Mat91 &xi);
+        SE3tc(const Mat61 &xi, const matData_t &t);
 
-        SE3vel inv(void) const;
-
-        Mat31 t() const; // this function is a copy of p(), returns translation, to keep consistent with other functions (see SE3)
         Mat31 p() const;
         Mat31 v() const;
         Mat3 R() const;
         Mat5 T() const;
+        matData_t t() const;
         Mat<3,5> T_compact() const;
 
 
-        Mat9 adj() const;
+        Mat6 adj() const;
 
-        void Exp(const Mat91 &xi);
-        Mat91 Ln(void) const;
+        void Exp(const Mat61& xi, const matData_t &t);
+        Mat61 Ln_position(void) const;
+        Mat61 Ln_velocity(void) const;
 
         void regenerate();
-        SE3vel operator*(const mrob::SE3vel& rhs);
-        SE3vel& operator=(const SE3vel& rhs);
+        SE3tc operator*(const mrob::SE3tc& rhs);
+        SE3tc& operator=(const SE3tc& rhs);
         std::ostream& operator<<(std::ostream &os);
         /**
          * @brief Generates string representation of the object
@@ -84,11 +86,8 @@ class SE3vel{
         Mat5 T_;
 };
 
-Mat5 hat9(const Mat91 &xi);
-
-Mat91 vee9(const Mat5 &xi_hat);
 
 }// end namespace
 
 
-#endif /* SE3VEL_HPP_ */
+#endif /* SE3TC_HPP_ */

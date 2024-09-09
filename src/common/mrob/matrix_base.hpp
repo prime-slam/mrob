@@ -76,7 +76,7 @@ using Mat1X = Eigen::Matrix<matData_t, 1,Eigen::Dynamic>;
 
 // Definition of templated-based fixed matrices using c'11 aliases
 template<int D>
-using Vect = Eigen::Matrix<matData_t, D,1, Eigen::RowMajor>;
+using Vect = Eigen::Matrix<matData_t, D,1>;
 template<int Rw,int Col>
 using Mat = Eigen::Matrix<matData_t, Rw, Col, Eigen::RowMajor>;
 
