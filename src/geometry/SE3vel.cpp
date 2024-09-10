@@ -65,6 +65,11 @@ Mat3 SE3vel::R() const
     return T_.topLeftCorner<3,3>();
 }
 
+Mat4 SE3vel::T_SE3(void) const
+{
+    return T_.topLeftCorner<4,4>();
+}
+
 Mat5 SE3vel::T(void) const
 {
     return this->T_;

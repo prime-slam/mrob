@@ -163,6 +163,10 @@ public:
      */
     Mat31 t() const;
     /**
+     * p method returns translation, equivalent to t()
+     */
+    Mat31 p() const;
+    /**
      * Provide the distance as a norm on the tangent space
      * of the ln(T * T_rhs^{-1})
      */

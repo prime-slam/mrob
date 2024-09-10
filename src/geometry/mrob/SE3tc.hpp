@@ -27,7 +27,7 @@
 
 
 #include "mrob/matrix_base.hpp"
-#include "mrob/SO3.hpp"
+#include "mrob/SE3.hpp"
 
 
 namespace mrob{
@@ -55,15 +55,18 @@ class SE3tc{
 
         SE3tc(const Mat61 &xi, const matData_t &t);
 
+        SE3tc(const SE3 &T, const matData_t &t);
+
         Mat31 p() const;
         Mat31 v() const;
         Mat3 R() const;
+        Mat4 T_SE3() const;
         Mat5 T() const;
         matData_t t() const;
         Mat<3,5> T_compact() const;
 
 
-        Mat6 adj() const;
+        //Mat6 adj() const;//TODO necesary here?
 
         void Exp(const Mat61& xi, const matData_t &t);
         Mat61 Ln_position(void) const;
@@ -86,6 +89,11 @@ class SE3tc{
         Mat5 T_;
 };
 
+Mat3 integrand_1(const Mat31 &omega, const matData_t &delta_t);
+Mat3 integrand_2(const Mat31 &omega, const matData_t &delta_t);
+
+Mat3 inv_integrand_1(const Mat31 &omega, const matData_t &delta_t);
+Mat3 inv_integrand_2(const Mat31 &omega, const matData_t &delta_t);
 
 }// end namespace
 

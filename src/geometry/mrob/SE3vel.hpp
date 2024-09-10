@@ -58,6 +58,7 @@ class SE3vel{
         Mat31 p() const;
         Mat31 v() const;
         Mat3 R() const;
+        Mat4 T_SE3() const;
         Mat5 T() const;
         Mat<3,5> T_compact() const;
 

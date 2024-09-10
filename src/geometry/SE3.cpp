@@ -217,6 +217,12 @@ Mat31 SE3::t() const
     return T_.topRightCorner<3,1>();
 }
 
+Mat31 SE3::p() const
+{
+    return T_.topRightCorner<3,1>();
+}
+
+
 double SE3::distance(const SE3 &rhs) const
 {
     return (*this * rhs.inv()).ln_vee().norm();
