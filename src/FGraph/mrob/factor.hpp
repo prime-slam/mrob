@@ -75,6 +75,9 @@ class Node;
  *   - McClure:   p(u) = 1/2 u^2 / (1+u^2)              w(u) = 1/(1+u^2)^2
  *   - Ransac:   p(u) = 1/2u^2    if u < d            w(u) = 1
  *                      d                                    0
+ * 
+ *  In addition, for those observations requireing it, a time stamp is a variable of the class
+ *  - double time_stamp_
  */
 
 
@@ -169,6 +172,9 @@ public:
     */
     bool get_robust_mask() const {return robust_mask_;}
 
+    double get_time_stamp() const {return time_stamp_;}
+    void set_time_stamp(double t){time_stamp_ = t;}
+
 protected:
     factor_id_t id_;
     /**
@@ -199,6 +205,10 @@ protected:
     //Mat61 obs_, r_; //and residuals
     //Mat<Z,N> J_;//Jacobians
     //Mat6 W_;//inverse of observation covariance (information matrix)
+
+    // current time of the node. Most node do not require this, so it will be transparent. For time continious.
+    // format is second [s]. NOTE: this is no not a Date stamp.
+    double time_stamp_;
 
 };
 
