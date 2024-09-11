@@ -28,7 +28,7 @@ using namespace mrob;
 
 Factor::Factor(uint_t dim, uint_t allNodesDim, robustFactorType factor_type, uint_t potNumberNodes):
 		id_(0), dim_(dim), allNodesDim_(allNodesDim), chi2_(0), robust_type_(factor_type), robust_weight_(0.0),
-        robust_mask_(false)
+        robust_mask_(false), time_stamp_(0.0)
 {
     // Child factor must specify dimensions
     neighbourNodes_.reserve( potNumberNodes );

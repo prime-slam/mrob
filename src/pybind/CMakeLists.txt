@@ -16,6 +16,7 @@ target_sources(pybind PRIVATE
     PCRegistrationPy.cpp 
     PCPlanesPy.cpp 
     FGraphPy.cpp
+    FGraphTimePy.cpp
 )
 
 #####################################
@@ -27,6 +28,7 @@ target_link_libraries(pybind PRIVATE
     FGraph 
     plane-surfaces 
     visual
+    FGraphTime
 )
 
 file(REMOVE_RECURSE ${PYTHON_BINARY_DIR})

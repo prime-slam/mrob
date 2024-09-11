@@ -55,7 +55,10 @@ class SE3tc{
 
         SE3tc(const Mat61 &xi, const matData_t &t);
 
+        // this function takes a SE3 lifts to SE3vel with 0 velocity. this is to be used with Ln_position
         SE3tc(const SE3 &T, const matData_t &t);
+
+
 
         Mat31 p() const;
         Mat31 v() const;
@@ -71,6 +74,8 @@ class SE3tc{
         void Exp(const Mat61& xi, const matData_t &t);
         Mat61 Ln_position(void) const;
         Mat61 Ln_velocity(void) const;
+
+
 
         void regenerate();
         SE3tc operator*(const mrob::SE3tc& rhs);

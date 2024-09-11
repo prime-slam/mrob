@@ -47,19 +47,14 @@ SE3tc::SE3tc(const Mat61 &xi, const matData_t &t)
 
 SE3tc::SE3tc(const SE3 &T, const matData_t &t): T_(Mat5::Identity())
 {
-    // how to contruct one element from a standar pose [R p]
     T_.topLeftCorner<3,3>() << T.R();
     if (t<1e-12)
         return;
-    Mat31 omega = SO3(T.R()).ln_vee()/t;
 
     Mat31 translation = T.p();
-    Mat31 acc = inv_integrand_2(omega,t)*translation;
-
     T_.block<3,1>(0,3) << translation;
-    T_.block<3,1>(0,4) << integrand_1(omega, t) * acc;//velocity
-    
     T_(4,3) = t;
+    return;
 }
 
 Mat31 SE3tc::p() const

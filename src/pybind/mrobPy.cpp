@@ -34,6 +34,7 @@ namespace py = pybind11;
 
 void init_geometry(py::module &m);
 void init_FGraph(py::module &m);
+void init_FGraphTime(py::module &m);
 //void init_FGraphDense(py::module &m);
 void init_PCRegistration(py::module &m);
 void init_PCPlanes(py::module &m);
@@ -65,6 +66,8 @@ PYBIND11_MODULE(pybind, m) {
     py::module m_reg = m.def_submodule("registration");
     init_PCRegistration(m_reg);
     init_PCPlanes(m_reg);
+
+    init_FGraphTime(m);
 }
 
 
