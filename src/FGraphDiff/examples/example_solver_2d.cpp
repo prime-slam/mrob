@@ -78,6 +78,18 @@ int main ()
         obs << 2, 2, 0;
         std::shared_ptr<mrob::DiffFactor> gnss_3(new mrob::Factor1Pose2d_diff(obs,n3,obsInformation*1e4));
         diff_factor_idx.emplace_back(graph.add_factor(gnss_3));
+
+        // obs << 2,2,0;
+        // std::shared_ptr<mrob::DiffFactor> gnss_4(new mrob::Factor1Pose2d_diff(obs,n3,obsInformation*1e4));
+        // diff_factor_idx.emplace_back(graph.add_factor(gnss_4));
+
+        // obs << 2, 2, 0;
+        // std::shared_ptr<mrob::DiffFactor> gnss_5(new mrob::Factor1Pose2d_diff(obs,n3,obsInformation*1e4));
+        // diff_factor_idx.emplace_back(graph.add_factor(gnss_5));
+
+        // obs << 2,2,0;
+        // std::shared_ptr<mrob::DiffFactor> gnss_6(new mrob::Factor1Pose2d_diff(obs,n3,obsInformation*1e4));
+        // diff_factor_idx.emplace_back(graph.add_factor(gnss_6));
     }
 
     // solve the Gauss Newton optimization
@@ -96,51 +108,70 @@ int main ()
         std::cout << x << std::endl;
     }
 
-    // composing the gradient dr_dz for the problem
-    auto A = graph.get_adjacency_matrix(); // has size |z| by |x|
-    std::cout << "\nA = \n" << MatX(A) << std::endl;
+    if (true) 
+    {
 
-    auto info = graph.get_information_matrix();
-    std::cout << "\ninfo =\n" << MatX(info) << std::endl;
+        // composing the gradient dr_dz for the problem
+        auto A = graph.get_adjacency_matrix(); // has size |z| by |x|
+        std::cout << "\nA = \n" << MatX(A) << std::endl;
 
-    auto b = graph.get_vector_b();
-    std::cout << "\nb =\n" << MatX(b) << std::endl;
+        auto info = graph.get_information_matrix();
+        std::cout << "\ninfo =\n" << MatX(info) << std::endl;
 
-    auto W = graph.get_W_matrix();
-    std::cout << "\nW =\n" << MatX(W) << std::endl;
+        auto b = graph.get_vector_b();
+        std::cout << "\nb =\n" << MatX(b) << std::endl;
 
-    auto r = graph.get_vector_r();
+        auto W = graph.get_W_matrix();
+        std::cout << "\nW =\n" << MatX(W) << std::endl;
 
-    std::cout << "Residuals = " << r << std::endl;
-
-    Eigen::SimplicialLDLT<mrob::SMatCol,Eigen::UpLoType::Lower, Eigen::AMDOrdering<mrob::SMatCol::StorageIndex>> alpha_solve;
-    alpha_solve.compute(A.transpose()*W*A);
-    SMatCol rhs(A.cols(),A.cols());
-    rhs.setIdentity();
-    std::cout << rhs << std::endl;
-
-    MatX alpha = alpha_solve.solve(rhs); // get information matrix graph - should be the same #TODO
-    std::cout << "\nalpha =\n" << alpha << std::endl;
-
-    MatX info_matrix = graph.get_information_matrix();
-    std::cout << "\ninfo matrix =\n" << info_matrix << std::endl;
-
-    std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
-
-    graph.build_dr_dz();
-
-    std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
+        auto r = graph.get_vector_r();
 
 
-    SMatRow dr_dz_full = graph.get_dr_dz();
-    std::cout << "\nMatrix B aka dr_dz matrix =\n" << MatX(dr_dz_full) << std::endl;
+        std::cout << "Residuals = " << r << std::endl;
 
-    MatX errors_grads;
-    errors_grads.resize(graph.get_dimension_state(), graph.get_dimension_obs());
+        Eigen::SimplicialLDLT<mrob::SMatCol,Eigen::UpLoType::Lower, Eigen::AMDOrdering<mrob::SMatCol::StorageIndex>> alpha_solve;
+        std::cout << "\ninfo =\n" << MatX(info) << std::endl;
 
-    errors_grads = -alpha*dr_dz_full.transpose()*W*dr_dz_full;
+        std::cout << MatX(A.transpose()*W*A) << std::endl;
+        alpha_solve.compute(A.transpose()*W*A);
+        SMatCol rhs(A.cols(),A.cols());
+        rhs.setIdentity();
+        std::cout << rhs << std::endl;
 
-    std::cout << "\nError_grads = \n" << errors_grads << std::endl;
+        MatX alpha = alpha_solve.solve(rhs); // get information matrix graph - should be the same #TODO
+        std::cout << "\nalpha =\n" << alpha << std::endl;
+
+        MatX info_matrix = graph.get_information_matrix();
+        std::cout << "\ninfo matrix =\n" << info_matrix << std::endl;
+
+        std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
+
+        std::cout << "\nA = \n" << MatX(graph.get_adjacency_matrix()) << std::endl;
+
+
+        SMatRow dr_dz_full = graph.get_dr_dz();
+        std::cout << "\nMatrix B aka dr_dz matrix =\n" << MatX(dr_dz_full) << std::endl;
+
+        MatX errors_grads;
+        errors_grads.resize(graph.get_dimension_state(), graph.get_dimension_obs());
+
+        std::cout << MatX(dr_dz_full) << std::endl;
+
+        std::cout << MatX(dr_dz_full.transpose()*W*dr_dz_full) << std::endl;
+
+        std::cout << MatX(alpha) << std::endl;
+        std::cout << MatX(W) << std::endl;
+        std::cout << MatX(dr_dz_full) << std::endl;
+        std::cout << MatX(W*dr_dz_full) << std::endl;
+
+        errors_grads = MatX(-(A.transpose()*W*dr_dz_full));
+
+        std::cout << "\nError_grads = \n" << errors_grads << std::endl;
+    
+        auto dchi2_dz = graph.get_dchi2_dz();
+
+        std::cout << "\nError_grads = \n" << MatX(dchi2_dz) << std::endl;
+    }
 
     return 0;
 }

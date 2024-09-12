@@ -163,6 +163,8 @@ void init_FGraphDiff(py::module &m)
             .def("number_nodes", &FGraphDiffSolve::number_nodes, "Returns the number of nodes")
             .def("number_factors", &FGraphDiffSolve::number_factors, "Returns the number of factors")
             .def("print", &FGraphDiff::print, "By default False: does not print all the information on the Fgraph", py::arg("completePrint") = false)
+            .def("get_dchi2_dz", &FGraphDiffSolve::get_dchi2_dz,
+                   "Calculate chi2 gradient with reference to all obzervations z in all factors")
             // Robust factors GUI
             // TODO, we want to set a default robust function? maybe at ini?
             // TODO we want a way to change the robust factor for each node, maybe accesing by id? This could be away to inactivate factors...
@@ -173,8 +175,8 @@ void init_FGraphDiff(py::module &m)
                     "output, node id, for later usage",
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
-            .def("add_factor_1pose_2d", &FGraphDiffPy::add_factor_1pose_2d_diff)
-            .def("add_factor_2poses_2d", &FGraphDiffPy::add_factor_2poses_2d_diff,
+            .def("add_factor_1pose_2d_diff", &FGraphDiffPy::add_factor_1pose_2d_diff)
+            .def("add_factor_2poses_2d_diff", &FGraphDiffPy::add_factor_2poses_2d_diff,
                     "Factors connecting 2 poses. If last input set to true (by default false), also updates "
                     "the value of the target Node according to the new obs + origin node",
                     py::arg("obs"),

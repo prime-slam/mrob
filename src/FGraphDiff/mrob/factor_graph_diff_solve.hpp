@@ -136,8 +136,17 @@ public:
      * TODO If true, it re-evaluates the problem
      */
     SMatCol get_adjacency_matrix() { return A_;}
-    void build_dr_dz();
-    SMatRow get_dr_dz() {return B_;} 
+    // void build_dr_dz();
+    SMatRow get_dr_dz() {return B_;}
+
+    /**
+     * @brief Get the derivative of chi2 by observations z.
+     * 
+     * dchi2_dz = -alpha*dr_dz_full.transpose()*W*dr_dz_full;
+     * 
+     * @return SMatRow of shape dim_state X dim_obs 
+     */
+    MatX get_dchi2_dz();
 
     /**
      * Returns a copy to the W matrix.
