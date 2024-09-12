@@ -164,22 +164,13 @@ Mat61 SE3tc::Ln_position() const
     return result;
 }
 
-Mat6 SE3tc::adj() const
-{
-    Mat6 res(Mat6::Zero());
-    Mat3 tx = hat3( this->p() );
-    res.topLeftCorner<3,3>() << R();
-    res.bottomRightCorner<3,3>() << R();
-    res.bottomLeftCorner<3,3>() << tx*R();// what is this? TODO
-    return res;
-}
 
 SE3tc SE3tc::inv(void) const
 {
     Mat5 inv;
     Mat3 R = this->R();
     R.transposeInPlace();
-    inv << R, -R * (this->p() - this->t()*this->v()), -R*this->v(),
+    inv << R, R * ( -this->p() + this->t()*this->v()), -R*this->v(),
            0,0,0,1,0, 
            0,0,0,-this->t(),0;
     return SE3tc(inv);
@@ -255,4 +246,13 @@ Mat3 mrob::inv_integrand_2(const Mat31 &omega, const matData_t &delta_t)
     Mat3 integrand2 = integrand_2(omega, delta_t);
     // there is a closed form, for now we go with brute force inverse.
     return integrand2.inverse();
+}
+
+
+Mat6 mrob::mapping_se3_to_se3tc(const Mat31 &omega, const matData_t &delta_t)
+{
+    Mat6 result = Mat6::Zero();
+    result.topLeftCorner<3,3>() = Mat3::Identity()/delta_t;
+    result.bottomRightCorner<3,3>() = inv_integrand_2(omega,delta_t) * left_jacobian(omega*delta_t);
+    return result;
 }

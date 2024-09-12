@@ -70,6 +70,7 @@ class Factor2Poses3dTwistMatching : public Factor
     Mat6 W_;//inverse of observation covariance (information matrix)
     Mat<6,12> J_;//Joint Jacobian
     double delta_t_;
+    Mat31 omega_;
 
     SE3 Tx_origin_inv_;
 

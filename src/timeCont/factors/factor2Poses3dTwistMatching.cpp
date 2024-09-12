@@ -51,7 +51,6 @@ Factor2Poses3dTwistMatching::Factor2Poses3dTwistMatching(const Mat61 &observatio
 void Factor2Poses3dTwistMatching::evaluate_residuals()
 {
     // From Origin we observe 
-    Mat61 twist;
     Mat4 state_origin;
     state_origin << get_neighbour_nodes()->at(0)->get_state();
     Tx_origin_inv_ = SE3(state_origin).inv();
@@ -61,13 +60,16 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
                get_neighbour_nodes()->at(0)->get_time_stamp();
     
     SE3tc dT(Tx_origin_inv_ * Tx_target, delta_t_);
-    r_ =  dT.Ln_position() - obs_;
+    Mat61 twist;
+    twist = dT.Ln_position();
+    omega_ = twist.head(3);
+    r_ =  twist - obs_;
 }
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
-    J_.topLeftCorner<6,6>() = (-1.0/delta_t_) * Tx_origin_inv_.adj();
-    J_.topRightCorner<6,6>() = (1.0/delta_t_) * Tx_origin_inv_.adj();
+    J_.topLeftCorner<6,6>() = - mapping_se3_to_se3tc(omega_,delta_t_) * Tx_origin_inv_.adj();
+    J_.topRightCorner<6,6>() =  mapping_se3_to_se3tc(omega_,delta_t_) * Tx_origin_inv_.adj();
 }
 
 void Factor2Poses3dTwistMatching::evaluate_chi2()

@@ -68,8 +68,8 @@ class SE3tc{
         matData_t t() const;
         Mat<3,5> T_compact() const;
 
-
-        Mat6 adj() const;
+        // The adjoint requires to use the velocity coordinates and we had to set it to 0 for the constraints.
+        //Mat9 adj() const;
 
         SE3tc inv(void) const;
 
@@ -101,6 +101,9 @@ Mat3 integrand_2(const Mat31 &omega, const matData_t &delta_t);
 
 Mat3 inv_integrand_1(const Mat31 &omega, const matData_t &delta_t);
 Mat3 inv_integrand_2(const Mat31 &omega, const matData_t &delta_t);
+
+Mat6 mapping_se3_to_se3tc(const Mat31 &omega, const matData_t &delta_t);
+Mat6 mapping_se3tc_to_se3(const Mat31 &omega, const matData_t &delta_t);
 
 }// end namespace
 
