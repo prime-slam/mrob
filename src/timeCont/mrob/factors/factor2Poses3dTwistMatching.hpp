@@ -27,6 +27,7 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3tc.hpp"
+#include "mrob/SE3.hpp"
 #include "mrob/factor.hpp"
 
 namespace mrob{

@@ -52,9 +52,11 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
 {
     // From Origin we observe 
     Mat61 twist;
-    Tx_origin_inv_ = SE3(get_neighbour_nodes()->at(0)->get_state()).inv();
-    //Mat4 TxTarget = get_neighbour_nodes()->at(1)->get_state();
-    SE3 Tx_target(get_neighbour_nodes()->at(1)->get_state());
+    Mat4 state_origin;
+    state_origin << get_neighbour_nodes()->at(0)->get_state();
+    Tx_origin_inv_ = SE3(state_origin).inv();
+    Mat4 state_target = get_neighbour_nodes()->at(1)->get_state();
+    SE3 Tx_target(state_target);
     delta_t_ = get_neighbour_nodes()->at(1)->get_time_stamp() - 
                get_neighbour_nodes()->at(0)->get_time_stamp();
     

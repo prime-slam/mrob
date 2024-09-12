@@ -19,7 +19,7 @@ SET(factors_sources
 
 # create library
 ADD_LIBRARY(FGraphTime ${sources} ${factors_sources})
-TARGET_LINK_LIBRARIES(FGraphTime SE3 common FGraph)
+TARGET_LINK_LIBRARIES(FGraphTime FGraph SE3 common)
 
 SET_TARGET_PROPERTIES(FGraphTime PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"

@@ -27,9 +27,9 @@
 
 #include "mrob/factor_graph_solve.hpp"
 #include "mrob/factors/nodePose3d.hpp"
+#include "mrob/factors/nodeLandmark3d.hpp"
 #include "mrob/factors/factor1Pose3d.hpp"
 #include "mrob/factors/factor2Poses3dTwistMatching.hpp"
-#include "mrob/factors/nodeLandmark3d.hpp"
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 
 
