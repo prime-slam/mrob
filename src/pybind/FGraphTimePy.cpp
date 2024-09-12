@@ -167,7 +167,12 @@ void init_FGraphTime(py::module &m)
                     "Ladmarks are 3D points, in [x,y,z]",
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
-            .def("add_factor_1pose_3d", &FGraphTimePy::add_factor_1pose_3d)
+            .def("add_factor_1pose_3d", &FGraphTimePy::add_factor_1pose_3d,
+                    "Adds a factor observing one pose, a GPS-like factor",
+                    py::arg("obs"),
+                    py::arg("nodeId"),
+                    py::arg("time_stamp"),
+                    py::arg("obsInvCov"))
             .def("add_factor_camera_proj_3d_point", &FGraphTimePy::add_factor_camera_proj_3d_point,
                     "\n Factor for the reprojection error from a point in the image plane",
                     py::arg("obs"),

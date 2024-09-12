@@ -164,6 +164,28 @@ Mat61 SE3tc::Ln_position() const
     return result;
 }
 
+Mat6 SE3tc::adj() const
+{
+    Mat6 res(Mat6::Zero());
+    Mat3 tx = hat3( this->p() );
+    res.topLeftCorner<3,3>() << R();
+    res.bottomRightCorner<3,3>() << R();
+    res.bottomLeftCorner<3,3>() << tx*R();// what is this? TODO
+    return res;
+}
+
+SE3tc SE3tc::inv(void) const
+{
+    Mat5 inv;
+    Mat3 R = this->R();
+    R.transposeInPlace();
+    inv << R, -R * (this->p() - this->t()*this->v()), -R*this->v(),
+           0,0,0,1,0, 
+           0,0,0,-this->t(),0;
+    return SE3tc(inv);
+
+}
+
 void SE3tc::regenerate()
 {
     Mat61 xi = this->Ln_position();

@@ -477,7 +477,11 @@ void init_FGraph(py::module &m)
                     "Input are poses in 3D, as Lie Algebra of RBT around the Identity",
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
-            .def("add_factor_1pose_3d", &FGraphPy::add_factor_1pose_3d)
+            .def("add_factor_1pose_3d", &FGraphPy::add_factor_1pose_3d,
+                    "Adds a factor observing one pose, a GPS-like factor",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
             .def("add_factor_2poses_3d", &FGraphPy::add_factor_2poses_3d,
                             "Factors connecting 2 poses. If last input set to true (by default false), also updates the value of the target Node according to the new obs + origin node",
                             py::arg("obs"),

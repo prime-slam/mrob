@@ -69,7 +69,9 @@ class SE3tc{
         Mat<3,5> T_compact() const;
 
 
-        //Mat6 adj() const;//TODO necesary here?
+        Mat6 adj() const;
+
+        SE3tc inv(void) const;
 
         void Exp(const Mat61& xi, const matData_t &t);
         Mat61 Ln_position(void) const;
