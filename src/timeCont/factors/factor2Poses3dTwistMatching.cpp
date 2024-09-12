@@ -68,8 +68,8 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
-    J_.topLeftCorner<6,6>() = - mapping_se3_to_se3tc(omega_,delta_t_) * Tx_origin_inv_.adj();
     J_.topRightCorner<6,6>() =  mapping_se3_to_se3tc(omega_,delta_t_) * Tx_origin_inv_.adj();
+    J_.topLeftCorner<6,6>() = - J_.topRightCorner<6,6>();
 }
 
 void Factor2Poses3dTwistMatching::evaluate_chi2()

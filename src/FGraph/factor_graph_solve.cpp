@@ -206,7 +206,8 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         }
 
         // 1.3) check for convergence
-        if (deltaChi2/currentChi2 < solutionTolerance_) //in ratio
+        if (deltaChi2/currentChi2 < solutionTolerance_ //in ratio
+            || deltaChi2 < solutionTolerance_)  //absolute update. There are case when the ratio does not identify convergence (small delta, small chi2)
         {
             if (verbose_)
                 std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: Converged Successfully" << std::endl;
