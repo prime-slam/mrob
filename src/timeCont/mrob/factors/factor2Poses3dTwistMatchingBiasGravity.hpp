@@ -21,8 +21,8 @@
  *              Mobile Robotics Lab, Skoltech 
  */
 
-#ifndef FACTOR2POSES3DTWISTMATCHING_HPP_
-#define FACTOR2POSES3DTWISTMATCHING_HPP_
+#ifndef FACTOR2POSES3DTWISTMATCHINGBIASGRAVITY_HPP_
+#define FACTOR2POSES3DTWISTMATCHINGBIASGRAVITY_HPP_
 
 
 #include "mrob/matrix_base.hpp"
@@ -33,17 +33,29 @@
 namespace mrob{
 
 /**
- * factor 2 poses 3d twsit matching creates a high dimension interpolation between poses of constant omega and acceleration
+ * factor 2 poses 3d twist matching creates a high dimension interpolation between poses of constant omega and acceleration
  * and matches it with IMU observations.
+ * 
+ * Node origin: Initial Pose
+ * Node target: Final Pose
+ * Node bias acc (landmark is a 3D vector)
+ * Node bias gyr (landmark is a 3D vector)
+ * Node gravity
+ * 
  */
 
-class Factor2Poses3dTwistMatching : public Factor
+class Factor2Poses3dTwistMatchingBiasGravity : public Factor
 {
   public:
-    Factor2Poses3dTwistMatching(const Mat61 &observation, std::shared_ptr<Node> &nodeOrigin,
-            std::shared_ptr<Node> &nodeTarget, const Mat9 &obsInf, 
+    Factor2Poses3dTwistMatchingBiasGravity(const Mat61 &observation,
+            std::shared_ptr<Node> &nodeOrigin,
+            std::shared_ptr<Node> &nodeTarget, 
+            std::shared_ptr<Node> &nodeBiasAcc, 
+            std::shared_ptr<Node> &nodeBiasGyro,
+            std::shared_ptr<Node> &nodeGravity, 
+            const Mat6 &obsInf, 
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor2Poses3dTwistMatching() = default;
+    ~Factor2Poses3dTwistMatchingBiasGravity() = default;
     /**
      * Jacobians are not evaluated, just the residuals
      */
@@ -66,13 +78,13 @@ class Factor2Poses3dTwistMatching : public Factor
     // being [0]->J_origin and [1]->J_target
     // declared here but initialized on child classes
     Mat61 obs_; // obs = [omega, acc]
-    Mat91 r_; //and residuals [omega, vel, acc]
-    Mat9 W_;//inverse of observation covariance (information matrix)
-    Mat<9,18> J_;//Joint Jacobian
+    Mat61 r_; //and residuals
+    Mat6 W_;//inverse of observation covariance (information matrix)
+    Mat<6,21> J_;//Joint Jacobian 6+6+3+3+3(2?)
     double delta_t_;
     Mat31 omega_;
 
-    SE3tc Tx_origin_inv_;
+    SE3 Tx_origin_inv_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
@@ -85,4 +97,4 @@ class Factor2Poses3dTwistMatching : public Factor
 
 
 
-#endif /* FACTOR2POSES3DTWISTMATCHING_HPP_ */
+#endif /* FACTOR2POSES3DTWISTMATCHINGBIASGRAVITY_HPP_ */

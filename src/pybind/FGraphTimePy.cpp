@@ -26,9 +26,9 @@
 #include <pybind11/stl.h>
 
 #include "mrob/factor_graph_solve.hpp"
-#include "mrob/factors/nodePose3d.hpp"
+#include "mrob/factors/nodePose3dVelTc.hpp"
 #include "mrob/factors/nodeLandmark3d.hpp"
-#include "mrob/factors/factor1Pose3d.hpp"
+#include "mrob/factors/factor1Pose3dVel.hpp"
 #include "mrob/factors/factor2Poses3dTwistMatching.hpp"
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 
@@ -53,9 +53,9 @@ public:
      */
     FGraphTimePy(mrob::Factor::robustFactorType robust_type = mrob::Factor::robustFactorType::QUADRATIC) :
         FGraphSolve(FGraphSolve::matrixMethod::ADJ), robust_type_(robust_type) {}
-    factor_id_t add_node_pose_3d(const SE3 &x, double time_stamp, mrob::Node::nodeMode mode)
+    factor_id_t add_node_pose_3d_vel_tc(const SE3tc &x, double time_stamp, mrob::Node::nodeMode mode)
     {
-        std::shared_ptr<mrob::Node> n(new mrob::NodePose3d(x,mode));
+        std::shared_ptr<mrob::Node> n(new mrob::NodePose3dVelTc(x,mode));
         n->set_time_stamp(time_stamp);
         this->add_node(n);
         return n->get_id();
@@ -69,12 +69,12 @@ public:
     factor_id_t add_factor_1pose_3d(const SE3 &obs, uint_t nodeId, double time_stamp, const py::EigenDRef<const Mat6> obsInvCov)
     {
         auto n1 = this->get_node(nodeId);
-        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Pose3d(obs,n1,obsInvCov,robust_type_));
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Pose3dVel(obs,n1,obsInvCov,robust_type_));
         this->add_factor(f);
         f->set_time_stamp(time_stamp);
         return f->get_id();
     }
-    factor_id_t add_factor_2pose_3d_twist(const py::EigenDRef<const Mat61> obs, uint_t nodeOrigin, uint_t nodeTarget,  double time_stamp, const py::EigenDRef<const Mat6> obsInvCov)
+    factor_id_t add_factor_2pose_3d_twist(const py::EigenDRef<const Mat61> obs, uint_t nodeOrigin, uint_t nodeTarget,  double time_stamp, const py::EigenDRef<const Mat9> obsInvCov)
     {
         auto n1 = this->get_node(nodeOrigin);
         auto n2 = this->get_node(nodeTarget);
@@ -83,10 +83,10 @@ public:
         this->add_factor(f);
         return f->get_id();
     }
-        // Visual factors
+    // Visual factors
     // --------------------------------------------------
     // add_factor_camera_proj_3d_point
-    factor_id_t add_factor_camera_proj_3d_point(const py::EigenDRef<const Mat21> obs, uint_t nodePoseId,
+    /*factor_id_t add_factor_camera_proj_3d_point(const py::EigenDRef<const Mat21> obs, uint_t nodePoseId,
                 uint_t nodeLandmarkId, const py::EigenDRef<const Mat41> camera_k, double time_stamp,
                 const py::EigenDRef<const Mat2> obsInvCov)
     {
@@ -96,7 +96,7 @@ public:
         this->add_factor(f);
         f->set_time_stamp(time_stamp);
         return f->get_id();
-    }
+    }*/
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -158,8 +158,8 @@ void init_FGraphTime(py::module &m)
 
             // -----------------------------------------------------------------------------
             // Specific call to 3D
-            .def("add_node_pose_3d", &FGraphTimePy::add_node_pose_3d,
-                    "Input are poses in 3D, as Lie Algebra of RBT around the Identity",
+            .def("add_node_pose_3d", &FGraphTimePy::add_node_pose_3d_vel_tc,
+                    "Input are a pose in 3D, and later it is lifted to SE3vel to match the node.",
                     py::arg("x"),
                     py::arg("time_stamp"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
@@ -171,14 +171,6 @@ void init_FGraphTime(py::module &m)
                     "Adds a factor observing one pose, a GPS-like factor",
                     py::arg("obs"),
                     py::arg("nodeId"),
-                    py::arg("time_stamp"),
-                    py::arg("obsInvCov"))
-            .def("add_factor_camera_proj_3d_point", &FGraphTimePy::add_factor_camera_proj_3d_point,
-                    "\n Factor for the reprojection error from a point in the image plane",
-                    py::arg("obs"),
-                    py::arg("nodePoseId"),
-                    py::arg("nodeLandmarkId"),
-                    py::arg("camera_k"),
                     py::arg("time_stamp"),
                     py::arg("obsInvCov"))
             .def("add_factor_2pose_3d_twist", &FGraphTimePy::add_factor_2pose_3d_twist,

@@ -121,7 +121,7 @@ class Node{
     nodeMode get_node_mode(){return node_mode_;}
 
     double get_time_stamp() const {return time_stamp_;}
-    void set_time_stamp(double t){time_stamp_ = t;}
+    virtual void set_time_stamp(double t){time_stamp_ = t;}
 
   protected:
     factor_id_t id_;

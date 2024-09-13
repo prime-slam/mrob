@@ -49,11 +49,9 @@ SE3tc::SE3tc(const Mat91 &xi, const matData_t &t)
 SE3tc::SE3tc(const SE3 &T, const matData_t &t): T_(Mat5::Identity())
 {
     T_.topLeftCorner<3,3>() << T.R();
-    if (t<1e-12)
-        return;
 
     Mat31 translation = T.p();
-    T_.block<3,1>(0,3) << translation;
+    T_.block<3,1>(0,3) = translation;
     T_(4,3) = t;
     return;
 }
@@ -86,6 +84,11 @@ Mat4 SE3tc::T_SE3(void) const
 matData_t SE3tc::t(void) const
 {
     return this->T_(4,3);//time
+}
+
+void SE3tc::set_time(double time_stamp)
+{
+    T_(4,3) = time_stamp;
 }
 
 Mat<3,5> SE3tc::T_compact() const
@@ -132,12 +135,14 @@ void SE3tc::Exp(const Mat91& xi, const matData_t &t)
 
 Mat91 SE3tc::Ln() const
 {
-    Mat91 result;
+    Mat91 result(Mat91::Zero());
 
     Mat3 R = this->R();
     Mat31 v = this->v();
     Mat31 p = this->p();
     matData_t delta_t = this->t();
+    if (delta_t < 1e-12)
+        return result;
 
     SO3 tmp(R);
     Mat31 omega = tmp.ln_vee()/delta_t;
@@ -178,7 +183,7 @@ SE3tc SE3tc::inv(void) const
     R.transposeInPlace();
     inv << R, R * ( -this->p() + this->t()*this->v()), -R*this->v(),
            0,0,0,1,0, 
-           0,0,0,-this->t(),0;
+           0,0,0,-this->t(),1;
     return SE3tc(inv);
 
 }
@@ -215,6 +220,7 @@ void SE3tc::print() const
 {
     std::cout << T_ << std::endl;
 }
+
 
 std::ostream& SE3tc::operator<<(std::ostream &os)
 {
