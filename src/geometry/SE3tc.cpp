@@ -34,14 +34,15 @@ SE3tc::SE3tc(const SE3tc &T) : T_(T.T()){}
 
 SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5::Identity())
 {
-    Mat61 xi;
+    Mat91 xi;
     xi.head(3) = omega;
     xi.tail(3) = acc;
     this->Exp(xi,t);
 }
 
-SE3tc::SE3tc(const Mat61 &xi, const matData_t &t)
+SE3tc::SE3tc(const Mat91 &xi, const matData_t &t)
 {
+    // xi = [omega, vel, acc]
     this->Exp(xi,t);
 }
 
@@ -106,41 +107,46 @@ SE3tc& SE3tc::operator=(const SE3tc& rhs)
     return *this;
 }
 
-void SE3tc::Exp(const Mat61& xi, const matData_t &t)  
+void SE3tc::Exp(const Mat91& xi, const matData_t &t)  
 {
     Mat5 result(Mat5::Identity());
 
     Mat31 omega = xi.head(3);
     Mat31 phi = omega * t; // Omega * time
+    Mat31 vel = xi.segment<3>(3);
     Mat31 acc = xi.tail(3);
 
     SO3 tmp(phi);
 
     result.topLeftCorner<3,3>() << tmp.R();
 
-
-    result.block<3,1>(0,3) << integrand_2(omega,t)*acc;
-    result.block<3,1>(0,4) << integrand_1(omega,t)*acc;
+    Mat3 integ1;
+    integ1 << integrand_1(omega,t);
+    result.block<3,1>(0,3) << integ1*vel + integrand_2(omega,t)*acc;
+    result.block<3,1>(0,4) << integ1*acc;
     
     result(4,3) = t;
 
     this->T_ = result;
 }
 
-Mat61 SE3tc::Ln_velocity() const
+Mat91 SE3tc::Ln() const
 {
-    Mat61 result;
+    Mat91 result;
 
     Mat3 R = this->R();
     Mat31 v = this->v();
+    Mat31 p = this->p();
     matData_t delta_t = this->t();
 
     SO3 tmp(R);
     Mat31 omega = tmp.ln_vee()/delta_t;
-    Mat3 jac = inv_integrand_1(omega, delta_t);
+    Mat3 inv_int_1 = inv_integrand_1(omega, delta_t);
+    Mat3 int_2 = integrand_2(omega, delta_t);
 
     result.head(3) << omega;
-    result.tail(3) << jac*v;
+    result.segment<3>(3) << inv_int_1*p - inv_int_1 * int_2 * inv_int_1 * v;
+    result.tail(3) << inv_int_1*v;
 
     return result;
 }
@@ -179,10 +185,31 @@ SE3tc SE3tc::inv(void) const
 
 void SE3tc::regenerate()
 {
-    Mat61 xi = this->Ln_position();
+    Mat91 xi = this->Ln();
     this->Exp(xi,this->t());
 }
 
+
+Mat<9,10> SE3tc::adj() const
+{
+    Mat<9,10> res(Mat<9,10>::Zero());
+    Mat3 R = this->R();
+    Mat31 v = this->v();
+    Mat31 p = this->p();
+    matData_t t = this->t();
+
+
+    res.block<3,3>(0,0) = R;
+    res.block<3,3>(3,3) = R;
+    res.block<3,3>(6,6) = R;
+
+    res.block<3,3>(3,0) = hat3(p-t*v)*R;
+    res.block<3,3>(6,0) = hat3(v)*R;
+
+    res.block<3,3>(3,6) = -t*R;
+    res.block<3,1>(3,9) = v;
+    return res;
+}
 
 void SE3tc::print() const
 {
