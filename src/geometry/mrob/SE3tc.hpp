@@ -53,6 +53,8 @@ class SE3tc{
     public:
         SE3tc(const Mat5 &T = Mat5::Identity());
 
+        SE3tc(const Mat5 &T, const matData_t &t);
+
         SE3tc(const SE3tc &T);
 
         SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t);

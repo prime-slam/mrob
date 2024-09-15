@@ -30,6 +30,11 @@ using namespace mrob;
 
 SE3tc::SE3tc(const Mat5 &T) : T_(T) {}
 
+SE3tc::SE3tc(const Mat5 &T, const matData_t &t) : T_(T)
+{
+    this->set_time(t);
+}
+
 SE3tc::SE3tc(const SE3tc &T) : T_(T.T()){}
 
 SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5::Identity())

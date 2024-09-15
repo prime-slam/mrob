@@ -67,6 +67,7 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
     r_.head(3) =  omega_ - obs_.head(3);
     r_.tail(3) =  twist.tail(3) - obs_.tail(3);
     r_.segment<3>(3) = twist.segment<3>(3); // 0 observation
+    //std::cout << "resuldula \n" << r_ << std::endl;
 }
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {

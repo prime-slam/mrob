@@ -237,6 +237,9 @@ void init_geometry(py::module &m) {
         .def(py::init<>(),
                 "Default construct a new SE3tc object",
                 py::return_value_policy::copy)
+        .def(py::init<const Mat5 &, const matData_t &>(),
+                "Mat5 constructor from SE3vel, meaning time enneeds to be specified because it is NOT in the transformation",
+                py::return_value_policy::copy)
         .def(py::init<const SE3tc &>(),
                 "Copy constructor",
                 py::return_value_policy::copy)
