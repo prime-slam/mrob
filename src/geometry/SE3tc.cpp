@@ -146,7 +146,7 @@ Mat91 SE3tc::Ln() const
     Mat31 v = this->v();
     Mat31 p = this->p();
     matData_t delta_t = this->t();
-    if (delta_t < 1e-12)
+    if ( std::fabs(delta_t) < 1e-12)
         return result;
 
     SO3 tmp(R);
@@ -200,9 +200,9 @@ void SE3tc::regenerate()
 }
 
 
-Mat<9,10> SE3tc::adj() const
+Mat<10,10> SE3tc::adj() const
 {
-    Mat<9,10> res(Mat<9,10>::Zero());
+    Mat<10,10> res(Mat<10,10>::Zero());
     Mat3 R = this->R();
     Mat31 v = this->v();
     Mat31 p = this->p();
@@ -218,6 +218,7 @@ Mat<9,10> SE3tc::adj() const
 
     res.block<3,3>(3,6) = -t*R;
     res.block<3,1>(3,9) = v;
+    res(9,9) = 1.0;
     return res;
 }
 

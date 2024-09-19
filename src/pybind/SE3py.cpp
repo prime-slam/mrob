@@ -234,8 +234,8 @@ void init_geometry(py::module &m) {
 
 
     py::class_<SE3tc>(m, "SE3tc")
-        .def(py::init<>(),
-                "Default construct a new SE3tc object",
+        .def(py::init<const Mat5 &>(),
+                "construct a new SE3tc object from Mat5. make sure time is correct",
                 py::return_value_policy::copy)
         .def(py::init<const Mat5 &, const matData_t &>(),
                 "Mat5 constructor from SE3vel, meaning time enneeds to be specified because it is NOT in the transformation",
@@ -281,6 +281,9 @@ void init_geometry(py::module &m) {
                 py::return_value_policy::copy)
         .def("adj", &SE3tc::adj,
                 "returns the adjoint as a 9x10 matrix",
+                py::return_value_policy::copy)
+        .def("inv", &SE3tc::inv,
+                "returns the inverse",
                 py::return_value_policy::copy)
         .def("print", &SE3tc::print,
                 "Prints current state of pose.")

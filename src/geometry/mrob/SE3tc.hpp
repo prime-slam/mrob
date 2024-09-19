@@ -74,8 +74,10 @@ class SE3tc{
         matData_t t() const;
         Mat<3,5> T_compact() const;
 
-        // The adjoint requires to use the velocity coordinates and we had to set it to 0 for the constraints.
-        Mat<9,10> adj() const;
+        // The adjoint coordinates plus the contraint -> dim 10.
+        Mat<10,10> adj() const;
+
+        // TODO adj_compact? 9x9
 
         SE3tc inv(void) const;
 
