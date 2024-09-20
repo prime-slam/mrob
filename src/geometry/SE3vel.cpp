@@ -168,8 +168,8 @@ void SE3vel::Exp(const Mat91& xi)
 
     Mat3 jac = left_jacobian(phi);
 
-    result.block<3,1>(0,3) << jac*v;
-    result.block<3,1>(0,4) << jac*p;
+    result.block<3,1>(0,3) << jac*p;
+    result.block<3,1>(0,4) << jac*v;
 
     this->T_ = result;
 }
