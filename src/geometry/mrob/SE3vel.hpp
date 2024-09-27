@@ -28,6 +28,7 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SO3.hpp"
+#include "mrob/SE3tc.hpp"
 
 namespace mrob{
 
@@ -42,6 +43,9 @@ namespace mrob{
  *  We will preserve this order in this class.
  */
 
+
+class SE3tc;
+
 class SE3vel{
     public:
         SE3vel(const Mat5 &T = Mat5::Identity());
@@ -51,6 +55,8 @@ class SE3vel{
         SE3vel(const SO3 &R, const Mat31 &p, const Mat31 &v);
 
         SE3vel(const Mat91 &xi);
+
+        SE3vel(const SE3tc &T);
 
         SE3vel inv(void) const;
 

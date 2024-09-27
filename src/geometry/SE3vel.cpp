@@ -29,6 +29,7 @@
 
 using namespace mrob;
 
+
 SE3vel::SE3vel(const Mat5 &T) : T_(T) {}
 
 SE3vel::SE3vel(const SE3vel &T) : T_(T.T()){}
@@ -44,7 +45,14 @@ SE3vel::SE3vel(const Mat91 &xi)
 {
     this->Exp(xi);
 }
- 
+
+SE3vel::SE3vel(const SE3tc &T)
+{
+    Mat5 transf = T.T();
+    transf(3,4) = 0.0;
+    this->T_ = transf;
+}
+
 Mat31 SE3vel::p() const
 {
     return T_.block<3,1>(0,3);

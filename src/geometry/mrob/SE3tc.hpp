@@ -28,9 +28,12 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp"
+#include "mrob/SE3vel.hpp"
 
 
 namespace mrob{
+
+
 
 /**
  *  \brief Extended Special Euclidean (group) in 3d Time Constrained
@@ -49,6 +52,8 @@ namespace mrob{
  * When acc = 0, this equals the SE(3)
  */
 
+class SE3vel;
+
 class SE3tc{
     public:
         SE3tc(const Mat5 &T = Mat5::Identity());
@@ -63,6 +68,9 @@ class SE3tc{
 
         // this function takes a SE3 lifts to SE3vel with 0 velocity
         SE3tc(const SE3 &T, const matData_t &t);
+
+        // This contrustor simply takes a SE3vel and ads the time, converting it into a tc object
+        SE3tc(const SE3vel &T, const matData_t &t);
 
 
 
@@ -84,6 +92,7 @@ class SE3tc{
         void Exp(const Mat91& xi, const matData_t &t);
         Mat91 Ln(void) const;
         Mat61 Ln_position(void) const;
+
 
 
         void set_time(double time_stamp =0.0);// this method is used for updates 9such as optimization) where the update is an instantaneous correction of the pose.

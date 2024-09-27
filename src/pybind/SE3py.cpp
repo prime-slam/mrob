@@ -199,6 +199,9 @@ void init_geometry(py::module &m) {
         .def(py::init<const SE3vel &>(),
                 "Copy constructor",
                 py::return_value_policy::copy)
+        .def(py::init<const SE3tc &>(),
+                "Copy constructor from SE3tc. It just clips time",
+                py::return_value_policy::copy)
         .def("t", &SE3vel::t,
                 "returns current covariance matrix state",
                 py::return_value_policy::copy)
@@ -251,6 +254,9 @@ void init_geometry(py::module &m) {
                 py::return_value_policy::copy)
         .def(py::init<const SE3 &, const matData_t &>(),
                 "Given an SE3 element and a time interval, it lifts it to SE3tc (velocities are empty).",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3vel &, const matData_t &>(),
+                "Given an SE3vel element and a time interval.",
                 py::return_value_policy::copy)
         .def("p", &SE3tc::p,
                 "returns current translation",

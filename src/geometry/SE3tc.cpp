@@ -45,7 +45,7 @@ SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5
     this->Exp(xi,t);
 }
 
-SE3tc::SE3tc(const Mat91 &xi, const matData_t &t)
+SE3tc::SE3tc(const Mat91 &xi, const matData_t &t): T_(Mat5::Identity())
 {
     // xi = [omega, vel, acc]
     this->Exp(xi,t);
@@ -57,8 +57,13 @@ SE3tc::SE3tc(const SE3 &T, const matData_t &t): T_(Mat5::Identity())
 
     Mat31 translation = T.p();
     T_.block<3,1>(0,3) = translation;
-    T_(4,3) = t;
+    this->set_time(t);
     return;
+}
+
+SE3tc::SE3tc(const SE3vel &T, const matData_t &t): T_(T.T())
+{
+    this->set_time(t);
 }
 
 Mat31 SE3tc::p() const
@@ -192,6 +197,7 @@ SE3tc SE3tc::inv(void) const
     return SE3tc(inv);
 
 }
+
 
 void SE3tc::regenerate()
 {
