@@ -74,6 +74,8 @@ class SE3vel{
         void Exp(const Mat91 &xi);
         Mat91 Ln(void) const;
 
+        SE3tc tc(const matData_t &time_stamp) const;
+
         void regenerate();
         SE3vel operator*(const mrob::SE3vel& rhs);
         SE3vel& operator=(const SE3vel& rhs);

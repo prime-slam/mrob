@@ -229,6 +229,9 @@ void init_geometry(py::module &m) {
         .def("inv", &SE3vel::inv,
                 "Outputs the inverse of T",
                 py::return_value_policy::copy)
+        .def("tc", &SE3vel::tc,
+                "Returns the SE3tc, given a time for integrating",
+                py::return_value_policy::copy)
         .def("print", &SE3vel::print,
                 "Prints current state of pose.")
         .def("__mul__", &SE3vel::operator*, py::is_operator())
@@ -286,10 +289,13 @@ void init_geometry(py::module &m) {
                 "Logarithm + vee operator, returns 9D coordinates (omega,vel,acc)",
                 py::return_value_policy::copy)
         .def("adj", &SE3tc::adj,
-                "returns the adjoint as a 9x10 matrix",
+                "returns the adjoint as a 10x10 matrix",
                 py::return_value_policy::copy)
         .def("inv", &SE3tc::inv,
                 "returns the inverse",
+                py::return_value_policy::copy)
+        .def("vel", &SE3tc::vel,
+                "returns the SE3vel after cliping time",
                 py::return_value_policy::copy)
         .def("print", &SE3tc::print,
                 "Prints current state of pose.")

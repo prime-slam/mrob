@@ -93,9 +93,11 @@ class SE3tc{
         Mat91 Ln(void) const;
         Mat61 Ln_position(void) const;
 
+        SE3vel vel() const;
 
 
-        void set_time(double time_stamp =0.0);// this method is used for updates 9such as optimization) where the update is an instantaneous correction of the pose.
+
+        void set_time(const matData_t &time_stamp =0.0);// this method is used for updates 9such as optimization) where the update is an instantaneous correction of the pose.
         void regenerate();
         SE3tc operator*(const mrob::SE3tc& rhs);
         SE3tc& operator=(const SE3tc& rhs);

@@ -41,16 +41,14 @@ SE3vel::SE3vel(const SO3 &R, const Mat31 &p, const Mat31 &v) : T_(Mat5::Identity
     T_.topRightCorner<3,1>() = v;
 }
 
-SE3vel::SE3vel(const Mat91 &xi)
+SE3vel::SE3vel(const Mat91 &xi): T_(Mat5::Identity())
 {
     this->Exp(xi);
 }
 
-SE3vel::SE3vel(const SE3tc &T)
+SE3vel::SE3vel(const SE3tc &T) : T_(T.T())
 {
-    Mat5 transf = T.T();
-    transf(3,4) = 0.0;
-    this->T_ = transf;
+    T_(4,3) = 0.0;
 }
 
 Mat31 SE3vel::p() const
@@ -207,6 +205,10 @@ void SE3vel::regenerate()
     this->Exp(xi);
 }
 
+SE3tc SE3vel::tc(const matData_t &time_stamp) const
+{
+    return SE3tc(*this,time_stamp);
+}
 
 void SE3vel::print() const
 {

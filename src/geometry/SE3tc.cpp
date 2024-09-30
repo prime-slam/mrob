@@ -96,7 +96,7 @@ matData_t SE3tc::t(void) const
     return this->T_(4,3);//time
 }
 
-void SE3tc::set_time(double time_stamp)
+void SE3tc::set_time(const matData_t &time_stamp)
 {
     T_(4,3) = time_stamp;
 }
@@ -104,6 +104,11 @@ void SE3tc::set_time(double time_stamp)
 Mat<3,5> SE3tc::T_compact() const
 {
     return T_.topLeftCorner<3,5>();
+}
+
+SE3vel SE3tc::vel() const
+{
+    return SE3vel(*this);
 }
 
 SE3tc SE3tc::operator*(const SE3tc& rhs)
