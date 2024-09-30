@@ -85,6 +85,9 @@ class SE3tc{
         // The adjoint coordinates plus the contraint -> dim 10.
         Mat<10,10> adj() const;
 
+        // The adjoint when transforming the action T_SE3tc * Exp_SE3vel
+        Mat<9,9> adj_vel() const;
+
         // TODO adj_compact? 9x9
 
         SE3tc inv(void) const;

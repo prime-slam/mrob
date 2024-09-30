@@ -72,7 +72,7 @@ class Factor2Poses3dTwistMatching : public Factor
     double delta_t_;
     Mat31 omega_;
 
-    SE3tc Tx_origin_inv_;
+    SE3tc Tx_target_inv_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

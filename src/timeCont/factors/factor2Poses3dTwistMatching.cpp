@@ -53,27 +53,24 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
     // From Origin we observe 
     Mat5 state_origin;
     state_origin = get_neighbour_nodes()->at(0)->get_state();
-    Tx_origin_inv_ = SE3tc(state_origin).inv();
+    SE3tc Tx_origin = SE3tc(state_origin);
     Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
-    SE3tc Tx_target(state_target);
+    Tx_target_inv_ = SE3tc(state_target).inv();
     delta_t_ = get_neighbour_nodes()->at(1)->get_time_stamp() - 
                get_neighbour_nodes()->at(0)->get_time_stamp();
     
-    SE3tc dT = Tx_origin_inv_ * Tx_target;
-    //delta_t_ = dT.t();//XXX time is not well set in the matrices... need to check this, it should be in one place only!
-    Mat91 twist;
-    twist = dT.Ln();
-    omega_ = twist.head(3);
-    r_.head(3) =  omega_ - obs_.head(3);
-    r_.tail(3) =  twist.tail(3) - obs_.tail(3);
-    r_.segment<3>(3) = twist.segment<3>(3); // 0 observation
-    //std::cout << "resuldula \n" << r_ << std::endl;
+    // constructor: omega, acc, dt
+    SE3tc T_imu_integration = SE3tc(obs_.head(3),obs_.tail(3),delta_t_);
+
+    SE3tc dT = Tx_target_inv_ * Tx_origin * T_imu_integration;
+    r_ = dT.vel().Ln();
+    //std::cout << "residuals \n" << r_ << std::endl;
 }
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
-    J_.topRightCorner<9,9>() =  Tx_origin_inv_.adj().topLeftCorner<9,9>();
-    J_.topLeftCorner<9,9>() = - J_.topRightCorner<9,9>();
+    J_.topLeftCorner<9,9>() =  Tx_target_inv_.adj_vel();
+    J_.topRightCorner<9,9>() =  - J_.topLeftCorner<9,9>();
 }
 
 void Factor2Poses3dTwistMatching::evaluate_chi2()

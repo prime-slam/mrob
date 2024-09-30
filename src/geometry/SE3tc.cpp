@@ -233,6 +233,26 @@ Mat<10,10> SE3tc::adj() const
     return res;
 }
 
+Mat<9,9> SE3tc::adj_vel() const
+{
+    Mat<9,9> res(Mat<9,9>::Zero());
+    Mat3 R = this->R();
+    Mat31 v = this->v();
+    Mat31 p = this->p();
+    matData_t t = this->t();
+
+
+    res.block<3,3>(0,0) = R;
+    res.block<3,3>(3,3) = R;
+    res.block<3,3>(6,6) = R;
+
+    res.block<3,3>(3,0) = hat3(p-t*v)*R;
+    res.block<3,3>(6,0) = hat3(v)*R;
+
+    res.block<3,3>(3,6) = -t*R;
+    return res;
+}
+
 void SE3tc::print() const
 {
     std::cout << T_ << std::endl;
