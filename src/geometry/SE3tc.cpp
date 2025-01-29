@@ -39,7 +39,7 @@ SE3tc::SE3tc(const SE3tc &T) : T_(T.T()){}
 
 SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5::Identity())
 {
-    Mat91 xi;
+    Mat91 xi = Mat91::Zero();
     xi.head(3) = omega;
     xi.tail(3) = acc;
     this->Exp(xi,t);
