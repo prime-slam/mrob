@@ -130,7 +130,7 @@ void SE3tc::Exp(const Mat91& xi, const matData_t &t)
     Mat5 result(Mat5::Identity());
 
     Mat31 omega = xi.head(3);
-    Mat31 phi = omega * t; // Omega * time
+    Mat31 phi = omega * t;
     Mat31 vel = xi.segment<3>(3);
     Mat31 acc = xi.tail(3);
 
@@ -282,7 +282,7 @@ Mat3 mrob::integrand_2(const Mat31 &omega, const matData_t &delta_t)
 {
     Mat3 result = Mat3::Identity()*0.5;
     Mat3 phi_hat = hat3(omega*delta_t);
-    if (delta_t < 1e-12)
+    if (fabs(delta_t) < 1e-12)
         return result;
     double o = omega.norm();
     double o2 = omega.squaredNorm();

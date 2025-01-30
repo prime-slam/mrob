@@ -42,11 +42,11 @@ void init_geometry(py::module &m) {
     py::class_<SE3> se3(m, "SE3");
 
     se3.def(py::init<>(),
-				"The Default constructor creates the identity transformation",
-				py::return_value_policy::copy)
+                "The Default constructor creates the identity transformation",
+                py::return_value_policy::copy)
         .def(py::init<const Mat4 &>(),
-        		"Matrix constructor, requires a 4x4 RBT matrix",
-				py::return_value_policy::copy)
+                "Matrix constructor, requires a 4x4 RBT matrix",
+                py::return_value_policy::copy)
         .def(py::init<const Mat61 &>(),
                 "Given a vector xi in R^6, creates a RBT with the exponential mapping.",
                 py::return_value_policy::copy)
@@ -190,6 +190,9 @@ void init_geometry(py::module &m) {
         .def(py::init<>(),
                 "Default construct a new SE3vel object",
                 py::return_value_policy::copy)
+        .def(py::init<const Mat5>(),
+                "Construct a new SE3vel object from a 5x5 matrix",
+                py::return_value_policy::copy)
         .def(py::init<const SO3 &, const Mat31 &, const Mat31 &>(),
                 "Construtor of SE3vel object with given Rotation, translation and velocity",
                 py::return_value_policy::copy)
@@ -294,6 +297,8 @@ void init_geometry(py::module &m) {
         .def("inv", &SE3tc::inv,
                 "returns the inverse",
                 py::return_value_policy::copy)
+        .def("set_time", &SE3tc::set_time,
+                "sets the time specified by the argument")
         .def("vel", &SE3tc::vel,
                 "returns the SE3vel after cliping time",
                 py::return_value_policy::copy)
