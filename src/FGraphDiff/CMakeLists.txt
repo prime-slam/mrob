@@ -14,12 +14,16 @@ SET(sources
 
 SET(factors_headers
     mrob/factors/factor1Pose2d_diff.hpp
+    mrob/factors/factor1Pose3d_diff.hpp
     mrob/factors/factor2Poses2d_diff.hpp
+    mrob/factors/factor2Poses3d_diff.hpp
 )
 
 SET(factors_sources
     factors/factor1Pose2d_diff.cpp
+    factors/factor1Pose3d_diff.cpp
     factors/factor2Poses2d_diff.cpp
+    factors/factor2Poses3d_diff.cpp
 )
 
 # create library

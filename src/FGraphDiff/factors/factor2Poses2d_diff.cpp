@@ -97,14 +97,9 @@ void Factor2Poses2d_diff::evaluate_chi2()
 
 void mrob::Factor2Poses2d_diff::evaluate_dr_dz()
 {
-    dr_dz_.setIdentity(3,3);
-    dr_dz_ *= -1;
+    dr_dz_ = - Mat3::Identity();
 }
 
-MatRefConst Factor2Poses2d_diff::get_dr_dz() const
-{
-    return dr_dz_;
-}
 
 void Factor2Poses2d_diff::print() const
 {
