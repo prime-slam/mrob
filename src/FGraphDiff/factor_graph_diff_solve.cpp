@@ -96,6 +96,12 @@ uint_t FGraphDiffSolve::solve(optimMethod method, uint_t maxIters,
     return iters; 
 }
 
+
+void FGraphDiffSolve::build_jacobians()
+{
+    this->build_adjacency();
+}
+
 void FGraphDiffSolve::build_problem(bool useLambda)
 {
 
@@ -349,14 +355,11 @@ void FGraphDiffSolve::build_index_nodes_matrix()
 //     }
 // }
 
-MatX FGraphDiffSolve::get_dchi2_dz()
+MatX FGraphDiffSolve::get_dx_dz()
 {
     // composing the gradient dr_dz for the problem
     auto A = get_adjacency_matrix(); // has size |z| by |x|
     // std::cout << "\nA = \n" << MatX(A) << std::endl;
-
-    auto info = get_information_matrix();
-    // std::cout << "\ninfo =\n" << MatX(info) << std::endl;
 
     auto b = get_vector_b();
     // std::cout << "\nb =\n" << MatX(b) << std::endl;
@@ -371,12 +374,14 @@ MatX FGraphDiffSolve::get_dchi2_dz()
 
     SMatRow dr_dz_full = get_dr_dz();
 
-    MatX errors_grads;
-    errors_grads.resize(get_dimension_state(), get_dimension_obs());
+    MatX d2_chi2_dzdx;
+    d2_chi2_dzdx.resize(get_dimension_state(), get_dimension_obs());
 
-    errors_grads = - A.transpose() * W * dr_dz_full;
+    d2_chi2_dzdx =  A.transpose() * W * dr_dz_full;
 
-    return errors_grads;
+    MatX dx_dz = -info_matrix.inverse()* d2_chi2_dzdx;    
+
+    return dx_dz;
 }
 
 

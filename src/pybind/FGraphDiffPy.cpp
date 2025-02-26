@@ -163,8 +163,10 @@ void init_FGraphDiff(py::module &m)
             .def("number_nodes", &FGraphDiffSolve::number_nodes, "Returns the number of nodes")
             .def("number_factors", &FGraphDiffSolve::number_factors, "Returns the number of factors")
             .def("print", &FGraphDiff::print, "By default False: does not print all the information on the Fgraph", py::arg("completePrint") = false)
-            .def("get_dchi2_dz", &FGraphDiffSolve::get_dchi2_dz,
-                   "Calculate chi2 gradient with reference to all obzervations z in all factors")
+            .def("get_dx_dz", &FGraphDiffSolve::get_dx_dz,
+                   "Calculate gradient of current estimated state of the graph with reference to all obzervations z in all factors")
+        .def("build_jacobians", &FGraphDiffSolve::build_jacobians,
+                "Computes all Jacobians without any optimization steps")
             // Robust factors GUI
             // TODO, we want to set a default robust function? maybe at ini?
             // TODO we want a way to change the robust factor for each node, maybe accesing by id? This could be away to inactivate factors...

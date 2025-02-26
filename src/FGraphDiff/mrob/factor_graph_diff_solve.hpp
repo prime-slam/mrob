@@ -146,7 +146,7 @@ public:
      * 
      * @return SMatRow of shape dim_state X dim_obs 
      */
-    MatX get_dchi2_dz();
+    MatX get_dx_dz();
 
     /**
      * Returns a copy to the W matrix.
@@ -173,6 +173,11 @@ public:
      * The index in the graph is the factor Id
     */
     std::vector<bool> get_factors_robust_mask();
+
+    /**
+    * Builds all Jacobians of the problem
+    */
+    void build_jacobians();
 
 protected:
     /**
