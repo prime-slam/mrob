@@ -22,7 +22,7 @@
  */
 
 
-#include "../mrob/factor_graph_diff_solve.hpp"
+#include "mrob/factor_graph_diff_solve.hpp"
 #include "mrob/factor_graph.hpp"
 #include "mrob/factors/factor1Pose2d_diff.hpp"
 #include "mrob/factors/factor2Poses2d_diff.hpp"
@@ -168,7 +168,7 @@ int main ()
 
         std::cout << "\nError_grads = \n" << errors_grads << std::endl;
     
-        auto dchi2_dz = graph.get_dchi2_dz();
+        auto dchi2_dz = graph.get_dx_dz();
 
         std::cout << "\nError_grads = \n" << MatX(dchi2_dz) << std::endl;
     }

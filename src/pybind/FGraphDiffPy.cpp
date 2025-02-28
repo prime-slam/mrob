@@ -30,8 +30,11 @@
 
 #include "mrob/factor_graph_diff_solve.hpp"
 #include "mrob/factors/nodePose2d.hpp"
+#include "mrob/factors/nodePose3d.hpp"
 #include "mrob/factors/factor1Pose2d_diff.hpp"
+#include "mrob/factors/factor1Pose3d_diff.hpp"
 #include "mrob/factors/factor2Poses2d_diff.hpp"
+#include "mrob/factors/factor2Poses3d_diff.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -68,12 +71,26 @@ public:
         this->add_node(n);
         return n->get_id();
     }
+    factor_id_t add_node_pose_3d(const SE3 &x, mrob::Node::nodeMode mode)
+    {
+        std::shared_ptr<mrob::Node> n(new mrob::NodePose3d(x,mode));
+        this->add_node(n);
+        return n->get_id();
+    }
     void add_factor_1pose_2d_diff(const py::EigenDRef<const Mat31> obs, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
     {
         auto n1 = this->get_node(nodeId);
         std::shared_ptr<mrob::DiffFactor> f(new mrob::Factor1Pose2d_diff(obs,n1,obsInvCov,robust_type_));
         this->add_factor(f);
     }
+    factor_id_t add_factor_1pose_3d_diff(const SE3 &obs, uint_t nodeId, const py::EigenDRef<const Mat6> obsInvCov)
+    {
+        auto n1 = this->get_node(nodeId);
+        std::shared_ptr<mrob::DiffFactor> f(new mrob::Factor1Pose3d_diff(obs,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    
     void add_factor_2poses_2d_diff(const py::EigenDRef<const Mat31> obs, uint_t nodeOriginId, uint_t nodeTargetId,
             const py::EigenDRef<const Mat3> obsInvCov, bool updateNodeTarget)
     {
@@ -81,6 +98,15 @@ public:
         auto nT = this->get_node(nodeTargetId);
         std::shared_ptr<mrob::DiffFactor> f(new mrob::Factor2Poses2d_diff(obs,nO,nT,obsInvCov, updateNodeTarget,robust_type_));
         this->add_factor(f);
+    }
+    factor_id_t add_factor_2poses_3d_diff(const SE3 &obs, uint_t nodeOriginId, uint_t nodeTargetId,
+            const py::EigenDRef<const Mat6> obsInvCov, bool updateNodeTarget)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
+        std::shared_ptr<mrob::DiffFactor> f(new mrob::Factor2Poses3d_diff(obs,nO,nT,obsInvCov, updateNodeTarget, robust_type_));
+        this->add_factor(f);
+        return f->get_id();
     }
     void add_factor_2poses_2d_odom_diff(const py::EigenDRef<const Mat31> obs, uint_t nodeOriginId, uint_t nodeTargetId, const py::EigenDRef<const Mat3> obsInvCov)
     {
@@ -177,15 +203,28 @@ void init_FGraphDiff(py::module &m)
                     "output, node id, for later usage",
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
+            .def("add_node_pose_3d", &FGraphDiffPy::add_node_pose_3d,
+                " - arguments, initial estimate (np.zeros(6))\n"
+                "output, node id, for later usage",
+                py::arg("x"),
+                py::arg("mode") = Node::nodeMode::STANDARD)
             .def("add_factor_1pose_2d_diff", &FGraphDiffPy::add_factor_1pose_2d_diff)
+            .def("add_factor_1pose_3d_diff", &FGraphDiffPy::add_factor_1pose_3d_diff)
             .def("add_factor_2poses_2d_diff", &FGraphDiffPy::add_factor_2poses_2d_diff,
-                    "Factors connecting 2 poses. If last input set to true (by default false), also updates "
+                    "Factors connecting 2 poses. If lastFGraphDiff input set to true (by default false), also updates "
                     "the value of the target Node according to the new obs + origin node",
                     py::arg("obs"),
                     py::arg("nodeOriginId"),
                     py::arg("nodeTargetId"),
                     py::arg("obsInvCov"),
                     py::arg("updateNodeTarget") = false)
+                .def("add_factor_2poses_3d_diff", &FGraphDiffPy::add_factor_2poses_3d_diff,
+                            "Factors connecting 2 poses. If last input set to true (by default false), also updates the value of the target Node according to the new obs + origin node",
+                            py::arg("obs"),
+                            py::arg("nodeOridingId"),
+                            py::arg("nodeTargetId"),
+                            py::arg("obsInvCov"),
+                            py::arg("updateNodeTarget") = false)
             .def("add_factor_2poses_2d_odom_diff", &FGraphDiffPy::add_factor_2poses_2d_odom_diff,
                     "add_factor_2poses_2d_odom(obs, nodeOriginId, nodeTargetId, W)"
                     "\nFactor connecting 2 poses, following an odometry model."

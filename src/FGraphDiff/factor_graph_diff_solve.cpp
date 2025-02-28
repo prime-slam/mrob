@@ -31,6 +31,7 @@
 #include <Eigen/SparseLU>
 #include <Eigen/SparseCholesky>
 #include <Eigen/SparseQR>
+#include <Eigen/LU> // for inverse and determinant
 
 
 using namespace mrob;
