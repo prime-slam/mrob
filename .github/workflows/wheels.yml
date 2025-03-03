@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheel-${{matrix.runs-on}}
           path: ./wheelhouse/*.whl
 
   publish_pypi:
@@ -33,6 +33,9 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.7
+        with:
+          pattern: wheel-*
+          merge-multiple: true
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
