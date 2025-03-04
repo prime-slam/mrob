@@ -20,7 +20,7 @@ jobs:
       - name: Check repo consistency
         run: git status --porcelain
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
