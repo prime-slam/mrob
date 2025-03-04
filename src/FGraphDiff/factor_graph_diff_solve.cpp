@@ -100,7 +100,7 @@ uint_t FGraphDiffSolve::solve(optimMethod method, uint_t maxIters,
 
 void FGraphDiffSolve::build_jacobians()
 {
-    this->build_adjacency();
+    this->build_problem();
 }
 
 void FGraphDiffSolve::build_problem(bool useLambda)
