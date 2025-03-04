@@ -13,6 +13,7 @@ SET(sources
 )
 # create library
 ADD_LIBRARY(common ${sources})
+TARGET_LINK_LIBRARIES(common PRIVATE Eigen3::Eigen)
 
 SET_TARGET_PROPERTIES(common PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
