@@ -8,9 +8,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-latest, macos-13, windows-2019]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.5
@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-${{matrix.runs-on}}
+          name: wheels-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   publish_pypi:
@@ -44,6 +44,8 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
           packages_dir: wheels/
           verbose: true
+          pattern: wheels-*
+          merge-multiple: true
 
   publish-github-release:
     name: Publish wheels to GitHub Releases
@@ -53,6 +55,9 @@ jobs:
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.7
+        with:
+          pattern: wheels-*
+          merge-multiple: true
 
       - uses: softprops/action-gh-release@v1
         with:

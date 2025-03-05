@@ -46,7 +46,7 @@ SET(factors_sources
 
 # create library
 ADD_LIBRARY(FGraph ${sources} ${factors_sources})
-TARGET_LINK_LIBRARIES(FGraph SE3 common)
+TARGET_LINK_LIBRARIES(FGraph SE3 common Eigen3::Eigen)
 
 SET_TARGET_PROPERTIES(FGraph PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"

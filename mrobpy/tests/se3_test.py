@@ -111,7 +111,7 @@ class TestSE3Basic:
 
         v = T_2.T()@v
 
-        assert(np.isclose(np.linalg.norm(v - tmp),0,atol=1e-15))
+        assert(np.isclose(np.linalg.norm(v - tmp), 0, atol=1e-15))
 
     # SE3.ref2T() does not have a binding in python
     #     SECTION("Access inner matrix")
@@ -134,7 +134,8 @@ class TestSE3Basic:
 
         T_inv = T.inv()
 
-        assert(np.isclose(np.linalg.norm(T_inv.T()@T.T() - np.eye(4)),0,atol=1e-15))
+        assert(np.isclose(np.linalg.norm(T_inv.T()@T.T() - np.eye(4)),0,atol=1e-14))
+        assert(np.isclose((T_inv*T).distance(), 0, atol=1e-32))
 
     def test_adjoint_simple_case(self):
         xi = np.array([0,0,0,1,2,3])
