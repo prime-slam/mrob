@@ -39,17 +39,30 @@ SE3tc::SE3tc(const SE3tc &T) : T_(T.T()){}
 
 SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5::Identity())
 {
-    Mat91 xi = Mat91::Zero();
-    xi.head(3) = omega;
-    xi.tail(3) = acc;
-    this->Exp(xi,t);
+    Mat101 xi = Mat101::Zero();
+    xi(9) = t;
+    xi.head(3) = omega * t;
+    xi.segment<3>(6) = acc * t;
+    std::cout << "xi = \n" << xi << std::endl;
+    this->Exp(xi);
 }
+
+
 
 SE3tc::SE3tc(const Mat91 &xi, const matData_t &t): T_(Mat5::Identity())
 {
-    // xi = [omega, vel, acc]
-    this->Exp(xi,t);
+    // xi- = [omega*t, vel*t, acc*t] and t
+    Mat101 xi_plus;
+    xi_plus << xi, t;
+    this->Exp(xi_plus);
 }
+
+SE3tc::SE3tc(const Mat101 &xi): T_(Mat5::Identity())
+{
+    // xi = [omega*t, vel*t, acc*t, t]
+    this->Exp(xi);
+}
+
 
 SE3tc::SE3tc(const SE3 &T, const matData_t &t): T_(Mat5::Identity())
 {
@@ -125,48 +138,47 @@ SE3tc& SE3tc::operator=(const SE3tc& rhs)
     return *this;
 }
 
-void SE3tc::Exp(const Mat91& xi, const matData_t &t)  
+void SE3tc::Exp(const Mat101& xi)  
 {
     Mat5 result(Mat5::Identity());
 
-    Mat31 omega = xi.head(3);
-    Mat31 phi = omega * t;
-    Mat31 vel = xi.segment<3>(3);
-    Mat31 acc = xi.tail(3);
+    Mat31 phi = xi.head(3);
+    Mat31 pos = xi.segment<3>(3);
+    Mat31 vel = xi.segment<3>(6);
+    matData_t t = xi(9);
 
     SO3 tmp(phi);
 
     result.topLeftCorner<3,3>() << tmp.R();
 
     Mat3 integ1;
-    integ1 << integrand_1(omega,t);
-    result.block<3,1>(0,3) << integ1*vel + integrand_2(omega,t)*acc;
-    result.block<3,1>(0,4) << integ1*acc;
+    integ1 << left_jacobian(phi);
+    result.block<3,1>(0,3) << integ1*pos + left_jacobian_2(phi)*vel*t;
+    result.block<3,1>(0,4) << integ1*vel;
     
     result(4,3) = t;
 
     this->T_ = result;
 }
 
-Mat91 SE3tc::Ln() const
+Mat101 SE3tc::Ln() const
 {
-    Mat91 result(Mat91::Zero());
+    Mat101 result(Mat101::Zero());
 
     Mat3 R = this->R();
     Mat31 v = this->v();
     Mat31 p = this->p();
     matData_t delta_t = this->t();
-    if ( std::fabs(delta_t) < 1e-12)
-        return result;
-
+    
     SO3 tmp(R);
-    Mat31 omega = tmp.ln_vee()/delta_t;
-    Mat3 inv_int_1 = inv_integrand_1(omega, delta_t);
-    Mat3 int_2 = integrand_2(omega, delta_t);
+    Mat31 phi = tmp.ln_vee();
+    Mat3 inv_int_1 = inv_left_jacobian(phi);
+    Mat3 int_2 = left_jacobian_2(phi);
 
-    result.head(3) << omega;
-    result.segment<3>(3) << inv_int_1*p - inv_int_1 * int_2 * inv_int_1 * v;
-    result.tail(3) << inv_int_1*v;
+    result.head(3) << phi;
+    result.segment<3>(3) << inv_int_1*p - inv_int_1 * int_2 * inv_int_1 * (delta_t * v);
+    result.segment<3>(6) << inv_int_1*v;
+    result(9) = delta_t;
 
     return result;
 }
@@ -178,14 +190,14 @@ Mat61 SE3tc::Ln_position() const
 
     Mat3 R = this->R();
     Mat31 p = this->p();
-    matData_t delta_t = this->t();
+    //matData_t delta_t = this->t();
 
     SO3 tmp(R);
-    Mat31 omega = tmp.ln_vee()/delta_t;
-    Mat3 jac = inv_integrand_2(omega, delta_t);
+    Mat31 phi = tmp.ln_vee();
+    Mat3 jac = inv_left_jacobian(phi);
 
-    result.head(3) << omega;
-    result.tail(3) << jac*p;
+    result.head(3) << phi;
+    result.segment<3>(6) << jac*p;
 
     return result;
 }
@@ -206,8 +218,8 @@ SE3tc SE3tc::inv(void) const
 
 void SE3tc::regenerate()
 {
-    Mat91 xi = this->Ln();
-    this->Exp(xi,this->t());
+    Mat101 xi = this->Ln();
+    this->Exp(xi);
 }
 
 
@@ -272,20 +284,14 @@ std::string SE3tc::toString() const
     return ss.str();
 }
 
-Mat3 mrob::integrand_1(const Mat31 &omega, const matData_t &delta_t)
-{
 
-    return left_jacobian(omega*delta_t) * delta_t;
-}
 
-Mat3 mrob::integrand_2(const Mat31 &omega, const matData_t &delta_t)
+Mat3 mrob::left_jacobian_2(const Mat31 &phi)
 {
     Mat3 result = Mat3::Identity()*0.5;
-    Mat3 phi_hat = hat3(omega*delta_t);
-    if (fabs(delta_t) < 1e-12)
-        return result;
-    double o = omega.norm();
-    double o2 = omega.squaredNorm();
+    Mat3 phi_hat = hat3(phi);
+    double o = phi.norm();
+    double o2 = phi.squaredNorm();
     // If rotation is not zero
     matData_t c3, c4;
     if ( o > 1e-3){
@@ -302,27 +308,5 @@ Mat3 mrob::integrand_2(const Mat31 &omega, const matData_t &delta_t)
     result += c3*phi_hat + c4*phi_hat*phi_hat;
 
 
-    return result * (delta_t * delta_t);
-}
-
-Mat3 mrob::inv_integrand_1(const Mat31 &omega, const matData_t &delta_t)
-{
-
-    return inv_left_jacobian(omega*delta_t) / delta_t;
-}
-
-Mat3 mrob::inv_integrand_2(const Mat31 &omega, const matData_t &delta_t)
-{
-    Mat3 integrand2 = integrand_2(omega, delta_t);
-    // there is a closed form, for now we go with brute force inverse.
-    return integrand2.inverse();
-}
-
-
-Mat6 mrob::mapping_se3_to_se3tc(const Mat31 &omega, const matData_t &delta_t)
-{
-    Mat6 result = Mat6::Zero();
-    result.topLeftCorner<3,3>() = Mat3::Identity()/delta_t;
-    result.bottomRightCorner<3,3>() = inv_integrand_2(omega,delta_t) * left_jacobian(omega*delta_t);
     return result;
 }

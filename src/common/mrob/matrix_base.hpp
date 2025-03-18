@@ -48,6 +48,7 @@ using Mat4 = Eigen::Matrix<matData_t, 4,4, Eigen::RowMajor>;
 using Mat5 = Eigen::Matrix<matData_t, 5,5, Eigen::RowMajor>;
 using Mat6 = Eigen::Matrix<matData_t, 6,6, Eigen::RowMajor>;
 using Mat9 = Eigen::Matrix<matData_t, 9,9, Eigen::RowMajor>;
+using Mat10 = Eigen::Matrix<matData_t, 9,9, Eigen::RowMajor>;
 using MatX = Eigen::Matrix<matData_t, Eigen::Dynamic,Eigen::Dynamic, Eigen::RowMajor>;
 
 //Sparse Matrices
@@ -62,6 +63,7 @@ using Mat41 = Eigen::Matrix<matData_t, 4,1>;
 using Mat51 = Eigen::Matrix<matData_t, 5,1>;
 using Mat61 = Eigen::Matrix<matData_t, 6,1>;
 using Mat91 = Eigen::Matrix<matData_t, 9,1>;
+using Mat101 = Eigen::Matrix<matData_t, 10,1>;
 using MatX1 = Eigen::Matrix<matData_t, Eigen::Dynamic,1>;
 
 // Definition of row matrices (vectors)
@@ -71,6 +73,7 @@ using Mat14 = Eigen::Matrix<matData_t, 1,4>;
 using Mat15 = Eigen::Matrix<matData_t, 1,5>;
 using Mat16 = Eigen::Matrix<matData_t, 1,6>;
 using Mat19 = Eigen::Matrix<matData_t, 1,9>;
+using Mat110 = Eigen::Matrix<matData_t, 1,10>;
 using Mat1X = Eigen::Matrix<matData_t, 1,Eigen::Dynamic>;
 
 

@@ -17,8 +17,8 @@ print('node 1 id = ', n1, ' , node 2 id = ', n2)
 invCov = np.identity(3)
 graph.add_factor_2poses_2d(np.ones(3),n1,n2,invCov)
 
-graph.solve(mrob.LM)
-graph.print(True)
+graph.solve(mrob.LM, verbose=True, solutionTolerance = 10)
+#graph.print(True)
 
 A = graph.get_adjacency_matrix()
 A = A.todense()

@@ -256,7 +256,10 @@ void init_geometry(py::module &m) {
                 "Construtor of SE3tcl object with given angular velocity (omega), acceleration and time inverval",
                 py::return_value_policy::copy)
         .def(py::init<const Mat91 &, const matData_t &>(),
-                "Given a vector xi in R^9 = [omega,vel,acc], and time interval",
+                "Given a vector xi in R^10 = [omega*t,vel*t,ac*t) and t as a separate argument]",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat101 &>(),
+                "Given a vector xi in R^10 = [omega*t,vel*t,ac*t,t)]",
                 py::return_value_policy::copy)
         .def(py::init<const SE3 &, const matData_t &>(),
                 "Given an SE3 element and a time interval, it lifts it to SE3tc (velocities are empty).",
@@ -286,10 +289,10 @@ void init_geometry(py::module &m) {
                 "Outputs the 3x5 (compact) transformation [R,p,v]",
                 py::return_value_policy::copy)
         .def("Ln_position", &SE3tc::Ln_position,
-                "Logarithm + vee operator, returns 6D coordinates (omega,acc) by inverse of the position",
+                "Logarithm + vee operator, returns 6D coordinates (omega*t,acc*t) by inverse of the position",
                 py::return_value_policy::copy)
         .def("Ln", &SE3tc::Ln,
-                "Logarithm + vee operator, returns 9D coordinates (omega,vel,acc)",
+                "Logarithm + vee operator, returns 10D coordinates (omega*t,vel*t,acc*t,t)",
                 py::return_value_policy::copy)
         .def("adj", &SE3tc::adj,
                 "returns the adjoint as a 10x10 matrix",

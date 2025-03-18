@@ -43,8 +43,10 @@ namespace mrob{
  *                [0 t  1]
  *        s.t. dot{p} = v, for any time t when conditions are met
  *  The Lie Algebra associated to this group is expressed by the coordinates
- *      xi =[omega , vel, acc] \in Re^9, where omega \in Re^3 represents the angular velocity
- *  vel is velocity and acc is the acceleration.
+ *      xi =[omega*t , vel*t, acc*t, t] \in Re^10, where 
+ *          - t is the time interval for integration
+ *          - omega \in Re^3 represents the angular velocity
+ *          - vel is velocity and acc is the acceleration.
  *  We will preserve this order in this class.
  * 
  * NOTE:
@@ -66,10 +68,12 @@ class SE3tc{
 
         SE3tc(const Mat91 &xi, const matData_t &t);
 
+        SE3tc(const Mat101 &xi);
+
         // this function takes a SE3 lifts to SE3vel with 0 velocity
         SE3tc(const SE3 &T, const matData_t &t);
 
-        // This contrustor simply takes a SE3vel and ads the time, converting it into a tc object
+        // This constructor simply takes a SE3vel and ads the time, converting it into a tc object
         SE3tc(const SE3vel &T, const matData_t &t);
 
 
@@ -86,14 +90,13 @@ class SE3tc{
         Mat<10,10> adj() const;
 
         // The adjoint when transforming the action T_SE3tc * Exp_SE3vel
+        //XXX deprecated? who uses this
         Mat<9,9> adj_vel() const;
-
-        // TODO adj_compact? 9x9
 
         SE3tc inv(void) const;
 
-        void Exp(const Mat91& xi, const matData_t &t);
-        Mat91 Ln(void) const;
+        void Exp(const Mat101& xi);
+        Mat101 Ln(void) const;
         Mat61 Ln_position(void) const;
 
         SE3vel vel() const;
@@ -118,14 +121,10 @@ class SE3tc{
         Mat5 T_;
 };
 
-Mat3 integrand_1(const Mat31 &omega, const matData_t &delta_t);
-Mat3 integrand_2(const Mat31 &omega, const matData_t &delta_t);
+// Order 2 (double integration) of the Jacobian
+Mat3 left_jacobian_2(const Mat31 &phi);
 
-Mat3 inv_integrand_1(const Mat31 &omega, const matData_t &delta_t);
-Mat3 inv_integrand_2(const Mat31 &omega, const matData_t &delta_t);
 
-Mat6 mapping_se3_to_se3tc(const Mat31 &omega, const matData_t &delta_t);
-//Mat6 mapping_se3tc_to_se3(const Mat31 &omega, const matData_t &delta_t);
 
 }// end namespace
 
