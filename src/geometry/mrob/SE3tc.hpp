@@ -101,6 +101,8 @@ class SE3tc{
 
         SE3vel vel() const;
 
+        Mat<10,10> inverse_left_jacobian() const;
+
 
 
         void set_time(const matData_t &time_stamp =0.0);// this method is used for updates 9such as optimization) where the update is an instantaneous correction of the pose.

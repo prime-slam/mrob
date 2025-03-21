@@ -44,9 +44,10 @@ void NodePose3dVelTc::update(VectRefConst &dx)
     Mat91 dxf = dx;
 
     // Tx  = Exp(xi,t=0) Tx
-    SE3tc update = SE3tc(dxf,1.0);
-    update.set_time();
-    state_ =  update * state_;
+    SE3vel update = SE3vel(dxf);
+    Mat5 res;
+    res = update.T() * state_.T();
+    state_ =  SE3tc(res);
     // XXX regeneration of state is required, for now we do it every time. random? count?
     //state_.regenerate();
 }
@@ -55,9 +56,10 @@ void NodePose3dVelTc::update_from_auxiliary(VectRefConst &dx)
 {
     Mat91 dxf = dx;
     state_ = auxiliaryState_;//we update from the auxiliary state
-    SE3tc update = SE3tc(dxf,1.0);
-    update.set_time();
-    state_ =  update * state_;
+    SE3vel update = SE3vel(dxf);
+    Mat5 res;
+    res = update.T() * state_.T();
+    state_ =  SE3tc(res);
 }
 
 void NodePose3dVelTc::set_state(MatRefConst &x)

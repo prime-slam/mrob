@@ -39,7 +39,7 @@ Factor1Pose3dVel::Factor1Pose3dVel(const Mat4 &observation, std::shared_ptr<Node
 
 Factor1Pose3dVel::Factor1Pose3dVel(const SE3 &observation, std::shared_ptr<Node> &n1,
              const Mat6 &obsInf, Factor::robustFactorType robust_type):
-             Factor(6,6, robust_type), Tobs_(observation), W_(obsInf), J_(Mat<6,9>::Zero())
+             Factor(6,9, robust_type), Tobs_(observation), W_(obsInf), J_(Mat<6,9>::Zero())
 {
     // Ordering here is not a problem, the node is unique
     neighbourNodes_.push_back(n1);

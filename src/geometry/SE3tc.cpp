@@ -310,3 +310,11 @@ Mat3 mrob::left_jacobian_2(const Mat31 &phi)
 
     return result;
 }
+
+
+Mat<10,10> SE3tc::inverse_left_jacobian() const
+{
+    Mat<10,10> result(Mat<10,10>::Zero());
+
+    return result;
+}
