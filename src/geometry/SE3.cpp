@@ -336,34 +336,49 @@ std::string SE3::toString() const
 
 
 
-Mat3 mrob::inv_Q_in_SE3invJacobian(const Mat31 &theta, const Mat31 &rho)
+Mat3 mrob::Q_in_SE3invJacobian(const Mat31 &theta, const Mat31 &rho)
 {
-    Mat3 Qinv = Mat3::Zero();
+    Mat3 Q = Mat3::Zero();
     matData_t theta_norm = theta.norm();
     matData_t theta_norm_2 = theta.dot(theta);
     Mat3 theta_hat;
     theta_hat = hat3(theta);
     Mat3 rho_hat;
     rho_hat = hat3(rho);
-    Qinv = -0.5*rho_hat;
+    Q = -0.5*rho_hat;
     
     // rho^theta^ and theta^rho^
     Mat3 rho_theta, theta_rho;
     rho_theta = rho_hat * theta_hat;
     theta_rho = theta_hat * rho_hat;
-    // TODO handle theta_norm to 0
-    matData_t alpha = 1/theta_norm_2 - 0.5/theta_norm / std::tan(theta_norm*0.5);
-    Qinv += alpha*(rho_theta + theta_rho);
+    // handle theta_norm to 0
+    matData_t alpha;
+    if (theta_norm > 1e-3)
+    {
+        alpha = 1/theta_norm_2 - 0.5/theta_norm / std::tan(theta_norm*0.5);
+    }
+    else
+    {
+        alpha = 0.0833333 + 0.00138889 * theta_norm_2;
+    }
+    Q += alpha*(rho_theta + theta_rho);
     
     // theta^rho^theta^2 and 
     matData_t s2 = std::sin(theta_norm*0.5);
-    // TODO handle theta_norm to 0
-    matData_t beta  = 0.5 / theta_norm_2 / theta_norm *
-            (0.5/ std::tan(theta_norm*0.5)  - theta_norm * 0.25 / (s2*s2) );
+    // handle theta_norm to 0
+    matData_t beta;
+    if (theta_norm > 1e-4)
+    {
+        beta = 0.5 / theta_norm_2 / theta_norm * (0.5/ std::tan(theta_norm*0.5)  - theta_norm * 0.25 / (s2*s2) );
+        beta += alpha/theta_norm_2;
+    }
+    else
+    {
+        beta = 0.0;
+    }
     Mat3 theta_hat_2;
     theta_hat_2 = theta_hat * theta_hat;
-    beta += alpha/theta_norm_2;
-    Qinv += beta*(theta_hat_2 * rho_theta + theta_rho * theta_hat_2);
+    Q += beta*(theta_hat_2 * rho_theta + theta_rho * theta_hat_2);
 
-    return Qinv;
+    return Q;
 }

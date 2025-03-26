@@ -230,7 +230,7 @@ Mat3 inv_left_jacobian(const Mat31 &phi);
  * the inverse Jacobian. It is defined in a global frame since it can be
  * used in other classes
  */
-Mat3 inv_Q_in_SE3invJacobian(const Mat31 &phi, const Mat31 &rho);
+Mat3 Q_in_SE3invJacobian(const Mat31 &phi, const Mat31 &rho);
 
 
 }// end namespace

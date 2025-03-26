@@ -330,7 +330,7 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
     result.block<3,3>(6,6) = inverse_J_R;
 
     Mat3 Qinv;
-    Qinv = mrob::inv_Q_in_SE3invJacobian(theta,nu);
+    Qinv = mrob::Q_in_SE3invJacobian(theta,nu);
     result.block<3,3>(6,0) = Qinv;
 
     // M (theta nu) block matrix
@@ -344,7 +344,14 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
     matData_t tan_norm = std::tan(theta_norm*0.5);
     matData_t inv_theta_norm = 1/theta_norm;
     matData_t inv_theta_norm_2 = 1/theta_norm_2;
-    alpha_M = inv_theta_norm_2 - 0.5 * inv_theta_norm /tan_norm;
+    if (theta_norm > 1e-4)
+    {
+        alpha_M = inv_theta_norm_2 - 0.5 * inv_theta_norm /tan_norm;
+    }
+    else
+    {
+        alpha_M = 0.0833333 + 0.00138889 * theta_norm_2;
+    }
     M  += alpha_M  * theta_hat;
     result.block<3,1>(3,9) = M * nu;
 
@@ -354,13 +361,20 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
     matData_t alpha_L;
     matData_t sin2_norm = std::sin(theta_norm*0.5);
     sin2_norm *= sin2_norm;
-    alpha_L =  t * inv_theta_norm * (0.5/tan_norm  - theta_norm * 0.25 / sin2_norm );
+    if (theta_norm > 1e-4)
+    {
+        alpha_L =  t * inv_theta_norm * (0.5/tan_norm  - theta_norm * 0.25 / sin2_norm );
+    }
+    else
+    {
+        alpha_L = t*(-0.166667 - 0.00555556 * theta_norm_2);
+    }
     L += alpha_L * theta_hat;
     result.block<3,3>(3,6) = L;
 
     // P (theta, rho, nu, t) block matrix
     Mat3 P;
-    P = mrob::inv_Q_in_SE3invJacobian(theta,rho);
+    P = mrob::Q_in_SE3invJacobian(theta,rho);
     Mat3 nu_hat;
     nu_hat = hat3(nu);
     P -= t /12 * nu_hat;
@@ -371,15 +385,23 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
     nu_theta2 = nu_hat * theta_hat_2;
     theta2_nu = theta_hat_2 * nu_hat;
     matData_t C_1,C_2,C_3,C_4;
-    C_1 = -t * inv_theta_norm_2 * ( 0.5*inv_theta_norm / tan_norm  - inv_theta_norm_2 + 1.0/12.0);
-    C_2 = -alpha_L*inv_theta_norm_2;
-    C_2 += 0.5*t * inv_theta_norm_2 * inv_theta_norm / tan_norm  - (1.0/12.0)*t*inv_theta_norm_2 - t * inv_theta_norm_2 * inv_theta_norm_2;
+    if (theta_norm > 1e-4)
+    {
+        C_1 = -t * inv_theta_norm_2 * ( 0.5*inv_theta_norm / tan_norm  - inv_theta_norm_2 + 1.0/12.0);
+        C_2 = -alpha_L*inv_theta_norm_2;
+        C_2 += 0.5*t * inv_theta_norm_2 * inv_theta_norm / tan_norm  - (1.0/12.0)*t*inv_theta_norm_2 - t * inv_theta_norm_2 * inv_theta_norm_2;
+    }
+    else
+    {
+        C_1 = t * (0.00138889 + 0.0000330688 * theta_norm_2);
+        C_2 = 0.0;//set to zero
+    }
     P += C_1*nu_theta2 + C_2 * theta2_nu;
     
     //C_3 = -2*t*BN[4]/np.math.factorial(4) + 6*t*BN[6]/np.math.factorial(6)*theta_norm_2
-    C_3 = 2*t*0.0013888888888864963 + 6*t*3.306878306878106e-05*theta_norm_2;
+    C_3 = t*0.0027777777777729926 + t*0.00019841269841268632*theta_norm_2;
     //C_4 = -3*t*BN[6]/np.math.factorial(6) + 8*t*BN[8]/np.math.factorial(8)*theta_norm_2
-    C_4 = -3*t*3.306878306878106e-05 - 8*t*8.267195767195686e-07*theta_norm_2;
+    C_4 = -t*9.920634920634316e-05 - t*6.613756613756549e-06*theta_norm_2;
     P +=  theta_hat * nu_hat * theta_hat * C_3;
     P += theta_hat_2 * nu_hat * theta_hat_2 * C_4;
     result.block<3,3>(3,0) = P;
