@@ -105,7 +105,7 @@ void init_geometry(py::module &m) {
         .def("__repr__", &SE3::toString, "Generates string representation of the SE3 object for console output");
 
     m.def("isSE3", &mrob::isSE3, "Returns True is the matrix is a valid transformation and False if not");
-
+    
     py::class_<SO3>(m, "SO3")
 		.def(py::init<>(), "Default SO3 construction, the identityt(3)", py::return_value_policy::copy)
 		.def(py::init<const Mat31 &>(), "SO3 constructor with a 3D vector. Inside uses the exponential map",
@@ -126,28 +126,30 @@ void init_geometry(py::module &m) {
         .def("Ln", &SO3::ln_vee,
                 "Logarithm operation, mapping to the tangent space around the identity element",
                 py::return_value_policy::copy)
-        .def("inv", &SO3::inv,
-                "Creates a copy of the inverse",
-                py::return_value_policy::copy)
+                .def("inv", &SO3::inv,
+                        "Creates a copy of the inverse",
+                        py::return_value_policy::copy)
         .def("adj", &SO3::adj,
                 "Returns the 3x3 adjoint matrix of the SO3 element",
                 py::return_value_policy::copy)
         .def("distance", &SO3::distance,
                 "Calculates the distance between rotation matrices as ||Ln(R'*R_i)||")
-        .def("print", &SO3::print, "Prints current information of the rotation")
+                .def("print", &SO3::print, "Prints current information of the rotation")
         .def("__mul__", &SO3::operator*, py::is_operator())
         .def("__str__", &SO3::toString, "Generates string representation of the SO3 object for print() output")
         .def("__repr__", &SO3::toString, "Generates string representation of the SO3 object for console output");
 
     m.def("isSO3", &mrob::isSO3, "Returns True is the matrix is a valid rotation and False if not");
-
+    
     m.def("hat3", &mrob::hat3, "Returns a skew symmetric matrix 3x3 from a 3-vector", py::return_value_policy::copy);
     m.def("hat6", &mrob::hat6, "Returns a Lie algebra matrix 4x4 from a 6-vector", py::return_value_policy::copy);
-
+    
     // AUxiliary functions to support other conventions (TORO, g2o)
     m.def("quat_to_so3", &quat_to_so3,"Suport function from quaternion to a rotation");
     m.def("so3_to_quat", &so3_to_quat,"Suport function from rotation matrix to quaternion");
     m.def("rpy_to_so3",  &rpy_to_so3,"Suport function from roll pitch yaw to a rotation");
+    m.def("left_jacobian_phi", &mrob::left_jacobian, "Returns the left Jacobian from the 3-vector phi", py::return_value_policy::copy);
+    m.def("inv_left_jacobian_phi", &mrob::inv_left_jacobian, "Returns the inverse left Jacobian from the 3-vector phi", py::return_value_policy::copy);
 
     py::class_<SE3Cov, SE3>(m, "SE3Cov")
         .def(py::init<>(),
@@ -310,5 +312,6 @@ void init_geometry(py::module &m) {
         .def("__mul__", &SE3tc::operator*, py::is_operator())
         .def("__str__", &SE3tc::toString, "Generates string representation of the SE3vel object for print() output")
         .def("__repr__", &SE3tc::toString, "Generates string representation of the SE3vel object for console output");
+    m.def("inv_left_jacobian_tc", &mrob::inv_left_jacobian_tc, "Returns the inverse left Jacobian from the 10-vector xi = [phi, pho, v, t]", py::return_value_policy::copy);
 }
 

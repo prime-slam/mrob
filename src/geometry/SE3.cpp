@@ -325,46 +325,45 @@ Mat3 mrob::inv_left_jacobian(const Mat31 &phi)
     return Vinv;
 }
 
-// Here we deine a global variable inside the file of this class, to be copied
-const std::vector<Mat4> LieGenerative{
 
-};
-
-
-// DEPRECATED?
-Mat4 mrob::SE3GenerativeMatrix(uint_t coordinate)
-{
-    Mat4 G = Mat4::Zero();
-    switch(coordinate)
-    {
-    case 0: //theta1
-        G(1,2) = -1.0;
-        G(2,1) = 1.0;
-        break;
-    case 1: // theta 2
-        G(0,2) = 1.0;
-        G(2,0) = -1.0;
-        break;
-    case 2: // theta 3
-        G(0,1) = -1.0;
-        G(1,0) = 1.0;
-        break;
-    case 3: // rho 1
-        G(0,3) = 1.0;
-        break;
-    case 4: // rho 2
-        G(1,3) = 1.0;
-        break;
-    case 5: // rho 3
-        G(2,3) = 1.0;
-        break;
-    }
-    return G;
-}
 
 std::string SE3::toString() const
 {
     std::stringstream ss;
     ss << this->T_;
     return ss.str();
+}
+
+
+
+Mat3 mrob::inv_Q_in_SE3invJacobian(const Mat31 &theta, const Mat31 &rho)
+{
+    Mat3 Qinv = Mat3::Zero();
+    matData_t theta_norm = theta.norm();
+    matData_t theta_norm_2 = theta.dot(theta);
+    Mat3 theta_hat;
+    theta_hat = hat3(theta);
+    Mat3 rho_hat;
+    rho_hat = hat3(rho);
+    Qinv = -0.5*rho_hat;
+    
+    // rho^theta^ and theta^rho^
+    Mat3 rho_theta, theta_rho;
+    rho_theta = rho_hat * theta_hat;
+    theta_rho = theta_hat * rho_hat;
+    // TODO handle theta_norm to 0
+    matData_t alpha = 1/theta_norm_2 - 0.5/theta_norm / std::tan(theta_norm*0.5);
+    Qinv += alpha*(rho_theta + theta_rho);
+    
+    // theta^rho^theta^2 and 
+    matData_t s2 = std::sin(theta_norm*0.5);
+    // TODO handle theta_norm to 0
+    matData_t beta  = 0.5 / theta_norm_2 / theta_norm *
+            (0.5/ std::tan(theta_norm*0.5)  - theta_norm * 0.25 / (s2*s2) );
+    Mat3 theta_hat_2;
+    theta_hat_2 = theta_hat * theta_hat;
+    beta += alpha/theta_norm_2;
+    Qinv += beta*(theta_hat_2 * rho_theta + theta_rho * theta_hat_2);
+
+    return Qinv;
 }

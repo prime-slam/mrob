@@ -312,9 +312,82 @@ Mat3 mrob::left_jacobian_2(const Mat31 &phi)
 }
 
 
-Mat<10,10> SE3tc::inverse_left_jacobian() const
+Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
 {
     Mat<10,10> result(Mat<10,10>::Zero());
+    result(9,9) = 1.0;
+    Mat31 theta = xi.head(3);
+    Mat31 rho = xi.segment<3>(3);
+    Mat31 nu = xi.segment<3>(6);
+    matData_t t = xi(9);
+
+
+    // Diagonal block, corresponding to the inverse left Jacobian of the rotation
+    Mat3 inverse_J_R;
+    inverse_J_R = mrob::inv_left_jacobian(theta);
+    result.block<3,3>(0,0) = inverse_J_R;
+    result.block<3,3>(3,3) = inverse_J_R;
+    result.block<3,3>(6,6) = inverse_J_R;
+
+    Mat3 Qinv;
+    Qinv = mrob::inv_Q_in_SE3invJacobian(theta,nu);
+    result.block<3,3>(6,0) = Qinv;
+
+    // M (theta nu) block matrix
+    Mat3 M;
+    matData_t theta_norm = theta.norm();
+    matData_t theta_norm_2 = theta.dot(theta);
+    M  = -0.5*Mat3::Identity();
+    Mat3 theta_hat;
+    theta_hat = hat3(theta);
+    matData_t alpha_M;
+    matData_t tan_norm = std::tan(theta_norm*0.5);
+    matData_t inv_theta_norm = 1/theta_norm;
+    matData_t inv_theta_norm_2 = 1/theta_norm_2;
+    alpha_M = inv_theta_norm_2 - 0.5 * inv_theta_norm /tan_norm;
+    M  += alpha_M  * theta_hat;
+    result.block<3,1>(3,9) = M * nu;
+
+    // L (theta, t) block matrix
+    Mat3 L;
+    L = 0.5*t*Mat3::Identity();
+    matData_t alpha_L;
+    matData_t sin2_norm = std::sin(theta_norm*0.5);
+    sin2_norm *= sin2_norm;
+    alpha_L =  t * inv_theta_norm * (0.5/tan_norm  - theta_norm * 0.25 / sin2_norm );
+    L += alpha_L * theta_hat;
+    result.block<3,3>(3,6) = L;
+
+    // P (theta, rho, nu, t) block matrix
+    Mat3 P;
+    P = mrob::inv_Q_in_SE3invJacobian(theta,rho);
+    Mat3 nu_hat;
+    nu_hat = hat3(nu);
+    P -= t /12 * nu_hat;
+    
+    Mat3 theta_hat_2;
+    theta_hat_2 = theta_hat * theta_hat;
+    Mat3 nu_theta2, theta2_nu;
+    nu_theta2 = nu_hat * theta_hat_2;
+    theta2_nu = theta_hat_2 * nu_hat;
+    matData_t C_1,C_2,C_3,C_4;
+    C_1 = -t * inv_theta_norm_2 * ( 0.5*inv_theta_norm / tan_norm  - inv_theta_norm_2 + 1.0/12.0);
+    C_2 = -alpha_L*inv_theta_norm_2;
+    C_2 += 0.5*t * inv_theta_norm_2 * inv_theta_norm / tan_norm  - (1.0/12.0)*t*inv_theta_norm_2 - t * inv_theta_norm_2 * inv_theta_norm_2;
+    P += C_1*nu_theta2 + C_2 * theta2_nu;
+    
+    //C_3 = -2*t*BN[4]/np.math.factorial(4) + 6*t*BN[6]/np.math.factorial(6)*theta_norm_2
+    C_3 = 2*t*0.0013888888888864963 + 6*t*3.306878306878106e-05*theta_norm_2;
+    //C_4 = -3*t*BN[6]/np.math.factorial(6) + 8*t*BN[8]/np.math.factorial(8)*theta_norm_2
+    C_4 = -3*t*3.306878306878106e-05 - 8*t*8.267195767195686e-07*theta_norm_2;
+    P +=  theta_hat * nu_hat * theta_hat * C_3;
+    P += theta_hat_2 * nu_hat * theta_hat_2 * C_4;
+    result.block<3,3>(3,0) = P;
+
+
 
     return result;
 }
+
+
+

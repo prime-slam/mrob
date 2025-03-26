@@ -225,39 +225,13 @@ bool isSE3(const Mat4 &T);
 
 Mat3 left_jacobian(const Mat31 &phi);
 Mat3 inv_left_jacobian(const Mat31 &phi);
+/**
+ * Inverse Q in the left inverse jacobian function is used to calculate 
+ * the inverse Jacobian. It is defined in a global frame since it can be
+ * used in other classes
+ */
+Mat3 inv_Q_in_SE3invJacobian(const Mat31 &phi, const Mat31 &rho);
 
-/**
- * Returns the generative matrix given the coordinate,
- * considering xi(0..5) = [theta(0..2), rho(3..5)]
- */
-Mat4 SE3GenerativeMatrix(uint_t coordinate);
-/**
- * Returns the double generative matrix given the coordinates (i,j),
- * considering xi(0..5) = [theta(0..2), rho(3..5)]
- * This corresponds to the differential form:
- *
- * d Exp / d xi = 0.5 (Gi *Gj + Gj*Gi)
- */
-//Mat4 SE3DoubleGenerativeMatrix(uint_t i, uint_t j);
-
-/**
- * Global variables declared here, defined once in the cpp.
- *
- * These are common data to access, so we make it accessible the fastest way.
- *  generative matrix given the coordinate,
- *  considering xi(0..5) = [theta(0..2), rho(3..5)]
- */
-extern const std::vector<Mat4> LieGenerative;
-/**
- * Global variables declared here, defined once in the cpp.
- * These are common data to access, so we make it accessible the fastest way.
- * Returns the double generative matrix given the coordinates (i,j),
- * considering xi(0..5) = [theta(0..2), rho(3..5)]
- * This corresponds to the differential form:
- *
- * d Exp / d xi = 0.5 (Gi *Gj + Gj*Gi)
- */
-extern const std::vector< Mat4> LieDoubleGenerative;
 
 }// end namespace
 #endif /* SE3_HPP_ */

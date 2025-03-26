@@ -101,10 +101,9 @@ class SE3tc{
 
         SE3vel vel() const;
 
-        Mat<10,10> inverse_left_jacobian() const;
-
-
-
+        
+        
+        
         void set_time(const matData_t &time_stamp =0.0);// this method is used for updates 9such as optimization) where the update is an instantaneous correction of the pose.
         void regenerate();
         SE3tc operator*(const mrob::SE3tc& rhs);
@@ -116,16 +115,18 @@ class SE3tc{
          * @return std::string object to print
          */
         std::string toString() const;
-
+        
         void print() const;
-     
-    protected:
+        
+        protected:
         Mat5 T_;
-};
+    };
 
-// Order 2 (double integration) of the Jacobian
-Mat3 left_jacobian_2(const Mat31 &phi);
-
+    // Order 2 (double integration) of the Jacobian
+    Mat3 left_jacobian_2(const Mat31 &phi);
+    
+    // Inverse Left Jacobian of the SE3tc
+    Mat<10,10> inv_left_jacobian_tc(const Mat101 &xi);
 
 
 }// end namespace
