@@ -61,7 +61,8 @@ void Factor1Pose3dVel::evaluate_jacobians()
     // J = d/dxi ln(T X-1 exp(-xi) (T X-1)-1)= - Adj_{T X-1} = - Adj(Tr)
     // J = d/dxi ln(exp(xi)X T-1  (T X-1)-1)= I
     J_.setZero();
-    J_.topLeftCorner<6,6>() = Mat6::Identity();
+    //J_.topLeftCorner<6,6>() = Mat6::Identity();
+    J_.topLeftCorner<6,6>() = inv_left_jacobian_SE3(r_);
 }
 
 void Factor1Pose3dVel::evaluate_chi2()

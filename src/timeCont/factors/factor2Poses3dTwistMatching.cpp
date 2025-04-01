@@ -69,7 +69,11 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
-    J_.topLeftCorner<9,9>() =  Tx_target_inv_.adj_vel();
+    Mat<10,10> inverse_jacobian;
+    inverse_jacobian = inv_left_jacobian_tc(r_.head(9));
+    Mat9 clip_inverse_jacobian;
+    clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
+    J_.topLeftCorner<9,9>() =  clip_inverse_jacobian * Tx_target_inv_.adj_vel();
     J_.topRightCorner<9,9>() =  - J_.topLeftCorner<9,9>();
 }
 

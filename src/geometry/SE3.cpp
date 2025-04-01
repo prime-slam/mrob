@@ -382,3 +382,17 @@ Mat3 mrob::Q_in_SE3invJacobian(const Mat31 &theta, const Mat31 &rho)
 
     return Q;
 }
+
+
+Mat6 mrob::inv_left_jacobian_SE3(const Mat61 &xi)
+{
+    Mat6 res = Mat6::Zero();
+    Mat31 theta,pho;
+    theta = xi.head<3>();
+    pho = xi.tail<3>();
+    res.topLeftCorner<3,3>() = inv_left_jacobian(theta);
+    res.bottomRightCorner<3,3>() = res.topLeftCorner<3,3>();
+    res.bottomLeftCorner<3,3>() = Q_in_SE3invJacobian(theta,pho);
+
+    return res;
+}

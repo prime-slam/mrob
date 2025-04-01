@@ -233,5 +233,7 @@ Mat3 inv_left_jacobian(const Mat31 &phi);
 Mat3 Q_in_SE3invJacobian(const Mat31 &phi, const Mat31 &rho);
 
 
+Mat6 inv_left_jacobian_SE3(const Mat61 &xi);
+
 }// end namespace
 #endif /* SE3_HPP_ */

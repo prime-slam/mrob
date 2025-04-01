@@ -43,7 +43,7 @@ SE3tc::SE3tc(const Mat31 &omega, const Mat31 &acc, const matData_t &t) : T_(Mat5
     xi(9) = t;
     xi.head(3) = omega * t;
     xi.segment<3>(6) = acc * t;
-    std::cout << "xi = \n" << xi << std::endl;
+    // std::cout << "xi = \n" << xi << std::endl;
     this->Exp(xi);
 }
 
@@ -197,7 +197,7 @@ Mat61 SE3tc::Ln_position() const
     Mat3 jac = inv_left_jacobian(phi);
 
     result.head(3) << phi;
-    result.segment<3>(6) << jac*p;
+    result.tail(3) << jac*p;
 
     return result;
 }
@@ -247,21 +247,10 @@ Mat<10,10> SE3tc::adj() const
 
 Mat<9,9> SE3tc::adj_vel() const
 {
-    Mat<9,9> res(Mat<9,9>::Zero());
-    Mat3 R = this->R();
-    Mat31 v = this->v();
-    Mat31 p = this->p();
-    matData_t t = this->t();
-
-
-    res.block<3,3>(0,0) = R;
-    res.block<3,3>(3,3) = R;
-    res.block<3,3>(6,6) = R;
-
-    res.block<3,3>(3,0) = hat3(p-t*v)*R;
-    res.block<3,3>(6,0) = hat3(v)*R;
-
-    res.block<3,3>(3,6) = -t*R;
+    Mat<9,9> res;
+    Mat<10,10> adjoint;
+    adjoint = this->adj();
+    res = adjoint.topLeftCorner<9,9>();
     return res;
 }
 

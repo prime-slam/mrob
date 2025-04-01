@@ -50,13 +50,14 @@ public:
      * Constructor for the python binding. See Fgraph.
      * 
      * New, adding methods to consider time continious solutions
+     * 
      */
     FGraphTimePy(mrob::Factor::robustFactorType robust_type = mrob::Factor::robustFactorType::QUADRATIC) :
         FGraphSolve(FGraphSolve::matrixMethod::ADJ), robust_type_(robust_type) {}
     factor_id_t add_node_pose_3d_vel_tc(const SE3tc &x, double time_stamp, mrob::Node::nodeMode mode)
     {
         std::shared_ptr<mrob::Node> n(new mrob::NodePose3dVelTc(x,mode));
-        n->set_time_stamp(time_stamp);
+        n->set_time_stamp(time_stamp); // rewrites time in the matrix as well. Just to be safe...
         this->add_node(n);
         return n->get_id();
     }
@@ -168,7 +169,7 @@ void init_FGraphTime(py::module &m)
                     py::arg("x"),
                     py::arg("mode") = Node::nodeMode::STANDARD)
             .def("add_factor_1pose_3d", &FGraphTimePy::add_factor_1pose_3d,
-                    "Adds a factor observing one pose, a GPS-like factor",
+                    "Adds a factor observing one pose",
                     py::arg("obs"),
                     py::arg("nodeId"),
                     py::arg("time_stamp"),
