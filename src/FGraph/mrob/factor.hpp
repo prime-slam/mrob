@@ -257,6 +257,21 @@ public:
 
 };
 
+
+/**
+ * factor get Jacobian  index for uno9rdered nodes (different than supposed order in the factor)
+ * 
+ * This function, give a vector of node id and its corresponding size
+ * returns:
+ *    -id_vector: the order index of the vector given;
+ *    -jacobian_indexes: index position in the Jacobian matrix for each of the elements in the same order (by reference)
+ * 
+ * This method is used to organize the different nodes in the factors and provide an ordered solution of the gradients
+ * as is used in fgraph_solve
+ */
+std::vector<uint_t> getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+            const std::vector<uint_t>& sizes_vector, std::vector<uint_t>& jacobian_indexes);
+
 }
 
 #endif /* FACTOR_HPP_ */

@@ -29,6 +29,7 @@
 #include "mrob/SE3tc.hpp"
 #include "mrob/SE3.hpp"
 #include "mrob/factor.hpp"
+#include <vector>
 
 namespace mrob{
 
@@ -53,7 +54,7 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
             std::shared_ptr<Node> &nodeBiasAcc, 
             std::shared_ptr<Node> &nodeBiasGyro,
             std::shared_ptr<Node> &nodeGravity, 
-            const Mat6 &obsInf, 
+            const Mat9 &obsInf, 
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
     ~Factor2Poses3dTwistMatchingBiasGravity() = default;
     /**
@@ -78,13 +79,16 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
     // being [0]->J_origin and [1]->J_target
     // declared here but initialized on child classes
     Mat61 obs_; // obs = [omega, acc]
-    Mat61 r_; //and residuals
-    Mat6 W_;//inverse of observation covariance (information matrix)
-    Mat<6,21> J_;//Joint Jacobian 6+6+3+3+3(2?)
+    Mat91 r_; //and residuals
+    Mat101 xi_target_inv_origin_;
+    Mat9 W_;//inverse of observation covariance (information matrix)
+    Mat<9,27> J_;//Joint Jacobian 9+9+3+3+3
     double delta_t_;
     Mat31 omega_;
 
-    SE3 Tx_origin_inv_;
+    SE3tc Tx_target_inv_;
+
+    std::vector<uint_t> jacobian_node_index_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
