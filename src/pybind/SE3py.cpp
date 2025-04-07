@@ -272,7 +272,7 @@ void init_geometry(py::module &m) {
         .def("p", &SE3tc::p,
                 "returns current translation",
                 py::return_value_policy::copy)
-        .def("t", &SE3tc::t,
+        .def("time", &SE3tc::time,
                 "returns current time interval",
                 py::return_value_policy::copy)
         .def("T_SE3", &SE3tc::T_SE3,
@@ -290,8 +290,8 @@ void init_geometry(py::module &m) {
         .def("T_compact", &SE3tc::T_compact,
                 "Outputs the 3x5 (compact) transformation [R,p,v]",
                 py::return_value_policy::copy)
-        .def("Ln_position", &SE3tc::Ln_position,
-                "Logarithm + vee operator, returns 6D coordinates (omega*t,acc*t) by inverse of the position",
+        .def("Ln_from_position_to_omega_acc", &SE3tc::Ln_from_position_to_omega_acc,
+                "Logarithm + vee operator, returns 6D coordinates (omega*t,acc*t) by inverse of the position only",
                 py::return_value_policy::copy)
         .def("Ln", &SE3tc::Ln,
                 "Logarithm + vee operator, returns 10D coordinates (omega*t,vel*t,acc*t,t)",

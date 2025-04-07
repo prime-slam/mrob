@@ -83,7 +83,7 @@ class SE3tc{
         Mat3 R() const;
         Mat4 T_SE3() const;
         Mat5 T() const;
-        matData_t t() const;
+        matData_t time() const;
         Mat<3,5> T_compact() const;
 
         // The adjoint coordinates plus the contraint -> dim 10.
@@ -97,7 +97,7 @@ class SE3tc{
 
         void Exp(const Mat101& xi);
         Mat101 Ln(void) const;
-        Mat61 Ln_position(void) const;
+        Mat61 Ln_from_position_to_omega_acc(void) const;
 
         SE3vel vel() const;
 
@@ -123,7 +123,8 @@ class SE3tc{
     };
 
     // Order 2 (double integration) of the Jacobian
-    Mat3 left_jacobian_2(const Mat31 &phi);
+    Mat3 left_jacobian_2_so3(const Mat31 &phi);
+    Mat3 inv_left_jacobian_2_so3(const Mat31 &phi);
     
     // Inverse Left Jacobian of the SE3tc
     Mat<10,10> inv_left_jacobian_tc(const Mat101 &xi);

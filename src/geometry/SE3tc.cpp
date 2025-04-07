@@ -104,7 +104,7 @@ Mat4 SE3tc::T_SE3(void) const
     return T_.topLeftCorner<4,4>();
 }
 
-matData_t SE3tc::t(void) const
+matData_t SE3tc::time(void) const
 {
     return this->T_(4,3);//time
 }
@@ -153,7 +153,7 @@ void SE3tc::Exp(const Mat101& xi)
 
     Mat3 integ1;
     integ1 << left_jacobian(phi);
-    result.block<3,1>(0,3) << integ1*pos + left_jacobian_2(phi)*vel*t;
+    result.block<3,1>(0,3) << integ1*pos + left_jacobian_2_so3(phi)*vel*t;
     result.block<3,1>(0,4) << integ1*vel;
     
     result(4,3) = t;
@@ -168,12 +168,12 @@ Mat101 SE3tc::Ln() const
     Mat3 R = this->R();
     Mat31 v = this->v();
     Mat31 p = this->p();
-    matData_t delta_t = this->t();
+    matData_t delta_t = this->time();
     
     SO3 tmp(R);
     Mat31 phi = tmp.ln_vee();
     Mat3 inv_int_1 = inv_left_jacobian(phi);
-    Mat3 int_2 = left_jacobian_2(phi);
+    Mat3 int_2 = left_jacobian_2_so3(phi);
 
     result.head(3) << phi;
     result.segment<3>(3) << inv_int_1*p - inv_int_1 * int_2 * inv_int_1 * (delta_t * v);
@@ -184,20 +184,26 @@ Mat101 SE3tc::Ln() const
 }
 
 
-Mat61 SE3tc::Ln_position() const
+Mat61 SE3tc::Ln_from_position_to_omega_acc() const
 {
-    Mat61 result;
+    Mat61 result(Mat61::Zero());
 
     Mat3 R = this->R();
     Mat31 p = this->p();
-    //matData_t delta_t = this->t();
+    matData_t delta_t = this->time();
+
+    if (std::fabs(delta_t) < 1e-8)
+    {
+        return result;
+    }
 
     SO3 tmp(R);
     Mat31 phi = tmp.ln_vee();
-    Mat3 jac = inv_left_jacobian(phi);
+    Mat3 jac = inv_left_jacobian_2_so3(phi);
+    matData_t delta_t2 = delta_t*delta_t;
 
-    result.head(3) << phi;
-    result.tail(3) << jac*p;
+    result.head(3) << phi/delta_t;
+    result.tail(3) << jac*p/delta_t2;
 
     return result;
 }
@@ -208,9 +214,9 @@ SE3tc SE3tc::inv(void) const
     Mat5 inv;
     Mat3 R = this->R();
     R.transposeInPlace();
-    inv << R, R * ( -this->p() + this->t()*this->v()), -R*this->v(),
+    inv << R, R * ( -this->p() + this->time()*this->v()), -R*this->v(),
            0,0,0,1,0, 
-           0,0,0,-this->t(),1;
+           0,0,0,-this->time(),1;
     return SE3tc(inv);
 
 }
@@ -229,7 +235,7 @@ Mat<10,10> SE3tc::adj() const
     Mat3 R = this->R();
     Mat31 v = this->v();
     Mat31 p = this->p();
-    matData_t t = this->t();
+    matData_t t = this->time();
 
 
     res.block<3,3>(0,0) = R;
@@ -275,7 +281,7 @@ std::string SE3tc::toString() const
 
 
 
-Mat3 mrob::left_jacobian_2(const Mat31 &phi)
+Mat3 mrob::left_jacobian_2_so3(const Mat31 &phi)
 {
     Mat3 result = Mat3::Identity()*0.5;
     Mat3 phi_hat = hat3(phi);
@@ -300,6 +306,15 @@ Mat3 mrob::left_jacobian_2(const Mat31 &phi)
     return result;
 }
 
+
+Mat3 mrob::inv_left_jacobian_2_so3(const Mat31 &phi)
+{
+    Mat3 result;
+    Mat3 left_jacobian = mrob::left_jacobian_2_so3(phi);
+    result = left_jacobian.inverse();// There is a close-form
+
+    return result;
+}
 
 Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
 {
