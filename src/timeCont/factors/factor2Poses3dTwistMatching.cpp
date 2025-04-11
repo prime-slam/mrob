@@ -63,14 +63,16 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
     SE3tc T_imu_integration = SE3tc(obs_.head(3),obs_.tail(3),delta_t_);
 
     SE3tc dT = Tx_target_inv_ * Tx_origin * T_imu_integration;
-    r_ = dT.vel().Ln();
+    r_ = dT.vel().Ln();//this is just zeroing time (it should be by construction)
     //std::cout << "residuals \n" << r_ << std::endl;
 }
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
     Mat<10,10> inverse_jacobian;
-    inverse_jacobian = inv_left_jacobian_tc(r_.head(9));
+    Mat101 xi_dt(Mat101::Zero());
+    xi_dt << r_, 0.0;
+    inverse_jacobian = inv_left_jacobian_tc(xi_dt);
     Mat9 clip_inverse_jacobian;
     clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
     J_.topLeftCorner<9,9>() =  clip_inverse_jacobian * Tx_target_inv_.adj_vel();
