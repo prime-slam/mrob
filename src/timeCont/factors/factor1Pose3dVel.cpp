@@ -50,8 +50,11 @@ void Factor1Pose3dVel::evaluate_residuals()
     // Anchor residuals as r = x - obs
     // r = ln(X * Tobs^-1) = - ln(Tobs * x^-1)
     // NOTE Tobs is a global observation (reference identity)
-    Mat4 x = get_neighbour_nodes()->at(0).get()->get_state();
-    Tr_ = SE3(x) * Tobs_.inv();
+    Mat5 x_target = get_neighbour_nodes()->at(0).get()->get_state();
+    Mat4 x;
+    x = x_target.topLeftCorner<4,4>();
+    T_node_ = SE3(x);
+    Tr_ =  T_node_ * Tobs_.inv();
     r_ = Tr_.ln_vee();
 }
 
@@ -62,7 +65,8 @@ void Factor1Pose3dVel::evaluate_jacobians()
     // J = d/dxi ln(exp(xi)X T-1  (T X-1)-1)= I
     J_.setZero();
     //J_.topLeftCorner<6,6>() = Mat6::Identity();
-    J_.topLeftCorner<6,6>() = inv_left_jacobian_SE3(r_);
+
+    J_.topLeftCorner<6,6>() = inv_left_jacobian_SE3(r_) * T_node_.adj();
 }
 
 void Factor1Pose3dVel::evaluate_chi2()

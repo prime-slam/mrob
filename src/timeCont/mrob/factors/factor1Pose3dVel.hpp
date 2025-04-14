@@ -67,7 +67,7 @@ class Factor1Pose3dVel : public Factor
 
   protected:
     Mat61 r_; //and residuals
-    SE3 Tobs_, Tr_;//Transformation for the observation and the residual
+    SE3 Tobs_, Tr_, T_node_;//Transformation for the observation and the residual
     Mat6 W_;//inverse of observation covariance (information matrix)
     Mat<6,9> J_;//Jacobian, parts set to zero to fullfill the requirements
 
