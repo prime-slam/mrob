@@ -88,7 +88,7 @@ void Factor2Poses3dTwistMatchingBiasGravity::evaluate_residuals()
     state_origin = get_neighbour_nodes()->at(0)->get_state();
     SE3tc Tx_origin = SE3tc(state_origin);
     Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
-    Tx_target_inv_ = SE3tc(state_target).inv();
+    SE3tc Tx_target_inv = SE3tc(state_target).inv();
     delta_t_ = get_neighbour_nodes()->at(1)->get_time_stamp() - 
                get_neighbour_nodes()->at(0)->get_time_stamp();
     Mat31 bias_acc, bias_omega, gravity;
@@ -100,32 +100,28 @@ void Factor2Poses3dTwistMatchingBiasGravity::evaluate_residuals()
     // constructor: omega, acc, dt
     SE3tc T_imu_integration = SE3tc( obs_.head(3) - bias_omega, obs_.tail(3) - bias_acc - gravity, delta_t_);
 
-    SE3tc T_target_inv_origin = Tx_target_inv_ * Tx_origin;
-    SE3tc dT =  T_target_inv_origin * T_imu_integration;
+    T_target_inv_origin_ = Tx_target_inv * Tx_origin;
+    SE3tc dT =  T_target_inv_origin_ * T_imu_integration;
 
-    xi_target_inv_origin_ = T_target_inv_origin.Ln();
-
+    
     r_ = dT.vel().Ln();
 }
 void Factor2Poses3dTwistMatchingBiasGravity::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
     Mat<10,10> inverse_jacobian;
-    inverse_jacobian = inv_left_jacobian_tc(r_.head(9));
+    xi_target_inv_origin_ << T_target_inv_origin_.Ln();
+    inverse_jacobian = inv_left_jacobian_tc(xi_target_inv_origin_);
     Mat9 clip_inverse_jacobian;
     clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
-    J_.block<9,9>(0,jacobian_node_index_[0]) =  clip_inverse_jacobian * Tx_target_inv_.adj_vel();//TODO needs gravity
-    J_.block<9,9>(0,jacobian_node_index_[1]) =  - J_.block<9,9>(0,jacobian_node_index_[0]);
+    J_.block<9,9>(0,jacobian_node_index_[0]) =  clip_inverse_jacobian * T_target_inv_origin_.adj_vel();//TODO needs gravity
+    J_.block<9,9>(0,jacobian_node_index_[1]) =  -clip_inverse_jacobian;
+    J_.block<9,3>(0,jacobian_node_index_[2]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0]);
+    J_.block<9,3>(0,jacobian_node_index_[3]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0] + 6);
+    //same gradient with 3d unconstrained gravity. Most likely grvity will be an anchor factor or we update its node and this gradient...
+    J_.block<9,3>(0,jacobian_node_index_[4]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0] + 6);
     
-    //Jl(xi) = Jr(-xi)
-    Mat<10,10> inverse_right_jacobian;
-    inverse_right_jacobian = inv_left_jacobian_tc(-xi_target_inv_origin_);
-    Mat<9,3> clip_theta_inverse_right_jacobian, clip_vel_inverse_right_jacobian;
-    clip_theta_inverse_right_jacobian = inverse_right_jacobian.topLeftCorner<9,3>();
-    clip_vel_inverse_right_jacobian = inverse_right_jacobian.block<9,3>(0,6);
-    J_.block<9,3>(0,jacobian_node_index_[2]) = -delta_t_*clip_vel_inverse_right_jacobian;
-    J_.block<9,3>(0,jacobian_node_index_[3]) = -delta_t_*clip_theta_inverse_right_jacobian;
-    J_.block<9,3>(0,jacobian_node_index_[4]) = -delta_t_*clip_vel_inverse_right_jacobian;
+
 }
 
 void Factor2Poses3dTwistMatchingBiasGravity::evaluate_chi2()

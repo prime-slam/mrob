@@ -86,7 +86,7 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
     double delta_t_;
     Mat31 omega_;
 
-    SE3tc Tx_target_inv_;
+    SE3tc T_target_inv_origin_;
 
     std::vector<uint_t> jacobian_node_index_;
 

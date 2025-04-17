@@ -4,8 +4,9 @@
 SET(factors_headers
     mrob/factors/factor2Poses3dTwistMatching.hpp
     mrob/factors/factor2Poses3dTwistMatchingBiasGravity.hpp
-    mrob/factors/nodePose3dVelTc.hpp
     mrob/factors/factor1Pose3dVel.hpp
+    mrob/factors/nodePose3dVelTc.hpp
+    mrob/factors/node3d.hpp
 )
 
 SET(factors_sources
@@ -13,6 +14,7 @@ SET(factors_sources
     factors/factor2Poses3dTwistMatchingBiasGravity.cpp
     factors/nodePose3dVelTc.cpp
     factors/factor1Pose3dVel.cpp
+    factors/node3d.cpp
 )
 
 # create library

@@ -72,7 +72,7 @@ void Factor2Poses3dTwistMatching::evaluate_jacobians()
     // it assumes you already have evaluated residuals
     Mat<10,10> inverse_jacobian;
     Mat101 xi_dt(Mat101::Zero());
-    xi_dt << r_, 0.0;
+    xi_dt << T_target_inv_origin_.Ln(); //time not zero
     inverse_jacobian = inv_left_jacobian_tc(xi_dt);
     Mat9 clip_inverse_jacobian;
     clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
