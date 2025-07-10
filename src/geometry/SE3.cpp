@@ -378,7 +378,8 @@ Mat3 mrob::Q_in_SE3invJacobian(const Mat31 &theta, const Mat31 &rho)
     }
     Mat3 theta_hat_2;
     theta_hat_2 = theta_hat * theta_hat;
-    Q += beta*(theta_hat_2 * rho_theta + theta_rho * theta_hat_2);
+    //Q += beta*(theta_hat_2 * rho_theta + theta_rho * theta_hat_2);
+    Q += 2.0*beta*(theta_hat_2 * rho_theta); // property a^a^b^a^ = a^b^a^a^
 
     return Q;
 }

@@ -101,9 +101,9 @@ void Factor2Poses3d::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
     Mat6 inv_left_jacobian;
-    //inv_left_jacobian = inv_left_jacobian_SE3(r_);
-    J_.topLeftCorner<6,6>() = Mat6::Identity(); //inv_left_jacobian;
-    J_.topRightCorner<6,6>() = -Tr_.adj(); //-inv_left_jacobian*Tr_.adj();
+    inv_left_jacobian = inv_left_jacobian_SE3(r_);
+    J_.topLeftCorner<6,6>() = inv_left_jacobian;
+    J_.topRightCorner<6,6>() = -inv_left_jacobian*Tr_.adj();
 }
 
 void Factor2Poses3d::evaluate_chi2()
