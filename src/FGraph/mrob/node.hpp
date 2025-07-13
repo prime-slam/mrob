@@ -37,7 +37,6 @@ namespace mrob{
 /**
  * Node class is an abstract class for creating future nodes. Pure
  * abstract methods on get and set dimension
- * is just a reminder that this is an Abstract class
  *
  * Node does not track the factors associated to it, it just contains
  * the state variables and allows to update its value.
@@ -51,11 +50,15 @@ namespace mrob{
  *	Two states are kept at the same time:
  *	- (principal) state: used for factors evaluations, errors and Jacobians
  *	- auxiliary state: a book-keep state useful for partial updates
+ * 
  *
  *	Node mode refer on how they will be processed further in the FGraph:
  *	- Standard: process as usual
  *	- Anchor: This node will be constant and insensitive to gradients (not processed). It must be correctly initialized
  *	- Schur_margi: Node to be marginalized when using Schur
+ *
+ *  In addition, for those observations requireing it, a time stamp is a variable of the class
+ *  - double time_stamp_
  */
 
 class Node{
@@ -110,13 +113,15 @@ class Node{
      * construction of the matrix
      * TODO not used right now, but it could to improve efficiency.
      */
-     bool is_connected_to_EF() const {return isConnected2EF_;}
-     void set_connected_to_EF(bool state = true) {isConnected2EF_ = state;}
+    bool is_connected_to_EF() const {return isConnected2EF_;}
+    void set_connected_to_EF(bool state = true) {isConnected2EF_ = state;}
 
 
     void set_node_mode(nodeMode mode){node_mode_ = mode;}
     nodeMode get_node_mode(){return node_mode_;}
 
+    double get_time_stamp() const {return time_stamp_;}
+    virtual void set_time_stamp(double t){time_stamp_ = t;}
 
   protected:
     factor_id_t id_;
@@ -132,9 +137,14 @@ class Node{
      *      Mat61 x_;
      * or   SE3 T_; (for transformations)
      */
-     // This variable is to know if there is an Eigen Factor connected to this node. The alternative
-     // is a list of factors connected, but removed this option since it was not really necessary.
-     bool isConnected2EF_;
+
+    // This variable is to know if there is an Eigen Factor connected to this node.
+    bool isConnected2EF_;
+
+    // current time of the node. Most node do not require this, so it will be transparent. For time continious.
+    // format is second [s]. NOTE: this is no not a Date stamp.
+    double time_stamp_;
+
 };
 
 /**

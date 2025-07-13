@@ -7,6 +7,7 @@ SET(sources
     SE3cov.cpp
     SE3vel.cpp
     SE3velCov.cpp
+    SE3tc.cpp
 )
 
 # extra header files
@@ -16,10 +17,12 @@ SET(headers
     mrob/SE3cov.hpp
     mrob/SE3vel.hpp
     mrob/SE3velCov.hpp
+    mrob/SE3tc.hpp
 )
 
 # create library
 ADD_LIBRARY(SE3 ${sources})
+TARGET_LINK_LIBRARIES(SE3 PRIVATE Eigen3::Eigen)
 
 SET_TARGET_PROPERTIES(SE3 PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"

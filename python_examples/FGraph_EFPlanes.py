@@ -124,47 +124,11 @@ for t in range(N_poses):
                                    W = 1.0)
 
 print('\n\n\n\nInitial error EF plane = ', graph.chi2(True))
-graph.solve(mrob.LM_ELLIPS,50)
+graph.solve(mrob.LM_ELLIPS,50, verbose=True)
 print('Chi2 = ', graph.chi2())
 draw_planes(synthetic, graph.get_estimated_state())
 traj2 = graph.get_estimated_state()
 
-
-# Solution 4: FG Planes Centered
-# -----------------------------------------------------------------------------------
-graph = mrob.FGraph()
-
-# Adding all empty EF planes
-for t in range(N_planes):
-    ef1 = graph.add_eigen_factor_plane_center()
-
-# Initializing the trajectories. It requires an initial solution
-n1 = graph.add_node_pose_3d(T0, mrob.NODE_ANCHOR)
-
-
-# The previous solution from EF point should be used in here
-for t in range(1,N_poses):
-    n1 = graph.add_node_pose_3d(mrob.geometry.SE3(traj1[t]))
-    # It is an ordered progression 0:N-1, no need for dict
-    print('Pose node id = ', n1)
-
-
-for t in range(N_poses):
-    print('Processing pose ', t)
-    points = synthetic.get_point_cloud(t)
-    indexes = synthetic.get_point_plane_ids(t)
-    for p,i in zip(points,indexes):
-        #print('point ', p, 'index ', i)
-        graph.eigen_factor_plane_add_point(planeEigenId = i,
-                                   nodePoseId = t,
-                                   point = p,
-                                   W = 1.0)
-
-print('\n\n\n\nInitial error EF plane Center= ', graph.chi2(True))
-graph.solve(mrob.LM_ELLIPS,50)
-print('Chi2 = ', graph.chi2())
-draw_planes(synthetic, graph.get_estimated_state())
-traj3 = graph.get_estimated_state()
 
 
 # Eval two trajectoryes:

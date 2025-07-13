@@ -30,6 +30,7 @@
 #include "mrob/SO3.hpp"
 #include "mrob/SE3cov.hpp"
 #include "mrob/SE3vel.hpp"
+#include "mrob/SE3tc.hpp"
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 //#include <pybind11/stl.h>
@@ -41,11 +42,11 @@ void init_geometry(py::module &m) {
     py::class_<SE3> se3(m, "SE3");
 
     se3.def(py::init<>(),
-				"The Default constructor creates the identity transformation",
-				py::return_value_policy::copy)
+                "The Default constructor creates the identity transformation",
+                py::return_value_policy::copy)
         .def(py::init<const Mat4 &>(),
-        		"Matrix constructor, requires a 4x4 RBT matrix",
-				py::return_value_policy::copy)
+                "Matrix constructor, requires a 4x4 RBT matrix",
+                py::return_value_policy::copy)
         .def(py::init<const Mat61 &>(),
                 "Given a vector xi in R^6, creates a RBT with the exponential mapping.",
                 py::return_value_policy::copy)
@@ -104,7 +105,7 @@ void init_geometry(py::module &m) {
         .def("__repr__", &SE3::toString, "Generates string representation of the SE3 object for console output");
 
     m.def("isSE3", &mrob::isSE3, "Returns True is the matrix is a valid transformation and False if not");
-
+    
     py::class_<SO3>(m, "SO3")
 		.def(py::init<>(), "Default SO3 construction, the identityt(3)", py::return_value_policy::copy)
 		.def(py::init<const Mat31 &>(), "SO3 constructor with a 3D vector. Inside uses the exponential map",
@@ -125,28 +126,30 @@ void init_geometry(py::module &m) {
         .def("Ln", &SO3::ln_vee,
                 "Logarithm operation, mapping to the tangent space around the identity element",
                 py::return_value_policy::copy)
-        .def("inv", &SO3::inv,
-                "Creates a copy of the inverse",
-                py::return_value_policy::copy)
+                .def("inv", &SO3::inv,
+                        "Creates a copy of the inverse",
+                        py::return_value_policy::copy)
         .def("adj", &SO3::adj,
                 "Returns the 3x3 adjoint matrix of the SO3 element",
                 py::return_value_policy::copy)
         .def("distance", &SO3::distance,
                 "Calculates the distance between rotation matrices as ||Ln(R'*R_i)||")
-        .def("print", &SO3::print, "Prints current information of the rotation")
+                .def("print", &SO3::print, "Prints current information of the rotation")
         .def("__mul__", &SO3::operator*, py::is_operator())
         .def("__str__", &SO3::toString, "Generates string representation of the SO3 object for print() output")
         .def("__repr__", &SO3::toString, "Generates string representation of the SO3 object for console output");
 
     m.def("isSO3", &mrob::isSO3, "Returns True is the matrix is a valid rotation and False if not");
-
+    
     m.def("hat3", &mrob::hat3, "Returns a skew symmetric matrix 3x3 from a 3-vector", py::return_value_policy::copy);
     m.def("hat6", &mrob::hat6, "Returns a Lie algebra matrix 4x4 from a 6-vector", py::return_value_policy::copy);
-
+    
     // AUxiliary functions to support other conventions (TORO, g2o)
     m.def("quat_to_so3", &quat_to_so3,"Suport function from quaternion to a rotation");
     m.def("so3_to_quat", &so3_to_quat,"Suport function from rotation matrix to quaternion");
     m.def("rpy_to_so3",  &rpy_to_so3,"Suport function from roll pitch yaw to a rotation");
+    m.def("left_jacobian_phi", &mrob::left_jacobian, "Returns the left Jacobian from the 3-vector phi", py::return_value_policy::copy);
+    m.def("inv_left_jacobian_phi", &mrob::inv_left_jacobian, "Returns the inverse left Jacobian from the 3-vector phi", py::return_value_policy::copy);
 
     py::class_<SE3Cov, SE3>(m, "SE3Cov")
         .def(py::init<>(),
@@ -189,6 +192,9 @@ void init_geometry(py::module &m) {
         .def(py::init<>(),
                 "Default construct a new SE3vel object",
                 py::return_value_policy::copy)
+        .def(py::init<const Mat5>(),
+                "Construct a new SE3vel object from a 5x5 matrix",
+                py::return_value_policy::copy)
         .def(py::init<const SO3 &, const Mat31 &, const Mat31 &>(),
                 "Construtor of SE3vel object with given Rotation, translation and velocity",
                 py::return_value_policy::copy)
@@ -198,11 +204,17 @@ void init_geometry(py::module &m) {
         .def(py::init<const SE3vel &>(),
                 "Copy constructor",
                 py::return_value_policy::copy)
+        .def(py::init<const SE3tc &>(),
+                "Copy constructor from SE3tc. It just clips time",
+                py::return_value_policy::copy)
         .def("t", &SE3vel::t,
                 "returns current covariance matrix state",
                 py::return_value_policy::copy)
-        .def("T", &SE3vel::T,
+        .def("T_SE3", &SE3vel::T_SE3,
                 "Outputs a 4x4 array with the transformation",
+                py::return_value_policy::copy)
+        .def("T", &SE3vel::T,
+                "Outputs a 5x5 array with the transformation and velocity",
                 py::return_value_policy::copy)
         .def("R",&SE3vel::R,
                 "Outputs the Rotation array 3x3 component of the transformation",
@@ -222,10 +234,84 @@ void init_geometry(py::module &m) {
         .def("inv", &SE3vel::inv,
                 "Outputs the inverse of T",
                 py::return_value_policy::copy)
+        .def("tc", &SE3vel::tc,
+                "Returns the SE3tc, given a time for integrating",
+                py::return_value_policy::copy)
         .def("print", &SE3vel::print,
                 "Prints current state of pose.")
         .def("__mul__", &SE3vel::operator*, py::is_operator())
         .def("__str__", &SE3vel::toString, "Generates string representation of the SE3vel object for print() output")
         .def("__repr__", &SE3vel::toString, "Generates string representation of the SE3vel object for console output");
+
+
+    py::class_<SE3tc>(m, "SE3tc")
+        .def(py::init<const Mat5 &>(),
+                "construct a new SE3tc object from Mat5. make sure time is correct",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat5 &, const matData_t &>(),
+                "Mat5 constructor from SE3vel, meaning time enneeds to be specified because it is NOT in the transformation",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3tc &>(),
+                "Copy constructor",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat31 &, const Mat31 &, const matData_t &>(),
+                "Construtor of SE3tcl object with given angular velocity (omega), acceleration and time inverval",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat91 &, const matData_t &>(),
+                "Given a vector xi in R^10 = [omega*t,vel*t,ac*t) and t as a separate argument]",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat101 &>(),
+                "Given a vector xi in R^10 = [omega*t,vel*t,ac*t,t)]",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3 &, const matData_t &>(),
+                "Given an SE3 element and a time interval, it lifts it to SE3tc (velocities are empty).",
+                py::return_value_policy::copy)
+        .def(py::init<const SE3vel &, const matData_t &>(),
+                "Given an SE3vel element and a time interval.",
+                py::return_value_policy::copy)
+        .def("p", &SE3tc::p,
+                "returns current translation",
+                py::return_value_policy::copy)
+        .def("time", &SE3tc::time,
+                "returns current time interval",
+                py::return_value_policy::copy)
+        .def("T_SE3", &SE3tc::T_SE3,
+                "Outputs a 4x4 array with the transformation, submatrix of T",
+                py::return_value_policy::copy)
+        .def("T", &SE3tc::T,
+                "Outputs a 5x5 array with the transformation",
+                py::return_value_policy::copy)
+        .def("R",&SE3tc::R,
+                "Outputs the Rotation array 3x3 component of the transformation",
+                py::return_value_policy::copy)
+        .def("v", &SE3tc::v,
+                "Outputs the velocity array 3D component of the transformation",
+                py::return_value_policy::copy)
+        .def("T_compact", &SE3tc::T_compact,
+                "Outputs the 3x5 (compact) transformation [R,p,v]",
+                py::return_value_policy::copy)
+        .def("Ln_from_position_to_omega_acc", &SE3tc::Ln_from_position_to_omega_acc,
+                "Logarithm + vee operator, returns 6D coordinates (omega*t,acc*t) by inverse of the position only",
+                py::return_value_policy::copy)
+        .def("Ln", &SE3tc::Ln,
+                "Logarithm + vee operator, returns 10D coordinates (omega*t,vel*t,acc*t,t)",
+                py::return_value_policy::copy)
+        .def("adj", &SE3tc::adj,
+                "returns the adjoint as a 10x10 matrix",
+                py::return_value_policy::copy)
+        .def("inv", &SE3tc::inv,
+                "returns the inverse",
+                py::return_value_policy::copy)
+        .def("set_time", &SE3tc::set_time,
+                "sets the time specified by the argument")
+        .def("vel", &SE3tc::vel,
+                "returns the SE3vel after cliping time",
+                py::return_value_policy::copy)
+        .def("print", &SE3tc::print,
+                "Prints current state of pose.")
+        .def("__mul__", &SE3tc::operator*, py::is_operator())
+        .def("__str__", &SE3tc::toString, "Generates string representation of the SE3vel object for print() output")
+        .def("__repr__", &SE3tc::toString, "Generates string representation of the SE3vel object for console output");
+    m.def("inv_left_jacobian_tc", &mrob::inv_left_jacobian_tc, "Returns the inverse left Jacobian from the 10-vector xi = [phi, pho, v, t]", py::return_value_policy::copy);
 }
 

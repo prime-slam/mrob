@@ -206,7 +206,8 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         }
 
         // 1.3) check for convergence
-        if (deltaChi2/currentChi2 < solutionTolerance_) //in ratio
+        if (deltaChi2/currentChi2 < solutionTolerance_ //in ratio
+            || deltaChi2 < solutionTolerance_)  //absolute update. There are case when the ratio does not identify convergence (small delta, small chi2)
         {
             if (verbose_)
                 std::cout << "\nFGraphSolve::optimize_levenberg_marquardt: Converged Successfully" << std::endl;
@@ -221,17 +222,21 @@ uint_t FGraphSolve::optimize_levenberg_marquardt(uint_t maxIters)
         //modelFidelity = deltaChi2 / (dx_.dot(b_) - 0.5*dx_.dot(L_* dx_));
         // Update, according to H.B. Nielson, Damping Parameter In Marquardt’s Method, Technical Report IMM-REP-1999-05, Dept. of Mathematical Modeling, Technical University Denmark
         // (J'J ) dx = J'r , so this is substituted.
-        modelFidelity = 2.0 * deltaChi2 / (dx_.dot(b_) - dx_.dot(lambda_ * diagL_* dx_));
+        modelFidelity = 2.0 * deltaChi2 / (dx_.dot(b_) - dx_.dot(lambda_ * diagL_.cwiseProduct(dx_)));
         if (verbose_)
         {
-            std::cout << "model fidelity = " << modelFidelity << " and m_k = " << dx_.dot(b_) << std::endl;
+            std::cout << "model fidelity = " << modelFidelity << " and m_k = " << 0.5*(dx_.dot(b_) - dx_.dot(lambda_ * diagL_.cwiseProduct(dx_)))<< std::endl;
         }
 
-        //3) update lambda
-        if (modelFidelity < sigma1)
+        //3) update lambda. If either too close to 0 or too far away from 1, requires reducding the trust region (lambda increase). XXX: not so sure about the later
+        if (modelFidelity < sigma1 || 2.0 - modelFidelity < sigma1)
+        {
             lambda_ *= beta1;
-        if (modelFidelity > sigma2)
+        }
+        else if (modelFidelity > sigma2 || 2.0 - modelFidelity > sigma2)
+        {
             lambda_ *= beta2;
+        }
 
 
     } while (iter < maxIters);

@@ -25,7 +25,7 @@ def pcd_1(X, color, T = np.identity(4)):
 def vis_her(X, Y, T = np.identity(4)):
     blue = np.array([0,0,1], dtype='float64')
     red = np.array([1,0,0], dtype='float64')
-    open3d.visualization.draw_geometries([pcd_1(X,red), pcd_1(Y,blue, T)])
+    open3d.visualization.draw_geometries([pcd_1(X,red,T), pcd_1(Y,blue)])
 
 def vis_arr(X):
 	pcd = open3d.PointCloud()
@@ -35,11 +35,11 @@ def vis_arr(X):
 
 
 
-# solve the problem
+# solve the problem,  ||T X - Y||
 vis_her(X,Y)
 T_arun = mrob.registration.arun(X,Y)
 print('Arun solution =\n', T_arun.T())
-vis_her(Y,X,np.asarray(T_arun.T()))
+vis_her(X,Y,np.asarray(T_arun.T()))
 
 W = np.ones(N)
 T_wp = mrob.registration.weighted(X,Y,W)

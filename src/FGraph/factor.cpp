@@ -28,7 +28,7 @@ using namespace mrob;
 
 Factor::Factor(uint_t dim, uint_t allNodesDim, robustFactorType factor_type, uint_t potNumberNodes):
 		id_(0), dim_(dim), allNodesDim_(allNodesDim), chi2_(0), robust_type_(factor_type), robust_weight_(0.0),
-        robust_mask_(false)
+        robust_mask_(false), time_stamp_(0.0)
 {
     // Child factor must specify dimensions
     neighbourNodes_.reserve( potNumberNodes );
@@ -94,4 +94,36 @@ EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
 {
     //Dimension zero since this is a non-parametric factor.
     //Also we don't known how many nodes will connect, so we set the second param to 0 (not-used)
+}
+
+
+std::vector<uint_t> mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+                    const std::vector<uint_t>& sizes_vector,
+                    std::vector<uint_t>& jacobian_indexes)
+{
+    // Create a vector of indices {0, 1, 2, ..., n-1}
+    std::vector<uint_t> indices(id_vector.size());
+    for (uint_t i = 0; i < id_vector.size(); ++i)
+    {
+        indices[i] = i;
+    }
+
+    std::stable_sort(indices.begin(), indices.end(),
+        [&id_vector](uint_t a, uint_t b) {
+            return id_vector[a] < id_vector[b];
+        });
+
+
+    std::vector<uint_t> order(id_vector.size());
+    uint_t matrix_index = 0;
+    jacobian_indexes.clear();
+    jacobian_indexes = std::vector<uint_t>(id_vector.size());
+    for (uint_t pos = 0; pos < indices.size(); ++pos)
+    {
+        order[indices[pos]] = pos;
+        jacobian_indexes[indices[pos]] = matrix_index;
+        matrix_index += sizes_vector[pos];
+    }
+
+    return order;
 }

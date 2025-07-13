@@ -28,13 +28,14 @@
 
 #include "mrob/matrix_base.hpp"
 #include "mrob/SO3.hpp"
+#include "mrob/SE3tc.hpp"
 
 namespace mrob{
 
 /**
  *  \brief Extended Special Euclidean (group) in 3d
  *  Is the group representing rotations, vel and translations:
- *  SE3vel = {T = [R  t  v]  |  R \in SO3 , t \in Re^3, v \in Re^3 }
+ *  SE3vel = {T = [R  p  v]  |  R \in SO3 , p \in Re^3, v \in Re^3 }
  *                [0   I  ]
  *  The Lie Algebra associated to this group is expressed by the coordinates
  *      xi =[theta , pho, vel] \in Re^9, where theta \in Re^3 represents the rotation
@@ -42,21 +43,28 @@ namespace mrob{
  *  We will preserve this order in this class.
  */
 
+
+class SE3tc;
+
 class SE3vel{
     public:
         SE3vel(const Mat5 &T = Mat5::Identity());
 
         SE3vel(const SE3vel &T);
 
-        SE3vel(const SO3 &R, const Mat31 &t, const Mat31 &v);
+        SE3vel(const SO3 &R, const Mat31 &p, const Mat31 &v);
 
         SE3vel(const Mat91 &xi);
 
+        SE3vel(const SE3tc &T);
+
         SE3vel inv(void) const;
 
-        Mat31 t() const;
+        Mat31 t() const; // this function is a copy of p(), returns translation, to keep consistent with other functions (see SE3)
+        Mat31 p() const;
         Mat31 v() const;
         Mat3 R() const;
+        Mat4 T_SE3() const;
         Mat5 T() const;
         Mat<3,5> T_compact() const;
 
@@ -65,6 +73,8 @@ class SE3vel{
 
         void Exp(const Mat91 &xi);
         Mat91 Ln(void) const;
+
+        SE3tc tc(const matData_t &time_stamp) const;
 
         void regenerate();
         SE3vel operator*(const mrob::SE3vel& rhs);

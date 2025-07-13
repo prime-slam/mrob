@@ -26,7 +26,7 @@
 using namespace mrob;
 
 Node::Node(uint_t dim, nodeMode mode):
-		 id_(0), dim_(dim), node_mode_(mode), isConnected2EF_(false)
+		 id_(0), dim_(dim), node_mode_(mode), isConnected2EF_(false), time_stamp_(0.0)
 {
 }
 

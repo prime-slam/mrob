@@ -24,6 +24,7 @@ cmake-build*
 doc/*
 __pycache__
 .*
+*code-workspace
 
 *.pyd
 dist/
