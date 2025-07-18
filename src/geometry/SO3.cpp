@@ -320,3 +320,10 @@ Mat3 mrob::rpy_to_so3(const Eigen::Ref<const Mat31> v)
           * Eigen::AngleAxisd(v(2), Eigen::Vector3d::UnitZ());
     return R;
 }
+
+
+void SO3::regenerate()
+{
+    Mat3 xi_hat = this->ln();
+    this->exp(xi_hat);
+}

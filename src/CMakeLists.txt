@@ -30,6 +30,8 @@ ADD_SUBDIRECTORY(visual)
 INCLUDE_DIRECTORIES(timeCont)
 ADD_SUBDIRECTORY(timeCont)
 
+INCLUDE_DIRECTORIES(attitude-estimator)
+ADD_SUBDIRECTORY(attitude-estimator)
 
 IF(NOT ANDROID)
     ADD_SUBDIRECTORY(pybind)
