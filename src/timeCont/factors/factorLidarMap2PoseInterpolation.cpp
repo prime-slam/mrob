@@ -23,7 +23,7 @@
 
 #include "mrob/factors/factorLidarMap2PoseInterpolation.hpp"
 #include <iostream>
- using namespace mrob;
+using namespace mrob;
 
 FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
         const Mat51 &observation,
@@ -61,8 +61,8 @@ void FactorLidarMap2PoseInterpolation::interpolate_pose(const SE3tc &T_origin, c
         matData_t t1 = T_origin.time();
         matData_t t2 = T_target.time();
         matData_t taw = (t2 - t_obs)/(t2-t1);
-        SE3 T_org = SE3(T_origin.T().block<4,4>(0,0));
-        SE3 T_tar = SE3(T_target.T().block<4,4>(0,0));
+        SE3 T_org = SE3(T_origin.T_SE3());
+        SE3 T_tar = SE3(T_target.T_SE3());
         Mat61 xi_delta = compute_delta(T_org, T_tar, taw);
         T_taw_ = SE3(xi_delta)*T_org;
 
