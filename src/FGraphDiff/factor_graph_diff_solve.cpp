@@ -222,7 +222,7 @@ uint_t FGraphDiffSolve::optimize_levenberg_marquardt(uint_t maxIters)
         //modelFidelity = deltaChi2 / (dx_.dot(b_) - 0.5*dx_.dot(L_* dx_));
         // Update, according to H.B. Nielson, Damping Parameter In Marquardt’s Method, Technical Report IMM-REP-1999-05, Dept. of Mathematical Modeling, Technical University Denmark
         // (J'J ) dx = J'r , so this is substituted.
-        modelFidelity = 2.0 * deltaChi2 / (dx_.dot(b_) - dx_.dot(lambda_ * diagL_* dx_));
+        modelFidelity = 2.0 * deltaChi2 / (dx_.dot(b_) - dx_.dot(lambda_ * diagL_.cwiseProduct(dx_)));
         if (verbose_)
         {
             std::cout << "model fidelity = " << modelFidelity << " and m_k = " << dx_.dot(b_) << std::endl;
