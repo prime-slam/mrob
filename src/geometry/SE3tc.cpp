@@ -94,9 +94,9 @@ Mat3 SE3tc::R() const
     return T_.topLeftCorner<3,3>();
 }
 
-Mat5 SE3tc::T(void) const
+const Eigen::Ref<const Mat5> SE3tc::T(void) const
 {
-    return this->T_;
+    return T_;
 }
 
 Mat4 SE3tc::T_SE3(void) const

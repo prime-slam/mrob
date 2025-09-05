@@ -82,7 +82,7 @@ class SE3tc{
         Mat31 v() const;
         Mat3 R() const;
         Mat4 T_SE3() const;
-        Mat5 T() const;
+        const Eigen::Ref<const Mat5> T() const;
         matData_t time() const;
         Mat<3,5> T_compact() const;
 

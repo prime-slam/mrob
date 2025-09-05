@@ -57,7 +57,7 @@ class NodePose3dVelTc : public Node
     MatRefConst get_state() const override {return state_.T();};
     MatRefConst get_auxiliary_state() const override {return auxiliaryState_.T();};
     void print() const override;
-
+    Mat5 get_state_test() const {return state_.T();};
     void set_time_stamp(double t) override;
 
   protected:
