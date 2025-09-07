@@ -30,10 +30,11 @@ FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
         const Mat31 &map_point, 
         std::shared_ptr<Node> &nodeOrigin,
         std::shared_ptr<Node> &nodeTarget, 
+        const Mat4 &offset_lidar_imu,
         const Mat3 &obsInf, 
         Factor::robustFactorType robust_type):
 
-        Factor(3,9,robust_type), obs_(observation), W_(obsInf), map_point_(map_point)
+        Factor(3,9,robust_type), obs_(observation), W_(obsInf), map_point_(map_point), offset_lidar_imu_(offset_lidar_imu)
 {
         if (nodeOrigin->get_id() < nodeTarget->get_id())
         {
@@ -79,7 +80,8 @@ void FactorLidarMap2PoseInterpolation::evaluate_residuals()
         SE3tc Tx_target = SE3tc(state_target);
         matData_t t_obs = obs_(4);
         interpolate_pose(Tx_origin, Tx_target, t_obs);
-        r_ = T_taw_.transform(map_point_) - obs_.head(3);
+        SE3 offset = SE3(offset_lidar_imu_);
+        r_ = (T_taw_ * offset).transform (obs_.head(3))- map_point_;
 }
 
 void FactorLidarMap2PoseInterpolation::evaluate_jacobians()
@@ -94,7 +96,8 @@ void FactorLidarMap2PoseInterpolation::evaluate_jacobians()
         matData_t t1 = Tx_origin.time();
         matData_t t2 = Tx_target.time();
         matData_t taw = (t2 - t_obs)/(t2-t1);
-        Mat3 tmp = hat3(-T_taw_.transform(map_point_));
+        SE3 offset = SE3(offset_lidar_imu_);
+        Mat3 tmp = hat3(-(T_taw_ * offset).transform(obs_.head(3)));
         Mat<3,6> r_T = Mat<3,6>::Zero();
         r_T.topLeftCorner<3,3>() = tmp;
         r_T.bottomRightCorner<3,3>() = Mat3::Identity();

@@ -72,8 +72,11 @@ int main() {
         // Test 4: Create and add factor to graph
         std::cout << "\n4. Creating and adding factor to graph..." << std::endl;
         
+        // Create offset_lidar_imu transformation (identity for simplicity)
+        Mat4 offset_lidar_imu = Mat4::Identity();
+        
         auto factor = std::make_shared<FactorLidarMap2PoseInterpolation>(
-            observation, map_point, nodeOrigin, nodeTarget, obsInf, Factor::robustFactorType::QUADRATIC
+            observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
         );
         
         // Add factor to graph
@@ -136,7 +139,7 @@ int main() {
             obs_t(4) = t;  // Set observation time
             
             auto factor_t = std::make_shared<FactorLidarMap2PoseInterpolation>(
-                obs_t, map_point, nodeOrigin, nodeTarget, obsInf, Factor::robustFactorType::QUADRATIC
+                obs_t, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
             );
             
             factor_t->evaluate_residuals();

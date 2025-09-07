@@ -77,8 +77,11 @@ int main() {
 
         std::cout << "\n3. Creating FactorLidarMap2PoseInterpolation..." << std::endl;
         
+        // Create offset_lidar_imu transformation (identity for simplicity)
+        Mat4 offset_lidar_imu = Mat4::Identity();
+        
         auto factor = std::make_shared<FactorLidarMap2PoseInterpolation>(
-            observation, map_point, nodeOrigin, nodeTarget, obsInf, Factor::robustFactorType::QUADRATIC
+            observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
         );
         
         std::cout << "Factor created successfully!" << std::endl;
@@ -130,7 +133,7 @@ int main() {
             obs_t(4) = t;  // Set observation time
             
             auto factor_t = std::make_shared<FactorLidarMap2PoseInterpolation>(
-                obs_t, map_point, nodeOrigin, nodeTarget, obsInf, Factor::robustFactorType::QUADRATIC
+                obs_t, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
             );
             
             factor_t->evaluate_residuals();

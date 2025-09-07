@@ -29,3 +29,6 @@ SET_TARGET_PROPERTIES(FGraphTime PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${MROB_LIB_DIR}"
 )
 
+# Add examples subdirectory
+add_subdirectory(examples)
+
