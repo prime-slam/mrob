@@ -16,7 +16,8 @@
  * nodeSO3.cpp
  *
  *  Created on: Jul 18, 2025
- *      Author: Ivan
+ *      Author: Ivan Kakurin
+ *              i.kakurin@skoltech.ru
  *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
@@ -34,6 +35,12 @@
  {
      assert(isSO3(initial_x) && "NodeSO3:: Incorrect initial state, not an element of SO3" );
  }
+
+NodeSO3::NodeSO3(const SO3 &initial_x, Node::nodeMode mode) :
+		 Node(3, mode), state_(initial_x), auxiliaryState_(initial_x)
+{
+	assert(isSO3(initial_x.R()) && "NodeSO3:: Incorrect initial state, not an element of SO3" );
+}
  
  
  
@@ -57,14 +64,14 @@
  
  void NodeSO3::set_state(MatRefConst &x)
  {
-     // casting is necessary for SE3 constructor, it does not handle a ref TODO
-     Mat4 newState = x;
+     // casting is necessary for SO3 constructor, it does not handle a ref TODO
+     Mat3 newState = x;
      state_ = SO3(newState);
  }
  
  void NodeSO3::set_auxiliary_state(MatRefConst &x)
  {
-     Mat4 newState = x;
+     Mat3 newState = x;
      auxiliaryState_ = SO3(newState);
  }
  

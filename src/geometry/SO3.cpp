@@ -327,3 +327,30 @@ void SO3::regenerate()
     Mat3 xi_hat = this->ln();
     this->exp(xi_hat);
 }
+
+Mat3 mrob::inv_left_jacobian_SO3(const Mat31 &phi)
+{
+    Mat3 Vinv = Mat3::Identity();
+    double k1;
+    double o = phi.norm();
+    double o2 = phi.squaredNorm();
+    Mat3 phi_hat = hat3(phi);
+    // 5e-3 bound provided on numerical_test.cpp, smaller than this k1 becomes degradated
+    if (o > 5e-3)
+    {
+        double c1 = std::sin(o); //sin(o)/o, we remove the o in both coeficients
+        double c2 = (1 - std::cos(o))/o; // (1 - std::cos(o))/o/o
+        k1 = 1/o2*(1 - 0.5*c1/c2);
+    }
+    //Taylor expansion for small o.
+    else
+    {
+        // f(o) = 1/12 + 1/2*f''*o^2
+        // f'' = 1/360
+        k1 = 1.0/12 + o2/720;
+    }
+    Vinv += -0.5*phi_hat + k1* phi_hat*phi_hat;
+
+    // v = V^-1 t
+    return Vinv;
+}

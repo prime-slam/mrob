@@ -55,6 +55,11 @@
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
 
+#include "mrob/factors/nodeSO3.hpp"
+#include "mrob/factors/factor1SO3obs.hpp"
+#include "mrob/factors/factor_gyro_prop.hpp"
+#include "mrob/factors/factor_gravity_align.hpp"
+
 //#include <Eigen/Geometry>
 
 namespace py = pybind11;
@@ -348,6 +353,39 @@ public:
         return f->get_id();
     }
 
+
+    // My factors
+    
+    factor_id_t add_node_so3(const SO3 &x, mrob::Node::nodeMode mode)
+    {
+        std::shared_ptr<mrob::Node> n(new mrob::NodeSO3(x,mode));
+        this->add_node(n);
+        return n->get_id();
+    }
+    factor_id_t add_factor_1so3_obs(const SO3 &obs, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(nodeId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1SO3obs(obs,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gyro_prop(const Mat31 &gyr, const double &dt, uint_t nodeOrigin, uint_t nodeTarget, 
+        const py::EigenDRef<const Mat3> obsInvCov, bool updateNodeTarget)
+    {
+        auto nO = this->get_node(nodeOrigin);
+        auto nT = this->get_node(nodeTarget);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGyroProp(gyr,dt,nO,nT,obsInvCov,updateNodeTarget,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gravity_align(const Mat31 &acc, const Mat31 &grav, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(nodeId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGravityAlign(acc,grav,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -575,6 +613,31 @@ void init_FGraph(py::module &m)
                     py::arg("nodePoint1"),
                     py::arg("nodePoint2"),
                     py::arg("camera_k"),
+                    py::arg("obsInvCov"))
+            // -----------------------------------------------------------------------------
+            // My factors
+            .def("add_node_so3", &FGraphPy::add_node_so3,
+                    "Nodes are rotations in 3D, as Lie Algebra of RBT around the Identity",
+                    py::arg("x"),
+                    py::arg("mode") = Node::nodeMode::STANDARD)
+            .def("add_factor_1so3_obs", &FGraphPy::add_factor_1so3_obs,
+                    "Adds a factor observing one rtation, a Mocap-like factor",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_gyro_prop", &FGraphPy::add_factor_gyro_prop,
+                    "Adds a factor observing one rotation increment, a gyroscope-like factor",
+                    py::arg("gyro"),
+                    py::arg("dt"),
+                    py::arg("nodeOridingId"),
+                    py::arg("nodeTargetId"),
+                    py::arg("obsInvCov"),
+                    py::arg("updateNodeTarget") = false)
+            .def("add_factor_gravity_align", &FGraphPy::add_factor_gravity_align,
+                    "Adds a factor observing one axis direction observation, a accelerometer-like factor",
+                    py::arg("acc"),
+                    py::arg("g"),
+                    py::arg("nodePoseId"),
                     py::arg("obsInvCov"))
             ;
 

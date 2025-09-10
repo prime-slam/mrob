@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * factor1SO3obs.hpp
+ * FactorGyroProp.hpp
  *
  *  Created on: Jul 18, 2025
  *      Author: Ivan Kakurin
@@ -24,8 +24,8 @@
  */
 
 
- #ifndef FACTOR1SO3OBS_HPP_
- #define FACTOR1SO3OBS_HPP_
+ #ifndef FACTORGYROPROP_HPP_
+ #define FACTORGYROPROP_HPP_
  
  
  #include "mrob/matrix_base.hpp"
@@ -35,7 +35,7 @@
  namespace mrob{
  
  /**
-  * The Factor1SO3obs is a vertex representing the distribution
+  * The FactorGyroProp is a vertex representing the distribution
   * of a nodeSO3, pretty much like an anchoring factor.
   *
   * The state is an observed orientation, coincident with the node state it is connected to.
@@ -44,12 +44,22 @@
   *   r = (x - obs) = Rx * Robs^{-1}
   */
  
- class Factor1SO3obs : public Factor
+ class FactorGyroProp : public Factor
  {
   public:
-   Factor1SO3obs(const SO3 &observation, std::shared_ptr<Node> &n1, const Mat3 &obsInf,
+   FactorGyroProp(const Mat31 &gyroscope, const double &dt, std::shared_ptr<Node> &nodeOrigin, 
+             std::shared_ptr<Node> &nodeTarget, const Mat3 &obsInf, bool updateNodeTarget,
              Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~Factor1SO3obs() = default;
+
+   FactorGyroProp(const Mat31 &d_fi, std::shared_ptr<Node> &nodeOrigin, 
+             std::shared_ptr<Node> &nodeTarget, const Mat3 &obsInf, bool updateNodeTarget,
+             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+
+   FactorGyroProp(const Mat3 &d_R, std::shared_ptr<Node> &nodeOrigin, 
+             std::shared_ptr<Node> &nodeTarget, const Mat3 &obsInf, bool updateNodeTarget,
+             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+
+    ~FactorGyroProp() = default;
     /**
      * Returns the chi2 error and fills the residual vector
      */
@@ -59,17 +69,19 @@
 
     void print() const override;
 
-    MatRefConst get_obs() const override {return Robs_.R();};
+    MatRefConst get_obs() const override {return Robs_.ln_vee();};
     VectRefConst get_residual() const override {return r_;};
     MatRefConst get_information_matrix() const override {return W_;};
     MatRefConst get_jacobian(mrob::factor_id_t /*id = 0*/) const override {return J_;};
  
  
   protected:
+    // uint_t dt_;
+    // Mat31 w_;
     Mat31 r_; //and residuals
     SO3 Robs_, Rr_;//Transformation for the observation and the residual
     Mat3 W_;//inverse of observation covariance (information matrix)
-    Mat3 J_;//Jacobian
+    Mat<3,6> J_;//Jacobian
  
  
  };
@@ -79,5 +91,5 @@
  
  
  
- #endif /* FACTOR1SO3OBS_HPP_ */
+ #endif /* FACTORGYROPROP_HPP_ */
  

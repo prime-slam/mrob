@@ -16,7 +16,8 @@
  * nodeSO3.hpp
  *
  *  Created on: Jul 18, 2025
- *      Author: Ivan
+ *      Author: Ivan Kakurin
+ *              i.kakurin@skoltech.ru
  *              Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
@@ -40,6 +41,10 @@
       * 
       */
      NodeSO3(const Mat3 &initial_x, Node::nodeMode mode = STANDARD);
+     /**
+     * Initialization directly on SO3 a matrix
+     */
+     NodeSO3(const SO3 &initial_x, Node::nodeMode mode = STANDARD);
      ~NodeSO3() = default;
      /**
       * Left update operation corresponds to

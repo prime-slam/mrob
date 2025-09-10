@@ -4,11 +4,15 @@
 SET(factors_headers
     mrob/factors/nodeSO3.hpp
     mrob/factors/factor1SO3obs.hpp
+    mrob/factors/factor_gyro_prop.hpp
+    mrob/factors/factor_gravity_align.hpp
 )
 
 SET(factors_sources
     factors/nodeSO3.cpp
     factors/factor1SO3obs.cpp
+    factors/factor_gyro_prop.cpp
+    factors/factor_gravity_align.cpp
 )
 
 # create library

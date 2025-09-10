@@ -16,7 +16,8 @@
 * factor1SO3obs.hpp
 *
 *  Created on: Jul 18, 2025
-*      Author: Ivan
+*      Author: Ivan Kakurin
+*              i.kakurin@skoltech.ru
 *              Gonzalo Ferrer
 *              g.ferrer@skoltech.ru
 *              Mobile Robotics Lab, Skoltech 
@@ -45,17 +46,17 @@ void Factor1SO3obs::evaluate_residuals()
     // NOTE Tobs is a global observation (reference identity)
 
     // change dimentsion to be 3x3 and T becomes R (rotations) Check out src/FGraph/factors/fator1Pose3d.cpp
-    Mat4 x = get_neighbour_nodes()->at(0).get()->get_state();
-    Tr_ = SE3(x) * Tobs_.inv();
-    r_ = Tr_.ln_vee();
+    Mat3 x = get_neighbour_nodes()->at(0).get()->get_state();
+    Rr_ = SO3(x) * Robs_.inv();
+    r_ = Rr_.ln_vee();
 }
 
 void Factor1SO3obs::evaluate_jacobians()
 {
-    // Evaluate Jacobian (see document on SE3 and small perturbations)
+    // Evaluate Jacobian (see document on SO3 and small perturbations)
     // J = d/dxi ln(T X-1 exp(-xi) (T X-1)-1)= - Adj_{T X-1} = - Adj(Tr)
     // J = d/dxi ln(exp(xi)X T-1  (T X-1)-1)= I
-    J_ = Mat6::Identity();
+    J_ = Mat3::Identity();
 }
 
 void Factor1SO3obs::evaluate_chi2()
@@ -65,7 +66,7 @@ void Factor1SO3obs::evaluate_chi2()
 
 void Factor1SO3obs::print() const
 {
-    std::cout << "Printing Factor: " << id_ << ", obs= \n" << Tobs_.T()
+    std::cout << "Printing Factor: " << id_ << ", obs= \n" << Robs_.R()
             << "\n Residuals= \n" << r_
             << " \nand Information matrix\n" << W_
             << "\n Calculated Jacobian = \n" << J_
