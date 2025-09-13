@@ -19,9 +19,9 @@ int main() {
         // Test 1: Create test data
         std::cout << "\n1. Creating test data..." << std::endl;
         
-        // Create observation: [X, Y, Z, 0, t] - lidar observation at time t
-        Mat51 observation;
-        observation << 1.5, 2.0, 0.8, 0.0, 0.5; // [x, y, z, 0, time]
+        // Create observation: [X, Y, Z, t] - lidar observation at time t
+        Mat41 observation;
+        observation << 1.5, 2.0, 0.8,  0.5; // [x, y, z, time]
         
         // Create map point: [X, Y, Z] - 3D point in map
         Mat31 map_point;
@@ -135,8 +135,8 @@ int main() {
         std::cout << "\n11. Testing with different observation times..." << std::endl;
         
         for (double t = 0.0; t <= 1.0; t += 0.2) {
-            Mat51 obs_t = observation;
-            obs_t(4) = t;  // Set observation time
+            Mat41 obs_t = observation;
+            obs_t(3) = t;  // Set observation time
             
             auto factor_t = std::make_shared<FactorLidarMap2PoseInterpolation>(
                 obs_t, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC

@@ -26,7 +26,7 @@
 using namespace mrob;
 
 FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
-        const Mat51 &observation,
+        const Mat41 &observation,
         const Mat31 &map_point, 
         std::shared_ptr<Node> &nodeOrigin,
         std::shared_ptr<Node> &nodeTarget, 
@@ -34,7 +34,8 @@ FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
         const Mat3 &obsInf, 
         Factor::robustFactorType robust_type):
 
-        Factor(3,9,robust_type), obs_(observation), W_(obsInf), map_point_(map_point), offset_lidar_imu_(offset_lidar_imu)
+        Factor(3,9,robust_type), obs_(observation), W_(obsInf), map_point_(map_point), point_obs_imu_frame_(Mat31::Zero()),
+        T_offset_lidar_imu_(offset_lidar_imu), thau_taw_(0.0)
 {
         if (nodeOrigin->get_id() < nodeTarget->get_id())
         {
@@ -54,21 +55,21 @@ FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
 
 Mat61 FactorLidarMap2PoseInterpolation::compute_delta(SE3 Ta, SE3 Tb, matData_t time)
 {
-        Mat61 xi_delta = (Tb*Ta.inv()).ln_vee() *time;
+        Mat61 xi_delta = (Ta.inv()*Tb).ln_vee() *time; //this is a non-essencitial change, but it will make the convention compatible with SE3tc
         return xi_delta;
 }
 void FactorLidarMap2PoseInterpolation::interpolate_pose(const SE3tc &T_origin, const SE3tc &T_target,const matData_t &t_obs)
 {
         matData_t t1 = T_origin.time();
         matData_t t2 = T_target.time();
-        matData_t taw = (t2 - t_obs)/(t2-t1);
+        thau_taw_ = (t2 - t_obs)/(t2-t1);
         
         SE3 T_org = SE3(T_origin.T_SE3());
         SE3 T_tar = SE3(T_target.T_SE3());
         
-        Mat61 xi_delta = compute_delta(T_org, T_tar, taw);
+        Mat61 xi_delta = compute_delta(T_org, T_tar, thau_taw_);
         
-        T_taw_ = SE3(xi_delta)*T_org;
+        T_taw_ = T_org*SE3(xi_delta);//this is a non-essencitial change, but it will make the convention compatible with SE3tc
 }
 void FactorLidarMap2PoseInterpolation::evaluate_residuals()
 {
@@ -78,33 +79,18 @@ void FactorLidarMap2PoseInterpolation::evaluate_residuals()
         SE3tc Tx_origin = SE3tc(state_origin);
         Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
         SE3tc Tx_target = SE3tc(state_target);
-        matData_t t_obs = obs_(4);
+        matData_t t_obs = obs_(3);
         interpolate_pose(Tx_origin, Tx_target, t_obs);
-        SE3 offset = SE3(offset_lidar_imu_);
-        r_ = (T_taw_ * offset).transform (obs_.head(3))- map_point_;
+        point_obs_imu_frame_ = T_offset_lidar_imu_.transform (obs_.head(3));
+        r_ = T_taw_.transform (point_obs_imu_frame_) - map_point_;
 }
 
 void FactorLidarMap2PoseInterpolation::evaluate_jacobians()
 {
-        Mat5 state_origin;
-        state_origin = get_neighbour_nodes()->at(0)->get_state();
-        SE3tc Tx_origin = SE3tc(state_origin);
-        Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
-        SE3tc Tx_target = SE3tc(state_target);
-        matData_t t_obs = obs_(4);
-        interpolate_pose(Tx_origin, Tx_target, t_obs);
-        matData_t t1 = Tx_origin.time();
-        matData_t t2 = Tx_target.time();
-        matData_t taw = (t2 - t_obs)/(t2-t1);
-        SE3 offset = SE3(offset_lidar_imu_);
-        Mat3 tmp = hat3(-(T_taw_ * offset).transform(obs_.head(3)));
-        Mat<3,6> r_T = Mat<3,6>::Zero();
-        r_T.topLeftCorner<3,3>() = tmp;
-        r_T.bottomRightCorner<3,3>() = Mat3::Identity();
-        Mat<3,6> r_T2 = r_T* (taw* Mat6::Identity());
-        J_ = Mat<3,9>::Zero();
-        J_.block<3,6>(0,0) = r_T2;
-        J_.block<3,3>(0,6) = Mat3::Zero();//J_.setZero() at the begining of the function?
+        J_.setZero();
+        Mat3 R_taw = T_taw_.R();
+        J_.topLeftCorner<3,3>() = -thau_taw_ * R_taw * hat3(point_obs_imu_frame_);
+        J_.block<3,3>(0,3) =  thau_taw_ * R_taw;
 }
 
 

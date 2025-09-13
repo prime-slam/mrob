@@ -26,8 +26,8 @@ int main() {
         std::cout << "\n1. Creating test data..." << std::endl;
         
         
-        Mat51 observation;
-        observation << 1.5, 2.0, 0.8, 0.0, 0.5; // [x, y, z, 0, time]  XXX wihy do you add the 5th coordinate 0? you only need 4. Change only when you have done all other stuff
+        Mat41 observation;
+        observation << 1.5, 2.0, 0.8,  0.5; // [x, y, z, time]  XXX changed to 4 coordinates
         
         
         Mat31 map_point;
@@ -141,14 +141,14 @@ int main() {
 
         std::cout << "\nSolved, chi2 = " << graph.chi2() << std::endl;
     
-        //graph.print(true);
+        graph.print(true);
 
         
         std::cout << "\n9. Testing with different observation times..." << std::endl;
         
         for (double t = 0.0; t <= 1.0; t += 0.2) {
-            Mat51 obs_t = observation;
-            obs_t(4) = t;  // Set observation time
+            Mat41 obs_t = observation;
+            obs_t(3) = t;  // Set observation time
             
             auto factor_t = std::make_shared<FactorLidarMap2PoseInterpolation>(
                 obs_t, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
