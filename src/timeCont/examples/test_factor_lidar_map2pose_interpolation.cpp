@@ -121,17 +121,33 @@ int main() {
         
         SE3tc T_origin(state_origin);
         SE3tc T_target(state_target);
-        matData_t t_obs = observation(4);
+        matData_t t_obs = observation(3);
         
         std::cout << "Origin time: " << T_origin.time() << std::endl;
         std::cout << "Target time: " << T_target.time() << std::endl;
         std::cout << "Observation time: " << t_obs << std::endl;//this should be in [target,origin]. it must coincide, so carafull with sweeping this variable.
         
         //to really test it works properly, I think you want to solve this graph
-        graph.add_factor(factor);
-        //graph.print(true);
+        observation << 1.5, 1.0, 0.0,  1.0;
+        map_point << 1.5, 2.0, 0.20;
+        std::shared_ptr<Factor> factor_1 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+            observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
+        graph.add_factor(factor_1);
+        
+        observation << -1.5, 1.0, 0.0,  1.0;
+        map_point << -1.5, 2.0, 0.20;
+        std::shared_ptr<Factor> factor_2 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+            observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
+        graph.add_factor(factor_2);
+
+        observation << 1.5, 2.0, 0.0,  1.0;
+        map_point << 1.5, 3.0, 0.20;
+        std::shared_ptr<Factor> factor_3 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+            observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
+        graph.add_factor(factor_3);
 
         // solve function in fg_solve.cpp. There are defauls params, but not using them
+        graph.print(true);
         auto iters = 
                 graph.solve(FGraphSolve::optimMethod::LM,
                     20,
@@ -139,7 +155,7 @@ int main() {
                     1e-6,
                     true);
 
-        std::cout << "\nSolved, chi2 = " << graph.chi2() << std::endl;
+        std::cout << "\nSolved, chi2 = " << graph.chi2() << ", iters = " << iters <<std::endl;
     
         graph.print(true);
 

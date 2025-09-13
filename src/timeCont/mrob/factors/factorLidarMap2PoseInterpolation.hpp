@@ -66,7 +66,7 @@ protected:
     Mat41 obs_; // obs = [X, Y, Z, t] lidar observation
     Mat31 r_; //residual [TP - Z(:3)]
     Mat3 W_;//inverse of observation covariance (information matrix)
-    Mat<3,9> J_;//Joint Jacobian
+    Mat<3,18> J_;//Joint Jacobian
     SE3 T_taw_; // interpolated pose
     Mat31 map_point_, point_obs_imu_frame_; // map point
     SE3 T_offset_lidar_imu_; // offset from lidar to imu XXX: I think it is the other way, from IMU to LiDAR. Plase check

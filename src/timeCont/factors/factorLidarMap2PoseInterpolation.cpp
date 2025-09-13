@@ -34,7 +34,7 @@ FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
         const Mat3 &obsInf, 
         Factor::robustFactorType robust_type):
 
-        Factor(3,9,robust_type), obs_(observation), W_(obsInf), map_point_(map_point), point_obs_imu_frame_(Mat31::Zero()),
+        Factor(3,18,robust_type), obs_(observation), W_(obsInf), map_point_(map_point), point_obs_imu_frame_(Mat31::Zero()),
         T_offset_lidar_imu_(offset_lidar_imu), thau_taw_(0.0)
 {
         if (nodeOrigin->get_id() < nodeTarget->get_id())
@@ -62,7 +62,7 @@ void FactorLidarMap2PoseInterpolation::interpolate_pose(const SE3tc &T_origin, c
 {
         matData_t t1 = T_origin.time();
         matData_t t2 = T_target.time();
-        thau_taw_ = (t2 - t_obs)/(t2-t1);
+        thau_taw_ = (t_obs - t1)/(t2-t1);
         
         SE3 T_org = SE3(T_origin.T_SE3());
         SE3 T_tar = SE3(T_target.T_SE3());
@@ -89,8 +89,8 @@ void FactorLidarMap2PoseInterpolation::evaluate_jacobians()
 {
         J_.setZero();
         Mat3 R_taw = T_taw_.R();
-        J_.topLeftCorner<3,3>() = -thau_taw_ * R_taw * hat3(point_obs_imu_frame_);
-        J_.block<3,3>(0,3) =  thau_taw_ * R_taw;
+        J_.block<3,3>(0,9) = -thau_taw_ * R_taw * hat3(point_obs_imu_frame_);
+        J_.block<3,3>(0,9+3) =  thau_taw_ * R_taw;
 }
 
 
