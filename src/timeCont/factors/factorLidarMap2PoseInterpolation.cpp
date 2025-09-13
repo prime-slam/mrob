@@ -41,7 +41,7 @@ FactorLidarMap2PoseInterpolation::FactorLidarMap2PoseInterpolation(
                 neighbourNodes_.push_back(nodeOrigin);
                 neighbourNodes_.push_back(nodeTarget);
         }
-        else
+        else //technically, you dont need reserver order of origin is not modified. Maybe for later. I would remove the if case then
         {
                 neighbourNodes_.push_back(nodeTarget);
                 neighbourNodes_.push_back(nodeOrigin);
@@ -104,22 +104,22 @@ void FactorLidarMap2PoseInterpolation::evaluate_jacobians()
         Mat<3,6> r_T2 = r_T* (taw* Mat6::Identity());
         J_ = Mat<3,9>::Zero();
         J_.block<3,6>(0,0) = r_T2;
-        J_.block<3,3>(0,6) = Mat3::Zero();
+        J_.block<3,3>(0,6) = Mat3::Zero();//J_.setZero() at the begining of the function?
 }
 
 
 void FactorLidarMap2PoseInterpolation::evaluate_chi2()
 {
-    chi2_ = r_.transpose() * W_ * r_;
+    chi2_ = 0.5 * r_.dot(W_ * r_);
 }   
 
 void FactorLidarMap2PoseInterpolation::print() const
 {
-        std::cout << "FactorLidarMap2PoseInterpolation" << std::endl;
+        std::cout << "FactorLidarMap2PoseInterpolation   id = " << id_ << std::endl;
         std::cout << "obs_: " << obs_.transpose() << std::endl;
         std::cout << "map_point_: " << map_point_.transpose() << std::endl;
         std::cout << "r_: " << r_.transpose() << std::endl;
-        std::cout << "W_: " << W_.transpose() << std::endl;
+        std::cout << "W_: " << W_ << std::endl;
         std::cout << "J_: " << J_ << std::endl;
         std::cout << "chi2_: " << chi2_ << std::endl;
 }

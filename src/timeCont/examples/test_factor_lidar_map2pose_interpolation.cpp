@@ -13,7 +13,8 @@
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp"
 #include "mrob/SE3tc.hpp"
-#include "mrob/factor_graph.hpp"
+//#include "mrob/factor_graph.hpp"
+#include "mrob/factor_graph_solve.hpp"
 
 using namespace mrob;
 
@@ -26,7 +27,7 @@ int main() {
         
         
         Mat51 observation;
-        observation << 1.5, 2.0, 0.8, 0.0, 0.5; // [x, y, z, 0, time]
+        observation << 1.5, 2.0, 0.8, 0.0, 0.5; // [x, y, z, 0, time]  XXX wihy do you add the 5th coordinate 0? you only need 4. Change only when you have done all other stuff
         
         
         Mat31 map_point;
@@ -57,8 +58,8 @@ int main() {
                         0.0, 0.0, 0.0, 1.0, 0.0,
                         0.0, 0.0, 0.0, 1.5, 1.0;
         
-        FGraph graph;
-        std::shared_ptr<Node> nodeOrigin = std::make_shared<NodePose3dVelTc>(state_origin);
+        FGraphSolve graph;
+        std::shared_ptr<Node> nodeOrigin = std::make_shared<NodePose3dVelTc>(state_origin,Node::ANCHOR);//XXX: this is going to be fixed, so the optimziation needs to know it, this is the way
         std::shared_ptr<Node> nodeTarget = std::make_shared<NodePose3dVelTc>(state_target);
 
         factor_id_t origin_id = graph.add_node(nodeOrigin);
@@ -80,7 +81,8 @@ int main() {
         // Create offset_lidar_imu transformation (identity for simplicity)
         Mat4 offset_lidar_imu = Mat4::Identity();
         
-        auto factor = std::make_shared<FactorLidarMap2PoseInterpolation>(
+        // I saw you ave to cast it anyway in FGraph example, so just define polimorphism one time at the declaration of the variable.
+        std::shared_ptr<Factor> factor = std::make_shared<FactorLidarMap2PoseInterpolation>(
             observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
         );
         
@@ -112,7 +114,7 @@ int main() {
         
         
         std::cout << "\n7. Factor details:" << std::endl;
-        factor->print();
+        factor->print();//all printed above, this function gives
         
         
         std::cout << "\n8. Testing interpolation..." << std::endl;
@@ -123,8 +125,24 @@ int main() {
         
         std::cout << "Origin time: " << T_origin.time() << std::endl;
         std::cout << "Target time: " << T_target.time() << std::endl;
-        std::cout << "Observation time: " << t_obs << std::endl;
+        std::cout << "Observation time: " << t_obs << std::endl;//this should be in [target,origin]. it must coincide, so carafull with sweeping this variable.
         
+        //to really test it works properly, I think you want to solve this graph
+        graph.add_factor(factor);
+        //graph.print(true);
+
+        // solve function in fg_solve.cpp. There are defauls params, but not using them
+        auto iters = 
+                graph.solve(FGraphSolve::optimMethod::LM,
+                    20,
+                    1e-5,
+                    1e-6,
+                    true);
+
+        std::cout << "\nSolved, chi2 = " << graph.chi2() << std::endl;
+    
+        //graph.print(true);
+
         
         std::cout << "\n9. Testing with different observation times..." << std::endl;
         
