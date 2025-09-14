@@ -13,16 +13,17 @@
  * limitations under the License.
  *
  *
- * factorLidarMap2PoseInterpolation.hpp
+ * FactorLidarMap2PoseInterpolationJacobian.hpp
  *
- *  Created on: Jul 17, 2025
+ *  Created on: Sept 14, 2025
  *      Author: Ahmed Baza
-                Ahmed.Baza@skoltech.ru 
+ *              Ahmed.Baza@skoltech.ru 
+ *              Gonzalo Ferrer
  *              Mobile Robotics Lab, Skoltech 
  */
 
- #ifndef FACTORLIDARMAP2POSEINTERPOLATION_HPP_
- #define FACTORLIDARMAP2POSEINTERPOLATION_HPP_
+ #ifndef FACTORLIDARMAP2POSEINTERPOLATIONJACOBIAN_HPP_
+ #define FACTORLIDARMAP2POSEINTERPOLATIONJACOBIAN_HPP_
  
  
  #include "mrob/matrix_base.hpp"
@@ -37,13 +38,13 @@
   * and matches it with lidar observations.
   */
 
-class FactorLidarMap2PoseInterpolation : public Factor
+class FactorLidarMap2PoseInterpolationJacobian : public Factor
 {
 public:
-    FactorLidarMap2PoseInterpolation(const Mat41 &observation,const Mat31 &map_point, std::shared_ptr<Node> &nodeOrigin,
+    FactorLidarMap2PoseInterpolationJacobian(const Mat41 &observation,const Mat31 &map_point, std::shared_ptr<Node> &nodeOrigin,
             std::shared_ptr<Node> &nodeTarget, const Mat4 &offset_lidar_imu, const Mat3 &obsInf, 
             Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~FactorLidarMap2PoseInterpolation() = default;
+    ~FactorLidarMap2PoseInterpolationJacobian() = default;
     /**
     * Jacobians are not evaluated, just the residuals
     */
@@ -65,13 +66,13 @@ public:
     Mat31 r_; //residual [TP - Z(:3)]
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,18> J_;//Joint Jacobian
-    SE3 T_taw_; // interpolated pose
+    SE3tc T_taw_; // interpolated pose
     Mat31 map_point_, point_obs_imu_frame_; // map point
     SE3 T_offset_lidar_imu_; // offset from lidar to imu XXX: I think it is the other way, from IMU to LiDAR. Plase check
     matData_t thau_taw_; //Interpolation fraction. Keept for jacobian calculation
-    Mat61 compute_delta(SE3 Ta, SE3 Tb, matData_t time); 
-    void interpolate_pose(const SE3tc &T_origin, const SE3tc &T_target,const matData_t &t_obs); // interpolate pose between two poses 
-
+    Mat101 xi_target_inv_origin_;
+    
+    void interpolate_pose(SE3tc &T_origin, SE3tc &T_target,const matData_t &t_obs); // interpolate pose between two poses 
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

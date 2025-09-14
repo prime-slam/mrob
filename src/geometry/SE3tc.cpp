@@ -416,4 +416,11 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
 }
 
 
+Mat<10,10> mrob::inv_right_jacobian_tc(const Mat101 &xi)
+{
+    Mat101 xi_negative = -xi;
+    xi_negative(9) = xi(9); // time is not negative, this is due to the constrain on the coordinates
+    return inv_left_jacobian_tc(xi_negative);
+}
+
 
