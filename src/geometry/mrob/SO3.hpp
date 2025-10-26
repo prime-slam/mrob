@@ -198,6 +198,7 @@ Mat41 so3_to_quat(const Eigen::Ref<const Mat3> R);
 Mat3 rpy_to_so3(const Eigen::Ref<const Mat31> v);
 
 Mat3 inv_left_jacobian_SO3(const Mat31 &phi);
+Mat3 left_jacobian_SO3(const Mat31 &phi);
 
 }// end namespace
 #endif /* SO3_HPP_ */

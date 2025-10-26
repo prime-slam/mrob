@@ -148,8 +148,8 @@ void init_geometry(py::module &m) {
     m.def("quat_to_so3", &quat_to_so3,"Suport function from quaternion to a rotation");
     m.def("so3_to_quat", &so3_to_quat,"Suport function from rotation matrix to quaternion");
     m.def("rpy_to_so3",  &rpy_to_so3,"Suport function from roll pitch yaw to a rotation");
-    m.def("left_jacobian_phi", &mrob::left_jacobian, "Returns the left Jacobian from the 3-vector phi", py::return_value_policy::copy);
-    m.def("inv_left_jacobian_phi", &mrob::inv_left_jacobian, "Returns the inverse left Jacobian from the 3-vector phi", py::return_value_policy::copy);
+    m.def("left_jacobian_SO3", &mrob::left_jacobian_SO3, "Returns the left Jacobian from the 3-vector phi so3", py::return_value_policy::copy);
+    m.def("inv_left_jacobian_SO3", &mrob::inv_left_jacobian_SO3, "Returns the inverse left Jacobian from the 3-vector phi so3", py::return_value_policy::copy);
 
     py::class_<SE3Cov, SE3>(m, "SE3Cov")
         .def(py::init<>(),

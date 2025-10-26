@@ -222,9 +222,9 @@ Mat61 vee6(const Mat4 &xi_hat);
 
 bool isSE3(const Mat4 &T);
 
-
-Mat3 left_jacobian(const Mat31 &phi);
-Mat3 inv_left_jacobian(const Mat31 &phi);
+//moved to SO3
+//Mat3 left_jacobian(const Mat31 &phi);
+//Mat3 inv_left_jacobian(const Mat31 &phi);
 /**
  * Inverse Q in the left inverse jacobian function is used to calculate 
  * the inverse Jacobian. It is defined in a global frame since it can be

@@ -354,3 +354,27 @@ Mat3 mrob::inv_left_jacobian_SO3(const Mat31 &phi)
     // v = V^-1 t
     return Vinv;
 }
+
+Mat3 mrob::left_jacobian_SO3(const Mat31& phi)
+{
+    Mat3 V = Mat3::Identity();
+    Mat3 phi_hat = hat3(phi);
+    double o = phi.norm();
+    double o2 = phi.squaredNorm();
+    // If rotation is not zero
+    matData_t c2, c3;
+    if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
+        c2 = (1 - std::cos(o))/o2;
+        c3 = (o - std::sin(o))/o2/o;
+    }
+    else
+    {
+        // second order Taylor (first order is zero since this is an even function)
+        c2 = 0.5 - o2/24;
+        // Second order Taylor
+        c3 = 1.0/6.0 - o2/120;
+    }
+    V += c2*phi_hat + c3*phi_hat*phi_hat;
+
+    return V;
+}

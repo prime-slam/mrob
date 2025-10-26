@@ -121,7 +121,7 @@ void SE3::exp(const Mat4 &xi_hat)
     //Mat3 w_hat = xi_hat.topLeftCorner<3,3>();
 
     // Calculate the closed form of V
-    Mat3 V = left_jacobian(w);
+    Mat3 V = left_jacobian_SO3(w);
 
     // Calculate the translation component t = Vv
     Mat31 t = V*v;
@@ -140,7 +140,7 @@ Mat4 SE3::ln(void) const
     Mat3 w_hat = rotation.ln();
 
     // calculate v = V^1 t
-    Mat3 Vinv = inv_left_jacobian(vee3(w_hat));
+    Mat3 Vinv = inv_left_jacobian_SO3(vee3(w_hat));
 
     // v = V^-1 t
     Mat31 v = Vinv * T_.topRightCorner<3,1>();
@@ -273,59 +273,6 @@ Mat41 SE3::transform_plane(const Mat41 &pi)
 }
 
 
-Mat3 mrob::left_jacobian(const Mat31& phi)
-{
-    Mat3 V = Mat3::Identity();
-    Mat3 phi_hat = hat3(phi);
-    double o = phi.norm();
-    double o2 = phi.squaredNorm();
-    // If rotation is not zero
-    matData_t c2, c3;
-    if ( o > 1e-3){ // c2 and c3 become numerically imprecise for o < 1-5, so we choose a conservative threshold 1e-3
-        c2 = (1 - std::cos(o))/o2;
-        c3 = (o - std::sin(o))/o2/o;
-    }
-    else
-    {
-        // second order Taylor (first order is zero since this is an even function)
-        c2 = 0.5 - o2/24;
-        // Second order Taylor
-        c3 = 1.0/6.0 - o2/120;
-    }
-    V += c2*phi_hat + c3*phi_hat*phi_hat;
-
-    return V;
-}
-
-
-Mat3 mrob::inv_left_jacobian(const Mat31 &phi)
-{
-    Mat3 Vinv = Mat3::Identity();
-    double k1;
-    double o = phi.norm();
-    double o2 = phi.squaredNorm();
-    Mat3 phi_hat = hat3(phi);
-    // 5e-3 bound provided on numerical_test.cpp, smaller than this k1 becomes degradated
-    if (o > 5e-3)
-    {
-        double c1 = std::sin(o); //sin(o)/o, we remove the o in both coeficients
-        double c2 = (1 - std::cos(o))/o; // (1 - std::cos(o))/o/o
-        k1 = 1/o2*(1 - 0.5*c1/c2);
-    }
-    //Taylor expansion for small o.
-    else
-    {
-        // f(o) = 1/12 + 1/2*f''*o^2
-        // f'' = 1/360
-        k1 = 1.0/12 + o2/720;
-    }
-    Vinv += -0.5*phi_hat + k1* phi_hat*phi_hat;
-
-    // v = V^-1 t
-    return Vinv;
-}
-
-
 
 std::string SE3::toString() const
 {
@@ -391,7 +338,7 @@ Mat6 mrob::inv_left_jacobian_SE3(const Mat61 &xi)
     Mat31 theta,pho;
     theta = xi.head<3>();
     pho = xi.tail<3>();
-    res.topLeftCorner<3,3>() = inv_left_jacobian(theta);
+    res.topLeftCorner<3,3>() = inv_left_jacobian_SO3(theta);
     res.bottomRightCorner<3,3>() = res.topLeftCorner<3,3>();
     res.bottomLeftCorner<3,3>() = Q_in_SE3invJacobian(theta,pho);
 
