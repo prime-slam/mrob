@@ -59,6 +59,7 @@
 #include "mrob/factors/factor1SO3obs.hpp"
 #include "mrob/factors/factor_gyro_prop.hpp"
 #include "mrob/factors/factor_gravity_align.hpp"
+#include "mrob/factors/factor_gyro_bias_prop.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -354,7 +355,7 @@ public:
     }
 
 
-    // My factors
+    // Factors Attitude estimator
     
     factor_id_t add_node_so3(const SO3 &x, mrob::Node::nodeMode mode)
     {
@@ -369,11 +370,15 @@ public:
         this->add_factor(f);
         return f->get_id();
     }
-    factor_id_t add_factor_gyro_prop(const Mat31 &gyr, const double &dt, uint_t nodeOrigin, uint_t nodeTarget, 
-        const py::EigenDRef<const Mat3> obsInvCov, bool updateNodeTarget)
+    factor_id_t add_factor_gyro_prop(const Mat31 &gyr,
+                const double &dt,
+                uint_t nodeOriginId,
+                uint_t nodeTargetId,
+                const py::EigenDRef<const Mat3> obsInvCov,
+                bool updateNodeTarget)
     {
-        auto nO = this->get_node(nodeOrigin);
-        auto nT = this->get_node(nodeTarget);
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
         std::shared_ptr<mrob::Factor> f(new mrob::FactorGyroProp(gyr,dt,nO,nT,obsInvCov,updateNodeTarget,robust_type_));
         this->add_factor(f);
         return f->get_id();
@@ -382,6 +387,21 @@ public:
     {
         auto n1 = this->get_node(nodeId);
         std::shared_ptr<mrob::Factor> f(new mrob::FactorGravityAlign(acc,grav,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gyro_bias_prop(const Mat31 &gyr,
+                const double &dt,
+                uint_t nodeOriginId,
+                uint_t nodeTargetId, 
+                uint_t nodeBiasId,
+                const py::EigenDRef<const Mat3> obsInvCov,
+                bool updateNodeTarget)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
+        auto nBias = this->get_node(nodeBiasId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGyroBiasProp(gyr,dt,nO,nT,nBias,obsInvCov,updateNodeTarget,robust_type_));
         this->add_factor(f);
         return f->get_id();
     }
@@ -639,6 +659,15 @@ void init_FGraph(py::module &m)
                     py::arg("g"),
                     py::arg("nodePoseId"),
                     py::arg("obsInvCov"))
+            .def("add_factor_gyro_bias_prop", &FGraphPy::add_factor_gyro_bias_prop,
+                    "Adds a factor observing one rotation increment, a gyroscope-like factor with bias",
+                    py::arg("gyro"),
+                    py::arg("dt"),
+                    py::arg("nodeOridingId"),
+                    py::arg("nodeTargetId"),
+                    py::arg("nodeBiasId"),
+                    py::arg("obsInvCov"),
+                    py::arg("updateNodeTarget") = false)
             ;
 
 }

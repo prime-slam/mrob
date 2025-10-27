@@ -39,15 +39,6 @@ FactorGravityAlign::FactorGravityAlign(const Mat31 &acc, const Mat31 &grav, std:
     neighbourNodes_.push_back(n1);
 }
 
-FactorGravityAlign::FactorGravityAlign(const Mat31 &acc, std::shared_ptr<Node> &n1,
-            const Mat3 &obsInf, Factor::robustFactorType robust_type):
-            Factor(3,3, robust_type), a_(Mat31::Zero()), W_(obsInf), J_(Mat3::Zero())
-{
-    // Ordering here is not a problem, the node is unique
-    g_ << 0.0, 0.0, 1.0;           // gravity default direction = [0, 0, 1]
-    neighbourNodes_.push_back(n1);
-}
-
 void FactorGravityAlign::evaluate_residuals()
 {
     // Anchor residuals as r = x - obs
