@@ -13,7 +13,7 @@
  * limitations under the License.
  *
  *
- * FactorGyroBiasProp.hpp
+ * FactorRotatedGyroBiasProp.hpp
  *
  *  Created on: Oct 25, 2025
  *      Author: Ivan Kakurin
@@ -24,38 +24,39 @@
  */
 
 
-#ifndef FACTORGYROBIASPROP_HPP_
-#define FACTORGYROBIASPROP_HPP_
- 
- 
+#ifndef FACTORROTATEDGYROBIASPROP_HPP_
+#define FACTORROTATEDGYROBIASPROP_HPP_
+
+
 #include "mrob/matrix_base.hpp"
 #include "mrob/SO3.hpp"
-#include "mrob/SE3.hpp"
 #include "mrob/factor.hpp"
- 
+
 namespace mrob{
 
 /**
-* The FactorGyroBiasProp is a vertex representing the distribution
+* The FactorRotatedGyroBiasProp is a vertex representing the distribution
 * of a nodeSO3, pretty much like an anchoring factor.
 *
 * The state is an observed orientation, coincident with the node state it is connected to.
 *
 * In particular, the residual of this factor is:
-*   r = (x - obs) = Ro * Robs((w-b)dt) * Rtarget^{-1}
+*   r = (x - obs) = Rx * Robs^{-1}
 */
 
-class FactorGyroBiasProp : public Factor
+class FactorRotatedGyroBiasProp : public Factor
 {
   public:
-    FactorGyroBiasProp(const Mat31 &gyroscope, const double &dt,
-            std::shared_ptr<Node> &nodeOrigin, 
-            std::shared_ptr<Node> &nodeTarget,
-            std::shared_ptr<Node> &nodeBias, //a R^3 vector, ie nodeLandmark3d
-            const Mat3 &obsInf, bool updateNodeTarget, 
-            Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    FactorRotatedGyroBiasProp(const Mat31 &gyroscope,
+                const double &dt,
+                std::shared_ptr<Node> &nodeOrigin, 
+                std::shared_ptr<Node> &nodeTarget,
+                std::shared_ptr<Node> &nodeBias, //a R^3 vector, ie nodeLandmark3d
+                std::shared_ptr<Node> &nodeRotation, 
+                const Mat3 &obsInf,
+                Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
 
-    ~FactorGyroBiasProp() = default;
+    ~FactorRotatedGyroBiasProp() = default;
     /**
      * Returns the chi2 error and fills the residual vector
      */
@@ -75,12 +76,11 @@ class FactorGyroBiasProp : public Factor
     double dt_;
     Mat31 bias_, gyro_;
     Mat31 r_; //and residuals
-    SO3 Robs_, Rr_;//Transformation for the observation and the residual
+    SO3 Robs_, Rr_, R_reference_;//Transformation for the observation and the residual
     Mat3 W_;//inverse of observation covariance (information matrix)
-    Mat<3,9> J_;//Jacobian
-    
-    std::vector<uint_t> jacobian_node_index_;
+    Mat<3,12> J_;//Jacobian
  
+    std::vector<uint_t> jacobian_node_index_;
  
 };
  
@@ -89,5 +89,5 @@ class FactorGyroBiasProp : public Factor
  
  
  
-#endif /* FACTORGYROBIASPROP_HPP_ */
+#endif /* FactorRotatedGyroBiasProp_HPP_ */
  

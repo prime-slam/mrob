@@ -7,6 +7,7 @@ SET(factors_headers
     mrob/factors/factor_gyro_prop.hpp
     mrob/factors/factor_gravity_align.hpp
     mrob/factors/factor_gyro_bias_prop.hpp
+    mrob/factors/factor_rotated_gyro_bias_prop.hpp
 )
 
 SET(factors_sources
@@ -15,6 +16,7 @@ SET(factors_sources
     factors/factor_gyro_prop.cpp
     factors/factor_gravity_align.cpp
     factors/factor_gyro_bias_prop.cpp
+    factors/factor_rotated_gyro_bias_prop.cpp
 )
 
 # create library
