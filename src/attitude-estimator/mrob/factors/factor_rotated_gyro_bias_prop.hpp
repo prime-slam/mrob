@@ -80,7 +80,7 @@ class FactorRotatedGyroBiasProp : public Factor
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,12> J_;//Jacobian
  
-    std::vector<uint_t> jacobian_node_index_;
+    std::vector<uint_t> order_, jacobian_node_index_;
  
 };
  

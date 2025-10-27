@@ -259,18 +259,32 @@ public:
 
 
 /**
- * factor get Jacobian  index for uno9rdered nodes (different than supposed order in the factor)
+ * factor get Jacobian index for unordered nodes (different than supposed order in the factor)
  * 
- * This function, give a vector of node id and its corresponding size
- * returns:
- *    -id_vector: the order index of the vector given;
- *    -jacobian_indexes: index position in the Jacobian matrix for each of the elements in the same order (by reference)
+ * This function, given a vector of node id and its corresponding size
+ * Input:
+ *    -id_vector: the order index of the vector given; this is the ordering criteria and the result will order from smaller to bigger Id.
+ *    -sizes_vector: size of each of the elements. This is important to allocate the exact matrix element of the different elements.
+ *
+ * Output (by reference)
+ *    -original_to_ordered_index: index position in the original list of nodes passed to the factor, and how they map to the internal storage to preserve the ordered structure.
+ *      For example, we receive the factor uses two nodes on its function header (nodeA, nodeB)
+ *      The desired way of using is to preserver this ORIGINAL order, where we always call first A (with [0]) and then B.
+ *      The ordered storage, however, does not preserve this order and it could be changed since {nodeA-id = 30, nodeB-id = 6}
+ *      So the ordered (desired) storage is that neighbouringNodes is {nodeB, nodeA}
+ *
+ *      original_to_ordered_index allos to access the original id and map it to the real (ordered) storage such that:
+ *                state_A = get_neighbour_nodes()->at(original_to_ordered_index_[0])->get_state()
+ *                state_B = get_neighbour_nodes()->at(original_to_ordered_index_[1])->get_state()
+ *    -jacobian_indexes: index position in the Jacobian matrix for each of the nodes. Same logic as with original_to_ordered_index but taking into account the sizes vector of each node.
  * 
  * This method is used to organize the different nodes in the factors and provide an ordered solution of the gradients
  * as is used in fgraph_solve
  */
-std::vector<uint_t> getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
-            const std::vector<uint_t>& sizes_vector, std::vector<uint_t>& jacobian_indexes);
+void getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+            const std::vector<uint_t>& sizes_vector,
+            std::vector<uint_t>& original_to_ordered_index,
+            std::vector<uint_t>& jacobian_indexes);
 
 }
 

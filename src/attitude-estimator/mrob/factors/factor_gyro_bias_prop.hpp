@@ -79,7 +79,7 @@ class FactorGyroBiasProp : public Factor
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,9> J_;//Jacobian
     
-    std::vector<uint_t> jacobian_node_index_;
+    std::vector<uint_t> original_to_ordered_index_, jacobian_node_index_;//data structures to handle any order of nodeIds
  
  
 };

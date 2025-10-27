@@ -58,11 +58,11 @@ FactorRotatedGyroBiasProp::FactorRotatedGyroBiasProp(const Mat31 &gyroscope, con
     std::vector<uint_t> sizes_vector = {3,3,3,3};
     
     //function from factors.hpp, for factors that have several nodes connected tha require to maintain order, mostly for the Jacobian
-    std::vector<uint_t> order = mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, jacobian_node_index_);
+    mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, order_, jacobian_node_index_);
 
     
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBias, nodeRotation};
-    for (auto i : order)
+    for (auto i : order_)
     {
         neighbourNodes_.push_back(smart_pointers_vector[i]);
     }
