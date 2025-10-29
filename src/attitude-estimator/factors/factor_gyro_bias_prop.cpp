@@ -42,6 +42,7 @@ FactorGyroBiasProp::FactorGyroBiasProp(const Mat31 &gyroscope, const double &dt,
 {
     bias_ = nodeBias->get_state();
     Robs_.exp(hat3((gyro_ - bias_) * dt_));
+    // Rbias_.exp(hat3((-bias_) * dt_));
 
     // original 0 -> Node Origin   size = 3
     // original 1 -> Node Traget   size = 3
@@ -59,9 +60,13 @@ FactorGyroBiasProp::FactorGyroBiasProp(const Mat31 &gyroscope, const double &dt,
 
     
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBias};
+    node_pos_in_ordered_list_ = std::vector<uint_t>(nodes_ids.size());
+    uint_t i_node_in_ordered_list = 0;
     for (auto i : original_to_ordered_index_)
     {
         neighbourNodes_.push_back(smart_pointers_vector[i]);
+        node_pos_in_ordered_list_[i] = i_node_in_ordered_list;
+        i_node_in_ordered_list++;
     }
 
 
@@ -81,9 +86,9 @@ void FactorGyroBiasProp::evaluate_residuals()
     // From Origin we observe Target such that: R_o * R_obs = R_t
     // Rr = Rxo * Exp((w-b)*dt) * Rxt^-1
 
-    Mat3 RxOrigin = get_neighbour_nodes()->at(original_to_ordered_index_[0])->get_state();
-    Mat3 RxTarget = get_neighbour_nodes()->at(original_to_ordered_index_[1])->get_state();
-    bias_ = get_neighbour_nodes()->at(original_to_ordered_index_[2])->get_state();
+    Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
+    Mat3 RxTarget = get_neighbour_nodes()->at(node_pos_in_ordered_list_[1])->get_state();
+    bias_ = get_neighbour_nodes()->at(node_pos_in_ordered_list_[2])->get_state();
     Robs_.exp(hat3((gyro_ - bias_) * dt_));
     Rr_ = SO3(RxOrigin) * Robs_ * SO3(RxTarget).inv();
     r_ = Rr_.ln_vee();
@@ -99,6 +104,9 @@ void FactorGyroBiasProp::evaluate_jacobians()
     left_jacobian_bias = left_jacobian_SO3((gyro_ - bias_) * dt_);
     Mat3 RxOrigin = get_neighbour_nodes()->at(original_to_ordered_index_[0])->get_state();
     J_.block<3,3>(0,jacobian_node_index_[2])= -dt_*inv_left_jacobian*RxOrigin*left_jacobian_bias;
+    // Rbias_.exp(hat3((-bias_) * dt_));
+    // left_jacobian_bias = left_jacobian_SO3((-bias_));
+    // J_.block<3,3>(0,jacobian_node_index_[2])= -dt_*RxOrigin*inv_left_jacobian*Rbias_.R()*left_jacobian_bias;
 }
 
 

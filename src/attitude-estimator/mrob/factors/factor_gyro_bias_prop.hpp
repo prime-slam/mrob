@@ -76,10 +76,11 @@ class FactorGyroBiasProp : public Factor
     Mat31 bias_, gyro_;
     Mat31 r_; //and residuals
     SO3 Robs_, Rr_;//Transformation for the observation and the residual
+    // SO3 Rbias_;
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,9> J_;//Jacobian
     
-    std::vector<uint_t> original_to_ordered_index_, jacobian_node_index_;//data structures to handle any order of nodeIds
+    std::vector<uint_t> original_to_ordered_index_, jacobian_node_index_, node_pos_in_ordered_list_;//data structures to handle any order of nodeIds
  
  
 };
