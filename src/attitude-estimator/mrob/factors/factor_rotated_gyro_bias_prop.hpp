@@ -76,11 +76,12 @@ class FactorRotatedGyroBiasProp : public Factor
     double dt_;
     Mat31 bias_, gyro_;
     Mat31 r_; //and residuals
-    SO3 Robs_, Rr_, R_reference_;//Transformation for the observation and the residual
+    SO3 Robs_, Rr_, R_reference_;//R_refence_ from gyro external refence frame to the poses (origin, target) r.f.
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,12> J_;//Jacobian
  
-    std::vector<uint_t> order_, jacobian_node_index_;
+    std::vector<uint_t> original_to_ordered_index_, jacobian_node_index_, node_pos_in_ordered_list_;//data structures to handle any order of nodeIds
+ 
  
 };
  

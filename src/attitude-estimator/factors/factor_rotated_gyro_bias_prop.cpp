@@ -58,13 +58,18 @@ FactorRotatedGyroBiasProp::FactorRotatedGyroBiasProp(const Mat31 &gyroscope, con
     std::vector<uint_t> sizes_vector = {3,3,3,3};
     
     //function from factors.hpp, for factors that have several nodes connected tha require to maintain order, mostly for the Jacobian
-    mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, order_, jacobian_node_index_);
+    mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, original_to_ordered_index_, jacobian_node_index_);
+
 
     
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBias, nodeRotation};
-    for (auto i : order_)
+    node_pos_in_ordered_list_ = std::vector<uint_t>(nodes_ids.size());
+    uint_t i_node_in_ordered_list = 0;
+    for (auto i : original_to_ordered_index_)
     {
         neighbourNodes_.push_back(smart_pointers_vector[i]);
+        node_pos_in_ordered_list_[i] = i_node_in_ordered_list;
+        i_node_in_ordered_list++;
     }
 
 }
@@ -76,10 +81,10 @@ void FactorRotatedGyroBiasProp::evaluate_residuals()
     // From Origin we observe Target such that: R_o * R_obs = R_t
     // Rr = Rxo * Exp((w-b)*dt) * Rxt^-1
 
-    Mat3 RxOrigin = get_neighbour_nodes()->at(0)->get_state();
-    Mat3 RxTarget = get_neighbour_nodes()->at(1)->get_state();
-    bias_ = get_neighbour_nodes()->at(2)->get_state();
-    Mat3 RxRotation = get_neighbour_nodes()->at(3)->get_state();
+    Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
+    Mat3 RxTarget = get_neighbour_nodes()->at(node_pos_in_ordered_list_[1])->get_state();
+    bias_ = get_neighbour_nodes()->at(node_pos_in_ordered_list_[2])->get_state();
+    Mat3 RxRotation = get_neighbour_nodes()->at(node_pos_in_ordered_list_[3])->get_state();
     R_reference_ = SO3(RxRotation);
     Robs_.exp(hat3((gyro_ - bias_) * dt_));
     Rr_ = SO3(RxOrigin) * R_reference_ * Robs_ * R_reference_.inv() *SO3(RxTarget).inv();
@@ -96,13 +101,13 @@ void FactorRotatedGyroBiasProp::evaluate_jacobians()
     
     // dr/db
     left_jacobian_bias = left_jacobian_SO3((gyro_ - bias_) * dt_);
-    Mat3 RxOrigin = get_neighbour_nodes()->at(0)->get_state();
+    Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
     Mat3 adjoint_rt_rot;
     adjoint_rt_rot = RxOrigin * R_reference_.R();
     J_.block<3,3>(0,jacobian_node_index_[2]) = -dt_*inv_left_jacobian*adjoint_rt_rot*left_jacobian_bias;
     
     // dr/dR_rot
-    J_.block<3,3>(0,jacobian_node_index_[3]) = Mat3::Zero();//TODO
+    J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * (RxOrigin * R_reference_.R() * (Mat3::Identity() - Robs_.R() * R_reference_.inv().R()));
 }
 
 
@@ -113,7 +118,7 @@ void FactorRotatedGyroBiasProp::evaluate_chi2()
 
 void FactorRotatedGyroBiasProp::print() const
 {
-    std::cout << "Printing Factor: " << id_ << ", obs= \n" << Robs_.R()
+    std::cout << "Printing Factor: " << id_ << ", obs= \n" << gyro_
             << "\n Residuals= \n" << r_
             << " \nand Information matrix\n" << W_
             << "\n Calculated Jacobian = \n" << J_

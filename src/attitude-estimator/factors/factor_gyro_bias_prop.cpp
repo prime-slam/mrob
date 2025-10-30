@@ -42,7 +42,6 @@ FactorGyroBiasProp::FactorGyroBiasProp(const Mat31 &gyroscope, const double &dt,
 {
     bias_ = nodeBias->get_state();
     Robs_.exp(hat3((gyro_ - bias_) * dt_));
-    // Rbias_.exp(hat3((-bias_) * dt_));
 
     // original 0 -> Node Origin   size = 3
     // original 1 -> Node Traget   size = 3
@@ -103,9 +102,6 @@ void FactorGyroBiasProp::evaluate_jacobians()
     left_jacobian_bias = left_jacobian_SO3((gyro_ - bias_) * dt_);
     Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
     J_.block<3,3>(0,jacobian_node_index_[2])= -dt_*inv_left_jacobian*RxOrigin*left_jacobian_bias;
-    // Rbias_.exp(hat3((-bias_) * dt_));
-    // left_jacobian_bias = left_jacobian_SO3((-bias_));
-    // J_.block<3,3>(0,jacobian_node_index_[2])= -dt_*RxOrigin*inv_left_jacobian*Rbias_.R()*left_jacobian_bias;
 }
 
 

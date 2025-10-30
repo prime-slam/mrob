@@ -76,7 +76,6 @@ class FactorGyroBiasProp : public Factor
     Mat31 bias_, gyro_;
     Mat31 r_; //and residuals
     SO3 Robs_, Rr_;//Transformation for the observation and the residual
-    // SO3 Rbias_;
     Mat3 W_;//inverse of observation covariance (information matrix)
     Mat<3,9> J_;//Jacobian
     
