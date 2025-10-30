@@ -58,7 +58,6 @@ FactorGyroBiasProp::FactorGyroBiasProp(const Mat31 &gyroscope, const double &dt,
     //function from factors.hpp, for factors that have several nodes connected tha require to maintain order, mostly for the Jacobian
     mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, original_to_ordered_index_, jacobian_node_index_);
 
-    
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBias};
     node_pos_in_ordered_list_ = std::vector<uint_t>(nodes_ids.size());
     uint_t i_node_in_ordered_list = 0;
@@ -102,7 +101,7 @@ void FactorGyroBiasProp::evaluate_jacobians()
     J_.block<3,3>(0,jacobian_node_index_[0]) = inv_left_jacobian;
     J_.block<3,3>(0,jacobian_node_index_[1]) = -inv_left_jacobian*Rr_.adj();
     left_jacobian_bias = left_jacobian_SO3((gyro_ - bias_) * dt_);
-    Mat3 RxOrigin = get_neighbour_nodes()->at(original_to_ordered_index_[0])->get_state();
+    Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
     J_.block<3,3>(0,jacobian_node_index_[2])= -dt_*inv_left_jacobian*RxOrigin*left_jacobian_bias;
     // Rbias_.exp(hat3((-bias_) * dt_));
     // left_jacobian_bias = left_jacobian_SO3((-bias_));
