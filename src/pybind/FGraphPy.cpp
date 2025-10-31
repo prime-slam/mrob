@@ -61,6 +61,8 @@
 #include "mrob/factors/factor_gravity_align.hpp"
 #include "mrob/factors/factor_gyro_bias_prop.hpp"
 #include "mrob/factors/factor_rotated_gyro_bias_prop.hpp"
+#include "mrob/factors/factor1Landmark3d.hpp"
+#include "mrob/factors/factor2Bias3d.hpp"
 
 //#include <Eigen/Geometry>
 
@@ -422,6 +424,25 @@ public:
         this->add_factor(f);
         return f->get_id();
     }
+    factor_id_t add_factor_1_landmark_3d(const Mat31 &obs,
+                uint_t nodeOriginId,
+                const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Landmark3d(obs,nO,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_2_bias_3d(const Mat31 &obs,
+                uint_t node1Id, uint_t node2Id,
+                const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(node1Id);
+        auto n2 = this->get_node(node2Id);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor2Bias3d(obs,n1,n2,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
 
 private:
     mrob::Factor::robustFactorType robust_type_;
@@ -693,6 +714,17 @@ void init_FGraph(py::module &m)
                     py::arg("nodeTargetId"),
                     py::arg("nodeBiasId"),
                     py::arg("nodeRotationId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_1_landmark_3d", &FGraphPy::add_factor_1_landmark_3d,
+                    "Regularizer for landmark",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_2_bias_3d", &FGraphPy::add_factor_2_bias_3d,
+                    "Regularizer for landmark differences",
+                    py::arg("obs"),
+                    py::arg("node1Id"),
+                    py::arg("node2Id"),
                     py::arg("obsInvCov"))
             ;
 

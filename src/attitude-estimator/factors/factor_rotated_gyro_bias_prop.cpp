@@ -100,6 +100,7 @@ void FactorRotatedGyroBiasProp::evaluate_jacobians()
     J_.block<3,3>(0,jacobian_node_index_[1]) = -inv_left_jacobian*Rr_.adj();
     
     // dr/db
+    bias_ = get_neighbour_nodes()->at(node_pos_in_ordered_list_[2])->get_state();
     left_jacobian_bias = left_jacobian_SO3((gyro_ - bias_) * dt_);
     Mat3 RxOrigin = get_neighbour_nodes()->at(node_pos_in_ordered_list_[0])->get_state();
     Mat3 adjoint_rt_rot;
@@ -107,7 +108,10 @@ void FactorRotatedGyroBiasProp::evaluate_jacobians()
     J_.block<3,3>(0,jacobian_node_index_[2]) = -dt_*inv_left_jacobian*adjoint_rt_rot*left_jacobian_bias;
     
     // dr/dR_rot
-    J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * (RxOrigin * R_reference_.R() * (Mat3::Identity() - Robs_.R() * R_reference_.inv().R()));
+    Mat3 DR = RxOrigin * R_reference_.R() * Robs_.R() * R_reference_.inv().R();
+    left_jacobian_bias = left_jacobian_SO3(SO3(DR).ln_vee());
+    J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * ( left_jacobian_bias *RxOrigin - DR);
+    //J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * RxOrigin * (Mat3::Identity() - R_reference_.R() * Robs_.R() * R_reference_.inv().R());
 }
 
 
