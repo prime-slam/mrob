@@ -47,6 +47,18 @@ ENDIF(ANDROID)
 #####################################
 # External dependencies
 #####################################
+# Use system Eigen3 instead of bundled version
+find_package(Eigen3 REQUIRED)
+message(Eigen: ${EIGEN3_INCLUDE_DIR})
+
+# Create Eigen3::Eigen target for compatibility
+if(NOT TARGET Eigen3::Eigen)
+    add_library(Eigen3::Eigen INTERFACE IMPORTED)
+    set_target_properties(Eigen3::Eigen PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${EIGEN3_INCLUDE_DIR}"
+    )
+endif()
+
 add_subdirectory(external)
 
 #####################################
