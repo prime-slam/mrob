@@ -9,6 +9,7 @@ SET(factors_headers
     mrob/factors/node3d.hpp
     mrob/factors/nodeGravity3d.hpp
     mrob/factors/factorLidarMap2PoseInterpolation.hpp
+    mrob/factors/factorLidarMap2PoseInterpolationJacobian.hpp
 )
 
 SET(factors_sources
@@ -19,6 +20,7 @@ SET(factors_sources
     factors/node3d.cpp
     factors/nodeGravity3d.cpp
     factors/factorLidarMap2PoseInterpolation.cpp
+    factors/factorLidarMap2PoseInterpolationJacobian.cpp
 )
 
 # create library

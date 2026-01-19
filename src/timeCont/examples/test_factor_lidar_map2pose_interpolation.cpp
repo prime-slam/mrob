@@ -8,15 +8,20 @@
 #include <memory>
 #include <Eigen/Dense>
 
-#include "mrob/factors/factorLidarMap2PoseInterpolation.hpp"
 #include "mrob/factors/nodePose3dVelTc.hpp"
 #include "mrob/matrix_base.hpp"
 #include "mrob/SE3.hpp"
 #include "mrob/SE3tc.hpp"
-//#include "mrob/factor_graph.hpp"
 #include "mrob/factor_graph_solve.hpp"
+#include "mrob/factors/factorLidarMap2PoseInterpolation.hpp"
+#include "mrob/factors/factorLidarMap2PoseInterpolationJacobian.hpp"
 
 using namespace mrob;
+
+
+// Select the factor type in here by uncomenting
+//using MyFactorLidar = FactorLidarMap2PoseInterpolation;
+using MyFactorLidar = FactorLidarMap2PoseInterpolationJacobian;
 
 int main() {
     std::cout << "=== FactorLidarMap2PoseInterpolation Test Program ===" << std::endl;
@@ -82,7 +87,7 @@ int main() {
         Mat4 offset_lidar_imu = Mat4::Identity();
         
         // I saw you ave to cast it anyway in FGraph example, so just define polimorphism one time at the declaration of the variable.
-        std::shared_ptr<Factor> factor = std::make_shared<FactorLidarMap2PoseInterpolation>(
+        std::shared_ptr<Factor> factor = std::make_shared<MyFactorLidar>(
             observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
         );
         
@@ -130,19 +135,19 @@ int main() {
         //to really test it works properly, I think you want to solve this graph
         observation << 1.5, 1.0, 0.0,  1.0;
         map_point << 1.5, 2.0, 0.20;
-        std::shared_ptr<Factor> factor_1 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+        std::shared_ptr<Factor> factor_1 = std::make_shared<MyFactorLidar>(
             observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
         graph.add_factor(factor_1);
         
         observation << -1.5, 1.0, 0.0,  1.0;
         map_point << -1.5, 2.0, 0.20;
-        std::shared_ptr<Factor> factor_2 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+        std::shared_ptr<Factor> factor_2 = std::make_shared<MyFactorLidar>(
             observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
         graph.add_factor(factor_2);
 
         observation << 1.5, 2.0, 0.0,  1.0;
         map_point << 1.5, 3.0, 0.20;
-        std::shared_ptr<Factor> factor_3 = std::make_shared<FactorLidarMap2PoseInterpolation>(
+        std::shared_ptr<Factor> factor_3 = std::make_shared<MyFactorLidar>(
             observation, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC);
         graph.add_factor(factor_3);
 
@@ -166,7 +171,7 @@ int main() {
             Mat41 obs_t = observation;
             obs_t(3) = t;  // Set observation time
             
-            auto factor_t = std::make_shared<FactorLidarMap2PoseInterpolation>(
+            auto factor_t = std::make_shared<MyFactorLidar>(
                 obs_t, map_point, nodeOrigin, nodeTarget, offset_lidar_imu, obsInf, Factor::robustFactorType::QUADRATIC
             );
             
