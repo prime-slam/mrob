@@ -39,7 +39,7 @@ NodeGravity3d::NodeGravity3d(const Mat31 &initial_x, Node::nodeMode mode) :
 void NodeGravity3d::update(VectRefConst &dx)
 {
     Mat31 dxf = dx;
-    // remove non-tangent compoenent to the update as (I-gg) XXX this is done in the factor
+    // remove non-tangent compoenent to the update as (I-gg) XXX this is NOT done in the factor
     state_ += dxf;
     regenerate();
 }
