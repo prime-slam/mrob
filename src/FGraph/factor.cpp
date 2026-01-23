@@ -97,33 +97,32 @@ EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
 }
 
 
-std::vector<uint_t> mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
-                    const std::vector<uint_t>& sizes_vector,
-                    std::vector<uint_t>& jacobian_indexes)
-{
-    // Create a vector of indices {0, 1, 2, ..., n-1}
-    std::vector<uint_t> indices(id_vector.size());
-    for (uint_t i = 0; i < id_vector.size(); ++i)
-    {
-        indices[i] = i;
-    }
+void mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+    const std::vector<uint_t>& sizes_vector,
+    std::vector<uint_t>& original_to_ordered_index,
+    std::vector<uint_t>& jacobian_indexes){
 
-    std::stable_sort(indices.begin(), indices.end(),
+    // Create a vector of indices {0, 1, 2, ..., n-1}
+    original_to_ordered_index.clear();
+    original_to_ordered_index = std::vector<uint_t>(id_vector.size());
+    for (uint_t i = 0; i < id_vector.size(); ++i){
+        original_to_ordered_index[i] = i;
+        }
+
+    // Sort using the id_vector values
+    std::stable_sort(original_to_ordered_index.begin(), original_to_ordered_index.end(),
         [&id_vector](uint_t a, uint_t b) {
             return id_vector[a] < id_vector[b];
         });
-
-
-    std::vector<uint_t> order(id_vector.size());
-    uint_t matrix_index = 0;
+    uint_t matrix_index = 0, i = 0;
     jacobian_indexes.clear();
     jacobian_indexes = std::vector<uint_t>(id_vector.size());
-    for (uint_t pos = 0; pos < indices.size(); ++pos)
+    for (uint_t pos : original_to_ordered_index)
     {
-        order[indices[pos]] = pos;
-        jacobian_indexes[indices[pos]] = matrix_index;
-        matrix_index += sizes_vector[pos];
+        jacobian_indexes[pos] = matrix_index; //check for the firsts elements in the orderded list and accumulated dimensions.
+        matrix_index += sizes_vector[i];
+        i++;
     }
 
-    return order;
+    return;
 }
