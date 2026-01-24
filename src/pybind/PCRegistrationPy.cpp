@@ -57,10 +57,10 @@ SE3 gicp_solve(const py::EigenDRef<const MatX> X, const py::EigenDRef<const MatX
 }
 
 SE3 weighted_solve(const py::EigenDRef<const MatX> X, const py::EigenDRef<const MatX> Y,
-        const py::EigenDRef<const MatX1> weight)
+        const py::EigenDRef<const MatX1> weight, uint_t num = 20)
 {
     SE3 res;
-    PCRegistration::weighted_point(X,Y,weight,res);
+    PCRegistration::weighted_point(X,Y,weight,res,num);
     return res;
 }
 
@@ -76,7 +76,7 @@ void init_PCRegistration(py::module &m)
 {
     m.def("arun", &arun_solve);
     m.def("gicp", &gicp_solve);
-    m.def("weighted", &weighted_solve);
+    m.def("weighted", &weighted_solve, py::arg("X"),py::arg("Y"), py::arg("weight"), py::arg("num") = 20);
     m.def("scaled_arun", &scaled_arun_solve);
 }
 

@@ -93,7 +93,7 @@ int gicp(MatRefConst X, MatRefConst Y,
  * Returns the number of iterations until convergence
  */
 int weighted_point(MatRefConst X, MatRefConst Y,
-                   VectRefConst w, SE3 &T, double tol = 1e-4);
+                   VectRefConst w, SE3 &T, uint_t num = 20, double tol = 1e-4);
 
 
 /**
