@@ -58,11 +58,11 @@ Factor2Poses3dTwistMatchingBiasGravity::Factor2Poses3dTwistMatchingBiasGravity(
     std::vector<uint_t> sizes_vector = {9,9,3,3,3};
     
     //function from factors.hpp, for factors that have so many nodes connected tha require to maintain order, mostly for the Jacobian
-    std::vector<uint_t> order = mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, jacobian_node_index_);
+    mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, order_, jacobian_node_index_);
 
     
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBiasAcc, nodeBiasGyro, nodeGravity};
-    for (auto i : order)
+    for (auto i : order_)
     {
         neighbourNodes_.push_back(smart_pointers_vector[i]);
     }
@@ -85,16 +85,16 @@ void Factor2Poses3dTwistMatchingBiasGravity::evaluate_residuals()
     // [3] -> Bias gyro     size = 3
     // [4] -> gravity       size = 3
     Mat5 state_origin;
-    state_origin = get_neighbour_nodes()->at(0)->get_state();
+    state_origin = get_neighbour_nodes()->at(order_[0])->get_state();
     SE3tc Tx_origin = SE3tc(state_origin);
-    Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
+    Mat5 state_target = get_neighbour_nodes()->at(order_[1])->get_state();
     SE3tc Tx_target_inv = SE3tc(state_target).inv();
-    delta_t_ = get_neighbour_nodes()->at(1)->get_time_stamp() - 
-               get_neighbour_nodes()->at(0)->get_time_stamp();
+    delta_t_ = get_neighbour_nodes()->at(order_[1])->get_time_stamp() - 
+               get_neighbour_nodes()->at(order_[0])->get_time_stamp();
     Mat31 bias_acc, bias_omega, gravity;
-    bias_acc = get_neighbour_nodes()->at(2)->get_state();
-    bias_omega = get_neighbour_nodes()->at(3)->get_state();
-    gravity = get_neighbour_nodes()->at(4)->get_state();
+    bias_acc = get_neighbour_nodes()->at(order_[2])->get_state();
+    bias_omega = get_neighbour_nodes()->at(order_[3])->get_state();
+    gravity = get_neighbour_nodes()->at(order_[4])->get_state();
     gravity = Tx_origin.R().transpose() * gravity; //transforming gravity in the gloabl frame, to the local frame at origin
     
     // constructor: omega, acc, dt

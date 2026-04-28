@@ -88,7 +88,7 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
 
     SE3tc T_target_inv_origin_;
 
-    std::vector<uint_t> jacobian_node_index_;
+    std::vector<uint_t> order_, jacobian_node_index_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

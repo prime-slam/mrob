@@ -172,7 +172,7 @@ void SE3vel::Exp(const Mat91& xi)
 
     result.topLeftCorner<3,3>() << tmp.R();
 
-    Mat3 jac = left_jacobian(phi);
+    Mat3 jac = left_jacobian_SO3(phi);
 
     result.block<3,1>(0,3) << jac*p;
     result.block<3,1>(0,4) << jac*v;
@@ -190,7 +190,7 @@ Mat91 SE3vel::Ln() const
 
     SO3 tmp(R);
     Mat31 log_R_vee = tmp.ln_vee();
-    Mat3 jac = inv_left_jacobian(log_R_vee);
+    Mat3 jac = inv_left_jacobian_SO3(log_R_vee);
 
     result.head(3) << log_R_vee;
     result.segment<3>(3) << jac*p;

@@ -137,6 +137,11 @@ public:
     void print(void) const;
     void print_lie(void) const;
 
+    /**
+     * Regenerate, does the following operation:
+     * R = Exp ( Ln(R) )
+     */
+    void regenerate();
 
     /**
      * @brief Generates string representation of the SO3 object
@@ -191,6 +196,9 @@ Mat41 so3_to_quat(const Eigen::Ref<const Mat3> R);
  * to a rotation matrix 3x3
  */
 Mat3 rpy_to_so3(const Eigen::Ref<const Mat31> v);
+
+Mat3 inv_left_jacobian_SO3(const Mat31 &phi);
+Mat3 left_jacobian_SO3(const Mat31 &phi);
 
 }// end namespace
 #endif /* SO3_HPP_ */

@@ -55,6 +55,15 @@
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
 
+#include "mrob/factors/nodeSO3.hpp"
+#include "mrob/factors/factor1SO3obs.hpp"
+#include "mrob/factors/factor_gyro_prop.hpp"
+#include "mrob/factors/factor_gravity_align.hpp"
+#include "mrob/factors/factor_gyro_bias_prop.hpp"
+#include "mrob/factors/factor_rotated_gyro_bias_prop.hpp"
+#include "mrob/factors/factor1Landmark3d.hpp"
+#include "mrob/factors/factor2Bias3d.hpp"
+
 //#include <Eigen/Geometry>
 
 namespace py = pybind11;
@@ -348,6 +357,93 @@ public:
         return f->get_id();
     }
 
+
+    // Factors Attitude estimator
+    
+    factor_id_t add_node_so3(const SO3 &x, mrob::Node::nodeMode mode)
+    {
+        std::shared_ptr<mrob::Node> n(new mrob::NodeSO3(x,mode));
+        this->add_node(n);
+        return n->get_id();
+    }
+    factor_id_t add_factor_1so3_obs(const SO3 &obs, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(nodeId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1SO3obs(obs,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gyro_prop(const Mat31 &gyr,
+                const double &dt,
+                uint_t nodeOriginId,
+                uint_t nodeTargetId,
+                const py::EigenDRef<const Mat3> obsInvCov,
+                bool updateNodeTarget)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGyroProp(gyr,dt,nO,nT,obsInvCov,updateNodeTarget,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gravity_align(const Mat31 &acc, const Mat31 &grav, uint_t nodeId, const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(nodeId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGravityAlign(acc,grav,n1,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_gyro_bias_prop(const Mat31 &gyr,
+                const double &dt,
+                uint_t nodeOriginId,
+                uint_t nodeTargetId, 
+                uint_t nodeBiasId,
+                const py::EigenDRef<const Mat3> obsInvCov,
+                bool updateNodeTarget)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
+        auto nBias = this->get_node(nodeBiasId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorGyroBiasProp(gyr,dt,nO,nT,nBias,obsInvCov,updateNodeTarget,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_rotated_gyro_bias_prop(const Mat31 &gyr,
+                const double &dt,
+                uint_t nodeOriginId,
+                uint_t nodeTargetId, 
+                uint_t nodeBiasId,
+                uint_t nodeRotationId,
+                const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        auto nT = this->get_node(nodeTargetId);
+        auto nBias = this->get_node(nodeBiasId);
+        auto nRot = this->get_node(nodeRotationId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorRotatedGyroBiasProp(gyr,dt,nO,nT,nBias,nRot,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_1_landmark_3d(const Mat31 &obs,
+                uint_t nodeOriginId,
+                const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto nO = this->get_node(nodeOriginId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Landmark3d(obs,nO,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+    factor_id_t add_factor_2_bias_3d(const Mat31 &obs,
+                uint_t node1Id, uint_t node2Id,
+                const py::EigenDRef<const Mat3> obsInvCov)
+    {
+        auto n1 = this->get_node(node1Id);
+        auto n2 = this->get_node(node2Id);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor2Bias3d(obs,n1,n2,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -575,6 +671,60 @@ void init_FGraph(py::module &m)
                     py::arg("nodePoint1"),
                     py::arg("nodePoint2"),
                     py::arg("camera_k"),
+                    py::arg("obsInvCov"))
+            // -----------------------------------------------------------------------------
+            // My factors
+            .def("add_node_so3", &FGraphPy::add_node_so3,
+                    "Nodes are rotations in 3D, as Lie Algebra of RBT around the Identity",
+                    py::arg("x"),
+                    py::arg("mode") = Node::nodeMode::STANDARD)
+            .def("add_factor_1so3_obs", &FGraphPy::add_factor_1so3_obs,
+                    "Adds a factor observing one rtation, a Mocap-like factor",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_gyro_prop", &FGraphPy::add_factor_gyro_prop,
+                    "Adds a factor observing one rotation increment, a gyroscope-like factor",
+                    py::arg("gyro"),
+                    py::arg("dt"),
+                    py::arg("nodeOridingId"),
+                    py::arg("nodeTargetId"),
+                    py::arg("obsInvCov"),
+                    py::arg("updateNodeTarget") = false)
+            .def("add_factor_gravity_align", &FGraphPy::add_factor_gravity_align,
+                    "Adds a factor observing one axis direction observation, a accelerometer-like factor",
+                    py::arg("acc"),
+                    py::arg("g"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_gyro_bias_prop", &FGraphPy::add_factor_gyro_bias_prop,
+                    "Adds a factor observing one rotation increment, a gyroscope-like factor with bias",
+                    py::arg("gyro"),
+                    py::arg("dt"),
+                    py::arg("nodeOridingId"),
+                    py::arg("nodeTargetId"),
+                    py::arg("nodeBiasId"),
+                    py::arg("obsInvCov"),
+                    py::arg("updateNodeTarget") = false)
+            .def("add_factor_rotated_gyro_bias_prop", &FGraphPy::add_factor_rotated_gyro_bias_prop,
+                    "Adds a factor observing one rotation increment, a gyroscope-like factor with bias plus a rotation to the IMU fram from the poses",
+                    py::arg("gyro"),
+                    py::arg("dt"),
+                    py::arg("nodeOridingId"),
+                    py::arg("nodeTargetId"),
+                    py::arg("nodeBiasId"),
+                    py::arg("nodeRotationId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_1_landmark_3d", &FGraphPy::add_factor_1_landmark_3d,
+                    "Regularizer for landmark",
+                    py::arg("obs"),
+                    py::arg("nodePoseId"),
+                    py::arg("obsInvCov"))
+            .def("add_factor_2_bias_3d", &FGraphPy::add_factor_2_bias_3d,
+                    "Regularizer for landmark differences",
+                    py::arg("obs"),
+                    py::arg("node1Id"),
+                    py::arg("node2Id"),
                     py::arg("obsInvCov"))
             ;
 

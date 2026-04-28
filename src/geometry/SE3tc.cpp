@@ -152,7 +152,7 @@ void SE3tc::Exp(const Mat101& xi)
     result.topLeftCorner<3,3>() << tmp.R();
 
     Mat3 integ1;
-    integ1 << left_jacobian(phi);
+    integ1 << left_jacobian_SO3(phi);
     result.block<3,1>(0,3) << integ1*pos + left_jacobian_2_so3(phi)*vel*t;
     result.block<3,1>(0,4) << integ1*vel;
     
@@ -172,7 +172,7 @@ Mat101 SE3tc::Ln() const
     
     SO3 tmp(R);
     Mat31 phi = tmp.ln_vee();
-    Mat3 inv_int_1 = inv_left_jacobian(phi);
+    Mat3 inv_int_1 = inv_left_jacobian_SO3(phi);
     Mat3 int_2 = left_jacobian_2_so3(phi);
 
     result.head(3) << phi;
@@ -328,7 +328,7 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
 
     // Diagonal block, corresponding to the inverse left Jacobian of the rotation
     Mat3 inverse_J_R;
-    inverse_J_R = mrob::inv_left_jacobian(theta);
+    inverse_J_R = mrob::inv_left_jacobian_SO3(theta);
     result.block<3,3>(0,0) = inverse_J_R;
     result.block<3,3>(3,3) = inverse_J_R;
     result.block<3,3>(6,6) = inverse_J_R;

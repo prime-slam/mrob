@@ -29,6 +29,7 @@ target_link_libraries(pybind PRIVATE
     plane-surfaces 
     visual
     FGraphTime
+    Attitude
 )
 
 file(REMOVE_RECURSE ${PYTHON_BINARY_DIR})
