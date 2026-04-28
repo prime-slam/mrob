@@ -110,8 +110,8 @@ void FactorRotatedGyroBiasProp::evaluate_jacobians()
     // dr/dR_rot
     Mat3 DR = RxOrigin * R_reference_.R() * Robs_.R() * R_reference_.inv().R();
     left_jacobian_bias = left_jacobian_SO3(SO3(DR).ln_vee());
-    J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * ( left_jacobian_bias *RxOrigin - DR);
-    //J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * RxOrigin * (Mat3::Identity() - R_reference_.R() * Robs_.R() * R_reference_.inv().R());
+    // J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * ( left_jacobian_bias *RxOrigin - DR);
+    J_.block<3,3>(0,jacobian_node_index_[3]) = inv_left_jacobian * RxOrigin * (Mat3::Identity() - R_reference_.R() * Robs_.R() * R_reference_.inv().R());
 }
 
 

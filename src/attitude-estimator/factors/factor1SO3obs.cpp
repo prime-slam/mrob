@@ -57,6 +57,7 @@ void Factor1SO3obs::evaluate_jacobians()
     // J = d/dxi ln(T X-1 exp(-xi) (T X-1)-1)= - Adj_{T X-1} = - Adj(Tr)
     // J = d/dxi ln(exp(xi)X T-1  (T X-1)-1)= I
     J_ = Mat3::Identity();
+    // J_ = inv_left_jacobian_SO3(r_)*Rr_.adj();
 }
 
 void Factor1SO3obs::evaluate_chi2()
