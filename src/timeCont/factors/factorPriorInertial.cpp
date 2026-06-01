@@ -44,7 +44,7 @@ FactorPriorInertial::FactorPriorInertial(const Mat5 &observationPoseTarget,
     obs_bias_acc_= obsBias.segment<3>(3);
     obs_gravity_ = obsBias.tail(3);
     Tobs_target_inv_ = SE3tc(observationPoseTarget).inv();
-    // Ordering here MUST be the same. TODO handle any order.
+    // Ordering here MUST be the same. It means Pose Target.id < bias gyro.id < bias acc.id < gravity.id
     // [0] Pose Target
     // [1] bias gyro
     // [2] bias acc

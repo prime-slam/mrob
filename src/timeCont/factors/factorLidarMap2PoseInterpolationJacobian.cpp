@@ -83,6 +83,7 @@ void FactorLidarMap2PoseInterpolationJacobian::evaluate_jacobians()
     inverse_jacobian = inv_right_jacobian_tc(xi_target_inv_origin_);
     Mat9 clip_inverse_jacobian;
     clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
+    // This is approximating the left jacobian to be identity on the interpolation TODO
     J_.block<3,9>(0,9) = J_.block<3,9>(0,9) * clip_inverse_jacobian;
 }
 

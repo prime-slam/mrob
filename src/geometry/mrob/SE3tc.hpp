@@ -132,6 +132,12 @@ class SE3tc{
     // Inverse Right Jacobian of the SE3tc
     Mat<10,10> inv_right_jacobian_tc(const Mat101 &xi);
 
+    // Left Jacobian of the SE3tc
+    Mat<10,10> left_jacobian_tc(const Mat101 &xi);
+
+    // Right Jacobian of the SE3tc
+    Mat<10,10> right_jacobian_tc(const Mat101 &xi);
+
 }// end namespace
 
 
