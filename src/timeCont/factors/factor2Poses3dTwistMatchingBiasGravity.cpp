@@ -29,7 +29,6 @@
 
 using namespace mrob;
 
-
 Factor2Poses3dTwistMatchingBiasGravity::Factor2Poses3dTwistMatchingBiasGravity(
         const Mat61 &observation, 
         std::shared_ptr<Node> &nodeOrigin,
@@ -58,43 +57,50 @@ Factor2Poses3dTwistMatchingBiasGravity::Factor2Poses3dTwistMatchingBiasGravity(
     std::vector<uint_t> sizes_vector = {9,9,3,3,3};
     
     //function from factors.hpp, for factors that have so many nodes connected tha require to maintain order, mostly for the Jacobian
-    std::vector<uint_t> order = mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, jacobian_node_index_);
+    std::vector<uint_t> original_to_ordered_index;
+    mrob::getJacobianIndexUnorderedNodes(nodes_ids, sizes_vector, original_to_ordered_index, jacobian_node_index_);
 
-    
+    original_to_sorted_index_.resize(5);
+    for (uint_t sorted_pos = 0; sorted_pos < original_to_ordered_index.size(); ++sorted_pos)
+    {
+        uint_t original_pos = original_to_ordered_index[sorted_pos];
+        original_to_sorted_index_[original_pos] = sorted_pos;
+    }
     std::vector<std::shared_ptr<Node> >  smart_pointers_vector = {nodeOrigin, nodeTarget, nodeBiasAcc, nodeBiasGyro, nodeGravity};
-    for (auto i : order)
+    for (auto i : original_to_ordered_index)
     {
         neighbourNodes_.push_back(smart_pointers_vector[i]);
     }
-
-    for(auto  node : neighbourNodes_ )
-    {
-        std::cout << "node in order: " << node->get_id() << std::endl;
-    }
-
 }
 
 
 
 void Factor2Poses3dTwistMatchingBiasGravity::evaluate_residuals()
 {
-    // From Origin we observe 
+    // Nodes are stored in sorted order by ID in neighbourNodes_
+    // Use original_to_sorted_index_ to map from original position to sorted position:
     // [0] -> Node Origin   size = 9
-    // [1] -> Node Traget   size = 9
+    // [1] -> Node Target   size = 9
     // [2] -> Bias Acc      size = 3
     // [3] -> Bias gyro     size = 3
     // [4] -> gravity       size = 3
-    Mat5 state_origin;
-    state_origin = get_neighbour_nodes()->at(0)->get_state();
+    uint_t idx_origin = original_to_sorted_index_[0];
+    uint_t idx_target = original_to_sorted_index_[1];
+    uint_t idx_bias_acc = original_to_sorted_index_[2];
+    uint_t idx_bias_gyro = original_to_sorted_index_[3];
+    uint_t idx_gravity = original_to_sorted_index_[4];
+
+    Mat5 state_origin; 
+    state_origin = get_neighbour_nodes()->at(idx_origin)->get_state();
     SE3tc Tx_origin = SE3tc(state_origin);
-    Mat5 state_target = get_neighbour_nodes()->at(1)->get_state();
+    Mat5 state_target = get_neighbour_nodes()->at(idx_target)->get_state();
     SE3tc Tx_target_inv = SE3tc(state_target).inv();
-    delta_t_ = get_neighbour_nodes()->at(1)->get_time_stamp() - 
-               get_neighbour_nodes()->at(0)->get_time_stamp();
+    delta_t_ = get_neighbour_nodes()->at(idx_target)->get_time_stamp() - 
+            get_neighbour_nodes()->at(idx_origin)->get_time_stamp();
     Mat31 bias_acc, bias_omega, gravity;
-    bias_acc = get_neighbour_nodes()->at(2)->get_state();
-    bias_omega = get_neighbour_nodes()->at(3)->get_state();
-    gravity = get_neighbour_nodes()->at(4)->get_state();
+    bias_acc = get_neighbour_nodes()->at(idx_bias_acc)->get_state();
+    bias_omega = get_neighbour_nodes()->at(idx_bias_gyro)->get_state();
+    gravity = get_neighbour_nodes()->at(idx_gravity)->get_state();
     gravity = Tx_origin.R().transpose() * gravity; //transforming gravity in the gloabl frame, to the local frame at origin
     
     // constructor: omega, acc, dt
@@ -109,18 +115,23 @@ void Factor2Poses3dTwistMatchingBiasGravity::evaluate_residuals()
 void Factor2Poses3dTwistMatchingBiasGravity::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
+    // jacobian_node_index_[i] maps from original position i to jacobian column:
+    
     Mat<10,10> inverse_jacobian;
     xi_target_inv_origin_ << T_target_inv_origin_.Ln();
     inverse_jacobian = inv_left_jacobian_tc(xi_target_inv_origin_);
     Mat9 clip_inverse_jacobian;
     clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
+    //Origin (9x9 block)
     J_.block<9,9>(0,jacobian_node_index_[0]) =  clip_inverse_jacobian * T_target_inv_origin_.adj_vel();//TODO needs gravity
+    //Target (9x9 block)
     J_.block<9,9>(0,jacobian_node_index_[1]) =  -clip_inverse_jacobian;
+    //BiasAcc (9x3 block)
     J_.block<9,3>(0,jacobian_node_index_[2]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0]);
+    //BiasGyro (9x3 block)
     J_.block<9,3>(0,jacobian_node_index_[3]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0] + 6);
-    //same gradient with 3d unconstrained gravity. Most likely grvity will be an anchor factor or we update its node and this gradient...
+    // Gravity (9x3 block)
     J_.block<9,3>(0,jacobian_node_index_[4]) = -delta_t_ * J_.block<9,3>(0,jacobian_node_index_[0] + 6);
-    
 
 }
 
@@ -131,12 +142,12 @@ void Factor2Poses3dTwistMatchingBiasGravity::evaluate_chi2()
 void Factor2Poses3dTwistMatchingBiasGravity::print() const
 {
     std::cout << "Printing Factor: " << id_ << ", obs= \n" << obs_
-              << "\n Residuals= \n" << r_
-              << " \nand Information matrix\n" << W_
-              << "\n Calculated Jacobian = \n" << J_
-              << "\n Chi2 error = " << chi2_
-              << " and neighbour Node ids: " << neighbourNodes_[0]->get_id()
-              << ", " << neighbourNodes_[1]->get_id()
-              << std::endl;
+            << "\n Residuals= \n" << r_
+            << " \nand Information matrix\n" << W_
+            << "\n Calculated Jacobian = \n" << J_
+            << "\n Chi2 error = " << chi2_
+            << " and neighbour Node ids: " << neighbourNodes_[0]->get_id()
+            << ", " << neighbourNodes_[1]->get_id()
+            << std::endl;
 }
 

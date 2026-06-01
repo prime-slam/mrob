@@ -89,6 +89,9 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
     SE3tc T_target_inv_origin_;
 
     std::vector<uint_t> jacobian_node_index_;
+    // Map from original node position ([origin,target,bias_acc,bias_gyro,gravity])
+    // to the sorted position inside neighbourNodes_ (sorted by node id).
+    std::vector<uint_t> original_to_sorted_index_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

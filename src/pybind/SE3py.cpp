@@ -313,5 +313,6 @@ void init_geometry(py::module &m) {
         .def("__str__", &SE3tc::toString, "Generates string representation of the SE3vel object for print() output")
         .def("__repr__", &SE3tc::toString, "Generates string representation of the SE3vel object for console output");
     m.def("inv_left_jacobian_tc", &mrob::inv_left_jacobian_tc, "Returns the inverse left Jacobian from the 10-vector xi = [phi, pho, v, t]", py::return_value_policy::copy);
+    m.def("inv_right_jacobian_tc", &mrob::inv_right_jacobian_tc, "Returns the inverse right Jacobian from the 10-vector xi = [phi, pho, v, t]", py::return_value_policy::copy);
 }
 

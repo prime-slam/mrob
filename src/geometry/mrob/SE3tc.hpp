@@ -82,7 +82,7 @@ class SE3tc{
         Mat31 v() const;
         Mat3 R() const;
         Mat4 T_SE3() const;
-        Mat5 T() const;
+        const Eigen::Ref<const Mat5> T() const;
         matData_t time() const;
         Mat<3,5> T_compact() const;
 
@@ -129,6 +129,14 @@ class SE3tc{
     // Inverse Left Jacobian of the SE3tc
     Mat<10,10> inv_left_jacobian_tc(const Mat101 &xi);
 
+    // Inverse Right Jacobian of the SE3tc
+    Mat<10,10> inv_right_jacobian_tc(const Mat101 &xi);
+
+    // Left Jacobian of the SE3tc
+    Mat<10,10> left_jacobian_tc(const Mat101 &xi);
+
+    // Right Jacobian of the SE3tc
+    Mat<10,10> right_jacobian_tc(const Mat101 &xi);
 
 }// end namespace
 

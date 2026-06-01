@@ -13,56 +13,49 @@
  * limitations under the License.
  *
  *
- * nodePose3dVelTc.hpp
+ * nodeGravity3d.hpp
  *
- *  Created on: Sept 13, 2024
+ *  Created on: July 31, 2025
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab, Skoltech 
  */
 
-#ifndef NODEPOSE3VELDTC_HPP_
-#define NODEPOSE3VELDTC_HPP_
+#ifndef NODEGRAVITY3D_HPP_
+#define NODEGRAVITY3D_HPP_
 
 #include "mrob/matrix_base.hpp"
-#include "mrob/SE3tc.hpp" //requires including and linking SE3 library
 #include "mrob/node.hpp"
 
 namespace mrob{
 
-class NodePose3dVelTc : public Node
+class NodeGravity3d : public Node
 {
   public:
     /**
      * For initialization, requires an initial estimation of the state.
-     * For 3D poses we use a transformation matrix 4x4
-     * 
-     * Note that the dimensionality of this node is 6, that is the DOF
      */
-    NodePose3dVelTc(const Mat5 &initial_x, Node::nodeMode mode = STANDARD);
-    /**
-     * Initialization directly on SE3 a matrix
-     */
-    NodePose3dVelTc(const SE3tc &initial_x, Node::nodeMode mode = STANDARD);
-    ~NodePose3dVelTc() = default;
-    /**
-     * Left update operation corresponds to
-     * T'=exp(dxi^)*T, time of the update set to zero.
-     * x'=vee(ln(T'))
-     */
+    NodeGravity3d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
+    //NodePose3d(const SE3 &initial_T);
+    ~NodeGravity3d() = default;
+
     void update(VectRefConst &dx) override;
     void update_from_auxiliary(VectRefConst &dx) override;
     void set_state(MatRefConst &x) override;
     void set_auxiliary_state(MatRefConst &x) override;
-    MatRefConst get_state() const override {return state_.T();};
-    MatRefConst get_auxiliary_state() const override {return auxiliaryState_.T();};
+    MatRefConst get_state() const override {return state_;}
+    MatRefConst get_auxiliary_state() const override {return auxiliaryState_;}
     void print() const override;
-    Mat5 get_state_test() const {return state_.T();};
-    void set_time_stamp(double t) override;
 
   protected:
-    SE3tc state_;
-    SE3tc auxiliaryState_; //an auxiliary vector for undoing updates
+    Mat31 state_;
+    Mat31 auxiliaryState_;
+
+    //new function to ensure the gravity vector stays in the magnitude 9.8
+    void regenerate(void);
+
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
 
 
 };
@@ -71,4 +64,4 @@ class NodePose3dVelTc : public Node
 }
 
 
-#endif /* NODEPOSE3D_HPP_ */
+#endif /* NodeGravity3d_HPP_ */
