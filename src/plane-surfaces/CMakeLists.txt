@@ -10,7 +10,7 @@ SET(sources
     utils_lie_differentiation.cpp
     factors/nodePlane4d.cpp
     factors/factor1Pose1Plane4d.cpp
-    factors/factor1PosePoint2Plane4d.cpp
+    factors/factor1LandmarkPoint2Plane4d.cpp
     factors/PiFactorPlane.cpp
     factors/BaregEFPlane.cpp
     factors/EigenFactorPlaneBase.cpp
@@ -30,7 +30,7 @@ SET(headers
     mrob/estimate_plane.hpp
     mrob/utils_lie_differentiation.hpp
     mrob/factors/nodePlane4d.hpp
-    mrob/factors/factor1PosePoint2Plane4d.hpp
+    mrob/factors/factor1LandmarkPoint2Plane4d.hpp
     mrob/factors/factor1Pose1plane4d.hpp
     mrob/factors/PiFactorPlane.hpp
     mrob/factors/BaregEFPlane.hpp

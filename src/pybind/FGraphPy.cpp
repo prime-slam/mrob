@@ -43,7 +43,7 @@
 #include "mrob/factors/factor1PosePoint2Point.hpp"
 
 #include "mrob/factors/factor1Pose1Plane4d.hpp"
-#include "mrob/factors/factor1PosePoint2Plane4d.hpp"
+#include "mrob/factors/factor1LandmarkPoint2Plane4d.hpp"
 #include "mrob/factors/nodePlane4d.hpp"
 #include "mrob/factors/BaregEFPlane.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
@@ -235,12 +235,12 @@ public:
         return f->get_id();
     }
 
-    factor_id_t add_factor_1pose_point2plane_4d(const py::EigenDRef<const Mat31> z_point_x,
-                const py::EigenDRef<const Mat41> z_plane, factor_id_t nodePoseId,
-                const py::EigenDRef<const Mat1> obsInf)
+    factor_id_t add_factor_1landmark_point2plane_4d(factor_id_t nodeLandmarkId,
+                factor_id_t planeEigenId, const py::EigenDRef<const Mat1> obsInf)
     {
-        auto n1 = this->get_node(nodePoseId);
-        std::shared_ptr<mrob::Factor> f(new mrob::Factor1PosePoint2Plane4d(z_point_x, z_plane, n1, obsInf, robust_type_));
+        auto n1 = this->get_node(nodeLandmarkId);
+        auto ef = this->get_eigen_factor(planeEigenId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1LandmarkPoint2Plane4d(n1, ef, obsInf, robust_type_));
         this->add_factor(f);
         return f->get_id();
     }
@@ -541,11 +541,10 @@ void init_FGraph(py::module &m)
                             py::arg("nodePoseId"),
                             py::arg("nodeLandmarkId"),
                             py::arg("obsInvCov"))
-            .def("add_factor_1pose_point2plane_4d", &FGraphPy::add_factor_1pose_point2plane_4d,
-                            "Factor constraining a local 3D point to lie on a world-frame homogeneous plane",
-                            py::arg("z_point_x"),
-                            py::arg("z_plane"),
-                            py::arg("nodePoseId"),
+            .def("add_factor_1landmark_point2plane_4d", &FGraphPy::add_factor_1landmark_point2plane_4d,
+                            "Factor constraining a 3D landmark point to lie on the plane estimated by an Eigen Factor",
+                            py::arg("nodeLandmarkId"),
+                            py::arg("planeEigenId"),
                             py::arg("obsInf"))
             // pi-factor, a variant of the EF estimating explicitly the plane 4d
             .def("add_pi_factor_plane_4d", &FGraphPy::add_pi_factor_plane_4d,
