@@ -122,9 +122,9 @@ void Factor2Poses3d_diff::print() const
               << std::endl;
 }
 
-void mrob::Factor2Poses3d_diff::evaluate_dr_dz()
+void Factor2Poses3d_diff::evaluate_dr_dz()
 {
     Mat4 TxOrigin = get_neighbour_nodes()->at(0)->get_state();
     SE3 Tx = SE3(TxOrigin);
-    dr_dz_ = Tx.adj();
+    dr_dz_ =  inv_left_jacobian_SE3(Tr_.ln_vee()) * Tx.adj();
 }
