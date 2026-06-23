@@ -47,6 +47,9 @@ ENDIF(ANDROID)
 #####################################
 # External dependencies
 #####################################
+#set(PYBIND11_FINDPYTHON ON)
+#set(PYBIND11_FINDPYTHON ON CACHE BOOL "" FORCE)
+set(PYBIND11_FINDPYTHON NEW)
 add_subdirectory(external)
 
 #####################################
