@@ -104,10 +104,11 @@ print('solution drawn')
 print_2d_graph(graph)
 
 
-if 0:
+if 1:
     # Information matrix
     import matplotlib.pyplot as plt
-    L = graph.get_information_matrix()
+    #L = graph.get_information_matrix()
+    L = graph.get_adjacency_matrix()
     plt.spy(L, marker='o', markersize=5)
     plt.title('Information matrix $\Lambda$')
     plt.show()
@@ -119,7 +120,7 @@ if 0:
 
 # alternative use Gauss-Newton
 if 0:
-    graph.solve(mrob.fgraph.GN)
+    graph.solve(mrob.GN)
     print('Iter 0 chi2 = ', graph.chi2() )
     graph.solve(mrob.GN)
     print('Iter 1 chi2 = ', graph.chi2() )

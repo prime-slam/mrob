@@ -1,5 +1,8 @@
 if (NOT PYTHON_EXECUTABLE)
-    message(FATAL_ERROR "PYTHON_EXECUTABLE was not found in top level file")
+    # Bridge the internal/modern path to the legacy uppercase variable your submodule expects
+    set(PYTHON_EXECUTABLE "/usr/bin/python3.8" CACHE FILEPATH "Bridge for submodule" FORCE)
+    message("PYTHON_EXECUTABLE not found, added manually CAREFUL HERE")
+    #message(FATAL_ERROR "PYTHON_EXECUTABLE was not found in top level file")
 endif ()
 
 pybind11_add_module(pybind)

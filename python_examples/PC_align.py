@@ -10,6 +10,8 @@ X =  np.random.rand(N,3)
 T = mrob.geometry.SE3(np.random.rand(6))
 Y = T.transform_array(X)
 
+Y += np.random.randn(N,3)*0.01
+
 print('X = \n', X,'\n T = \n', T.T(),'\n Y =\n', Y)
 
 

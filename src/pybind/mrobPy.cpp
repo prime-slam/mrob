@@ -24,6 +24,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/iostream.h>
+#include <pybind11/native_enum.h>
 
 
 #include "mrob/optimizer.hpp"
@@ -47,11 +48,12 @@ PYBIND11_MODULE(pybind, m) {
     py::add_ostream_redirect(m, "ostream_redirect");
 
     //TODO: deprecated. this enum are no longer used?
-    py::enum_<mrob::Optimizer::optimMethod>(m, "optimMethod")
+    py::native_enum<mrob::Optimizer::optimMethod>(m, "optimMethod", "enum.Enum")
         .value("NEWTON_RAPHSON", mrob::Optimizer::optimMethod::NEWTON_RAPHSON)
         .value("LEVENBERG_MARQUARDT_SPHER", mrob::Optimizer::optimMethod::LEVENBERG_MARQUARDT_SPHER)
         .value("LEVENBERG_MARQUARDT_ELLIP", mrob::Optimizer::optimMethod::LEVENBERG_MARQUARDT_ELLIP)
         .export_values()
+        .finalize()
         ;
 
     // TODO to be deprecated this namespace

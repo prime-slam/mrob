@@ -30,6 +30,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
+#include <pybind11/native_enum.h>
 namespace py = pybind11;
 
 #include "mrob/plane.hpp"
@@ -62,7 +63,8 @@ Mat4 estimate_matrix_S(const py::EigenDRef<const MatX> pointsArray)
 
 void init_PCPlanes(py::module &m)
 {
-    py::enum_<PlaneRegistration::SolveMode>(m, "PlaneRegistration.SolveMethod")
+    py::native_enum<PlaneRegistration::SolveMode>(m, 
+                        "PlaneRegistration.SolveMethod", "enum.Enum")
         .value("INITIALIZE", PlaneRegistration::SolveMode::INITIALIZE)
         .value("GRADIENT_BENGIOS_NAG", PlaneRegistration::SolveMode::GRADIENT_BENGIOS_NAG)
         .value("GRADIENT_ALL_POSES", PlaneRegistration::SolveMode::GRADIENT_ALL_POSES)
@@ -71,6 +73,7 @@ void init_PCPlanes(py::module &m)
         .value("LM_SPHER", PlaneRegistration::SolveMode::LM_SPHER)
         .value("LM_ELLIP", PlaneRegistration::SolveMode::LM_ELLIP)
         .export_values()
+        .finalize()
         ;
     // This class creates a synthetic testing
     py::class_<CreatePoints>(m,"CreatePoints")

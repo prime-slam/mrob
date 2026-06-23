@@ -24,6 +24,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
+#include <pybind11/native_enum.h>
 
 
 #include "mrob/factor_graph_solve.hpp"
@@ -354,25 +355,32 @@ private:
 
 void init_FGraph(py::module &m)
 {
-    py::enum_<FGraphSolve::optimMethod>(m, "FGraph.optimMethod")
+    py::native_enum<FGraphSolve::optimMethod>(m, 
+                        "FGraph.optimMethod",
+                        "enum.Enum")
         .value("GN", FGraphSolve::optimMethod::GN)
         .value("LM", FGraphSolve::optimMethod::LM)
         .value("LM_ELLIPS", FGraphSolve::optimMethod::LM_ELLIPS)
         .export_values()
+        .finalize()
         ;
-    py::enum_<Factor::robustFactorType>(m, "FGraph.robustFactorType")
+    py::native_enum<Factor::robustFactorType>(m, 
+                    "FGraph.robustFactorType",
+                    "enum.Enum")
         .value("QUADRATIC", Factor::robustFactorType::QUADRATIC)
         .value("CAUCHY", Factor::robustFactorType::CAUCHY)
         .value("HUBER", Factor::robustFactorType::HUBER)
         .value("MCCLURE", Factor::robustFactorType::MCCLURE)
         .value("RANSAC", Factor::robustFactorType::RANSAC)
         .export_values()
+        .finalize()
         ;
-    py::enum_<Node::nodeMode>(m, "FGraph.nodeMode")
+    py::native_enum<Node::nodeMode>(m, "FGraph.nodeMode", "enum.Enum")
     .value("NODE_STANDARD", Node::nodeMode::STANDARD)
     .value("NODE_ANCHOR", Node::nodeMode::ANCHOR)
     .value("NODE_SCHUR_MARGI", Node::nodeMode::SCHUR_MARGI)
     .export_values()
+    .finalize()
     ;
     // Fgraph class adding factors and providing method to solve the inference problem.
     py::class_<FGraphPy> (m,"FGraph")
