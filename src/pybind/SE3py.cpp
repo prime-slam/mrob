@@ -103,7 +103,7 @@ void init_geometry(py::module &m) {
         .def("__mul__", &SE3::operator*, py::is_operator())
         .def("__str__", &SE3::toString, "Generates string representation of the SE3 object for print() output")
         .def("__repr__", &SE3::toString, "Generates string representation of the SE3 object for console output");
-
+    m.def("inv_left_jacobian_SE3", &mrob::inv_left_jacobian_SE3, "Returns the inverse left Jacobian from the 6-vector xi = [phi, pho]", py::return_value_policy::copy);
     m.def("isSE3", &mrob::isSE3, "Returns True is the matrix is a valid transformation and False if not");
     
     py::class_<SO3>(m, "SO3")

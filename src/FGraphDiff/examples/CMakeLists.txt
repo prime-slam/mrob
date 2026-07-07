@@ -1,0 +1,2 @@
+ADD_EXECUTABLE(example_FGraphDiff_2d_example  example_solver_2d.cpp)
+TARGET_LINK_LIBRARIES(example_FGraphDiff_2d_example FGraphDiff FGraph)

@@ -1,5 +1,6 @@
 # Pre-requisites about cmake itself
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+MESSAGE("Cmake version:  " ${CMAKE_VERSION})
 
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0005 NEW) 
