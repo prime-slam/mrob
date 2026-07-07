@@ -43,11 +43,15 @@ Factor2Poses3d_diff::Factor2Poses3d_diff(const Mat4 &observation, std::shared_pt
     }
     else
     {
-        neighbourNodes_.push_back(nodeTarget);
-        neighbourNodes_.push_back(nodeOrigin);
+        //neighbourNodes_.push_back(nodeTarget);
+        //neighbourNodes_.push_back(nodeOrigin);
 
         // inverse observations to correctly modify this
-        Tobs_.inv();
+        //Tobs_.inv();
+        
+        //to Alexey: I have removed this reverse option becasue  If reversed, this affect the gradient of d/dz and it requires
+        // a minus sign and the adjoint is different... 
+        assert(0 && "Factor2Poses3d_diff::Factor2Poses3d_diff: Order must be preserved for this factor.");
     }
     if (updateNodeTarget)
     {
@@ -69,12 +73,8 @@ Factor2Poses3d_diff::Factor2Poses3d_diff(const SE3 &observation, std::shared_ptr
         neighbourNodes_.push_back(nodeTarget);
     }
     else
-    {
-        neighbourNodes_.push_back(nodeTarget);
-        neighbourNodes_.push_back(nodeOrigin);
-
-        // inverse observations to correctly modify this
-        Tobs_.inv();
+    {   
+        assert(0 && "Factor2Poses3d_diff::Factor2Poses3d_diff: Order must be preserved for this factor.");
     }
     if (updateNodeTarget)
     {
@@ -102,8 +102,10 @@ void Factor2Poses3d_diff::evaluate_residuals()
 void Factor2Poses3d_diff::evaluate_jacobians()
 {
     // it assumes you already have evaluated residuals
-    J_.topLeftCorner<6,6>() = Mat6::Identity();
-    J_.topRightCorner<6,6>() = -Tr_.adj();
+    Mat6 inv_left_jacobian;
+    inv_left_jacobian = inv_left_jacobian_SE3(r_);
+    J_.topLeftCorner<6,6>() = inv_left_jacobian;
+    J_.topRightCorner<6,6>() = -inv_left_jacobian*Tr_.adj();
 }
 
 void Factor2Poses3d_diff::evaluate_chi2()
@@ -126,5 +128,5 @@ void Factor2Poses3d_diff::evaluate_dr_dz()
 {
     Mat4 TxOrigin = get_neighbour_nodes()->at(0)->get_state();
     SE3 Tx = SE3(TxOrigin);
-    dr_dz_ =  inv_left_jacobian_SE3(Tr_.ln_vee()) * Tx.adj();
+    dr_dz_ =  inv_left_jacobian_SE3(r_) * Tx.adj();
 }

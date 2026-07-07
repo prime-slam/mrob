@@ -62,7 +62,9 @@ void Factor1Pose3d_diff::evaluate_jacobians()
     // Evaluate Jacobian (see document on SE3 and small perturbations)
     // J = d/dxi ln(T X-1 exp(-xi) (T X-1)-1)= - Adj_{T X-1} = - Adj(Tr)
     // J = d/dxi ln(exp(xi)X T-1  (T X-1)-1)= I
-    J_ = Mat6::Identity();
+    Mat6 inv_left_jacobian;
+    inv_left_jacobian = inv_left_jacobian_SE3(r_);
+    J_ = inv_left_jacobian;
 }
 
 void Factor1Pose3d_diff::evaluate_chi2()
@@ -83,5 +85,7 @@ void Factor1Pose3d_diff::print() const
 
 void mrob::Factor1Pose3d_diff::evaluate_dr_dz() 
 {
-    dr_dz_ = - Mat6::Identity();
+    Mat6 inv_left_jacobian;
+    inv_left_jacobian = inv_left_jacobian_SE3(r_);
+    dr_dz_ = - inv_left_jacobian * Tr_.adj();
 }
