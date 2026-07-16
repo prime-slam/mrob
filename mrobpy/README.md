@@ -30,8 +30,8 @@ You can find more usage examples in [python_examples](https://github.com/prime-s
 ## Supported platforms
 |         | macOS    | Linux         | Windows     |
 |---------|----------|---------------|-------------|
-| Version | 11+      | manylinux2014 | Windows2019 |
-| Python  | 3.7-3.10 | 3.6-3.10      | 3.6-3.10    |
+| Version | 11+      | manylinux2014 | Windows2022 |
+| Python  | 3.8-3.12 | 3.8-3.12      | 3.8-3.12    |
 
 ## License
 Apache-2.0 License

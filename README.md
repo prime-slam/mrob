@@ -42,24 +42,21 @@ You can also use MROB as a pure C++ library.
 The present library is meant to be a self-contained library. However, there are few dependencies:
 * C++'14
 * CMake
-* [Eigen](https://gitlab.com/libeigen/eigen) (included as a submodule)
-* [pybind11](https://github.com/pybind/pybind11) (included as a submodule)
-  - python3-distutils
-  - python3-dev
-* [Catch2 v2.x branch](https://github.com/catchorg/Catch2/tree/v2.x) (included as a submodule)
+* Python >= 3.8, with dev headers
+* [Eigen](https://gitlab.com/libeigen/eigen) (fetched automatically by CMake at configure time)
+* [pybind11](https://github.com/pybind/pybind11) (fetched automatically by CMake at configure time)
+* [Catch2 v2.x branch](https://github.com/catchorg/Catch2/tree/v2.x) (fetched automatically by CMake at configure time, only when `-DBUILD_TESTING=ON`)
+
+These dependencies are downloaded via CMake `FetchContent` when you configure the project, so the first configure needs network access; there are no git submodules to initialize.
 
 This is the list of required packages to install:
 
-`sudo apt install build-essential cmake python3-distutils python3-dev`
+`sudo apt install build-essential cmake python3-dev`
 
 ### Repository 
-Standard github cloning, adding the recursive term for submodules.
+Standard github cloning:
 
-`git clone --recursive https://github.com/prime-slam/mrob.git`
-
-If there was ever a submodule update (not frequently) the command to use:
-
-`git submodule update --recursive`
+`git clone https://github.com/prime-slam/mrob.git`
 
 ### Build with CMake
 ```
@@ -68,12 +65,13 @@ cmake --build build --config Release
 ```
 
 ### Build Python wheel
-You can also manually build a Python wheel
+You can also manually build a Python wheel, using [cibuildwheel](https://cibuildwheel.readthedocs.io/) as described above, or by building the bindings and then invoking Python's own build frontend:
 ```
-cmake -B build 
-cmake --build build --target build-wheel
+cmake -B build -DPYTHON_EXECUTABLE=$(which python3)
+cmake --build build --target python-package
+python -m build --wheel mrobpy/
 ```
-To build a correct redistributable wheel we recommend building them on manylinux-2014, macOS 10.15 and Windows 2019 for a variety of version of Linux, macOS and Windows respectively.
+To build correct redistributable wheels we recommend building them on manylinux2014 for Linux, and on whatever macOS/Windows versions you need to support — see the actual CI matrix in [.github/workflows/wheels.yml](https://github.com/prime-slam/mrob/tree/master/.github/workflows/wheels.yml) for the versions this project currently builds and tests against.
 
 You may also find useful pipeline presented in [tools](https://github.com/prime-slam/mrob/tree/master/tools).
 
