@@ -1,5 +1,6 @@
 [tool.cibuildwheel]
 build = "cp*"
+skip = "cp36-* cp37-*"
 archs = "auto64"
 before-build = "bash tools/unix-wheels.sh"
 build-verbosity = 1
