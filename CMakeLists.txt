@@ -51,10 +51,13 @@ ENDIF(ANDROID)
 # Python_EXECUTABLE (capital P) cache variable, not the legacy PYTHON_EXECUTABLE that this
 # project's build docs/scripts use to pin the interpreter. Bridge it here, before Python is
 # first searched for (inside external/pybind11) -- otherwise -DPYTHON_EXECUTABLE=... is
-# silently ignored and CMake auto-detects whatever "python3" happens to be first on PATH,
-# which can build the extension against the wrong Python/NumPy installation.
-if (PYTHON_EXECUTABLE AND NOT Python_EXECUTABLE)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Path to the Python interpreter")
+# silently ignored and CMake auto-detects whatever "python3" happens to be first on PATH.
+# Always FORCE-sync so reconfiguring an existing build dir with a different -DPYTHON_EXECUTABLE
+# (e.g. cibuildwheel building cp38, then cp39, then cp310... into the same build dir) actually
+# takes effect instead of being silently ignored because Python_EXECUTABLE was already cached
+# from a prior configure.
+if (PYTHON_EXECUTABLE)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Path to the Python interpreter" FORCE)
 endif ()
 set(PYBIND11_FINDPYTHON NEW)
 add_subdirectory(external)
