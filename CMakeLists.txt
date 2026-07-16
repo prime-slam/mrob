@@ -47,8 +47,15 @@ ENDIF(ANDROID)
 #####################################
 # External dependencies
 #####################################
-#set(PYBIND11_FINDPYTHON ON)
-#set(PYBIND11_FINDPYTHON ON CACHE BOOL "" FORCE)
+# pybind11 v3 defaults CMake to the modern FindPython module, which is driven by the
+# Python_EXECUTABLE (capital P) cache variable, not the legacy PYTHON_EXECUTABLE that this
+# project's build docs/scripts use to pin the interpreter. Bridge it here, before Python is
+# first searched for (inside external/pybind11) -- otherwise -DPYTHON_EXECUTABLE=... is
+# silently ignored and CMake auto-detects whatever "python3" happens to be first on PATH,
+# which can build the extension against the wrong Python/NumPy installation.
+if (PYTHON_EXECUTABLE AND NOT Python_EXECUTABLE)
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Path to the Python interpreter")
+endif ()
 set(PYBIND11_FINDPYTHON NEW)
 add_subdirectory(external)
 
