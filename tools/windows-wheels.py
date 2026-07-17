@@ -11,15 +11,20 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-import sys 
-import subprocess
 
+# Build only the Python bindings against the core prebuilt by tools/windows-core.py
+# (cibuildwheel: before-build, once per Python version). The build dir is recreated
+# from scratch each time: FindPython caches its detection per build dir, so a fresh
+# dir per interpreter is what makes multi-version builds correct by construction.
+import os
+import shutil
+import subprocess
+import sys
 
 if __name__ == "__main__":
-    python_path = sys.executable
-    build_dir = "build"
-    target_name = "python-package"
-    config_mode = "Release"
-
-    cmake_configure = subprocess.run(["cmake", "-B", build_dir, f"-DPYTHON_EXECUTABLE={python_path}"])
-    cmake_build = subprocess.run(["cmake", "--build", build_dir, "--target", target_name, "--config", config_mode])
+    shutil.rmtree("pybuild", ignore_errors=True)
+    subprocess.run(["cmake", "-B", "pybuild", "-S", os.path.join("src", "pybind"),
+                    f"-DPYTHON_EXECUTABLE={sys.executable}",
+                    f"-DMROB_CORE_BUILD_DIR={os.path.abspath('build')}"], check=True)
+    subprocess.run(["cmake", "--build", "pybuild", "--target", "python-package",
+                    "--config", "Release", "--parallel"], check=True)

@@ -45,21 +45,33 @@ ELSE(ANDROID)
 ENDIF(ANDROID)
 
 #####################################
+# Python bindings option
+#####################################
+option(BUILD_PYTHON_BINDINGS "Build the mrob Python bindings" ON)
+IF(ANDROID)
+    SET(BUILD_PYTHON_BINDINGS OFF)
+ENDIF(ANDROID)
+
+#####################################
 # External dependencies
 #####################################
-# pybind11 v3 defaults CMake to the modern FindPython module, which is driven by the
-# Python_EXECUTABLE (capital P) cache variable, not the legacy PYTHON_EXECUTABLE that this
-# project's build docs/scripts use to pin the interpreter. Bridge it here, before Python is
-# first searched for (inside external/pybind11) -- otherwise -DPYTHON_EXECUTABLE=... is
-# silently ignored and CMake auto-detects whatever "python3" happens to be first on PATH.
-# Always FORCE-sync so reconfiguring an existing build dir with a different -DPYTHON_EXECUTABLE
-# (e.g. cibuildwheel building cp38, then cp39, then cp310... into the same build dir) actually
-# takes effect instead of being silently ignored because Python_EXECUTABLE was already cached
-# from a prior configure.
-if (PYTHON_EXECUTABLE)
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Path to the Python interpreter" FORCE)
+if (BUILD_PYTHON_BINDINGS)
+    # pybind11 v3 uses CMake's modern FindPython module, driven by the Python_EXECUTABLE
+    # (capital P) variable, not the legacy PYTHON_EXECUTABLE this project's docs and
+    # scripts use to pin the interpreter. Bridge it here, before Python is first searched
+    # for (inside external/pybind11). Note: reconfiguring an existing build dir with a
+    # different interpreter is not supported (FindPython caches its detection) -- use a
+    # fresh build dir instead; the wheel scripts in tools/ already work that way.
+    if (PYTHON_EXECUTABLE)
+        if (Python_EXECUTABLE AND NOT Python_EXECUTABLE STREQUAL PYTHON_EXECUTABLE)
+            message(FATAL_ERROR "This build directory was configured for Python at '${Python_EXECUTABLE}'. "
+                    "Reconfiguring it for a different interpreter is not supported (CMake's FindPython "
+                    "caches its detection) -- use a fresh build directory instead.")
+        endif ()
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Path to the Python interpreter")
+    endif ()
+    set(PYBIND11_FINDPYTHON NEW)
 endif ()
-set(PYBIND11_FINDPYTHON NEW)
 add_subdirectory(external)
 
 #####################################

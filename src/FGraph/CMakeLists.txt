@@ -46,6 +46,7 @@ SET(factors_sources
 
 # create library
 ADD_LIBRARY(FGraph ${sources} ${factors_sources})
+TARGET_INCLUDE_DIRECTORIES(FGraph PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 TARGET_LINK_LIBRARIES(FGraph SE3 common Eigen3::Eigen)
 
 SET_TARGET_PROPERTIES(FGraph PROPERTIES

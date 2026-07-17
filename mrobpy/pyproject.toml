@@ -2,6 +2,7 @@
 build = "cp*"
 skip = "cp36-* cp37-*"
 archs = "auto64"
+before-all = "bash tools/unix-core.sh"
 before-build = "bash tools/unix-wheels.sh"
 build-verbosity = 1
 test-requires = ["pytest", "numpy"]
@@ -14,4 +15,5 @@ build = "cp*-manylinux*"
 archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.windows]
+before-all = "python tools\\windows-core.py"
 before-build = "python tools\\windows-wheels.py"

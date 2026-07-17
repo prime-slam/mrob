@@ -12,6 +12,7 @@
 .settings/
 build/
 cppbuild/
+pybuild/
 lib/
 bin/
 cmake-build*

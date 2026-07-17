@@ -42,6 +42,7 @@ SET(headers
 
 # create library
 ADD_LIBRARY(plane-surfaces ${sources} )
+TARGET_INCLUDE_DIRECTORIES(plane-surfaces PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 # linking PCregistration is only due to plane_registration, remove when not needed
 TARGET_LINK_LIBRARIES(plane-surfaces PCRegistration SE3 FGraph common)
 
