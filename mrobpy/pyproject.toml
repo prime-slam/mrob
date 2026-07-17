@@ -10,6 +10,10 @@ test-command = "pytest {package}/tests"
 
 [tool.cibuildwheel.linux]
 build = "cp*-manylinux*"
+# Wheels are tested inside the manylinux2014 container (glibc 2.17). numpy >= 2.3 ships
+# only manylinux_2_28 binaries, so pip would build numpy from source there -- slow, and
+# numpy >= 2.5 requires GCC >= 10.3 while the container has 10.2, which fails outright.
+test-requires = ["pytest", "numpy<2.3"]
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
