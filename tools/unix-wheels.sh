@@ -16,8 +16,16 @@
 set -euo pipefail
 export LC_ALL=C
 
+# Build only the Python bindings against the core prebuilt by tools/unix-core.sh
+# (cibuildwheel: before-build, once per Python version). The build dir is recreated
+# from scratch each time: FindPython caches its detection per build dir, so a fresh
+# dir per interpreter is what makes multi-version builds correct by construction.
+
 # Get Python MAJOR.MINOR version to specify Python path for pybind
 PYTHON_VERSION=$(python3 --version | grep -o 3.[0-9]*)
 
-cmake -B cppbuild -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DPYTHON_EXECUTABLE=$(which python${PYTHON_VERSION})
-cmake --build cppbuild --target python-package 
+rm -rf pybuild
+cmake -B pybuild -S src/pybind -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+      -DPYTHON_EXECUTABLE=$(which python${PYTHON_VERSION}) \
+      -DMROB_CORE_BUILD_DIR=$PWD/cppbuild
+cmake --build pybuild --target python-package --parallel "$(getconf _NPROCESSORS_ONLN)"
