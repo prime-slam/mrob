@@ -115,7 +115,7 @@ void Sim3::exp(const Mat71 &xi)
 
     // Calculate the closed form of V
     Mat3 V;
-    if (s < 1e-10)
+    if (std::abs(sigma) < 1e-10)
         V = left_jacobian(omega);
     else{
         Mat3 K = sigma * Mat3::Identity() + hat3(omega) ;
@@ -180,7 +180,7 @@ Sim3 Sim3::inv(void) const
     matData_t inv_s = 1/s/s;
     Mat3 inv_sR;
     inv_sR = inv_s*sR;
-    sR.transposeInPlace();
+    inv_sR.transposeInPlace();
     inv << inv_sR, -inv_sR * this->t(),
            0,0,0,1;
     return Sim3(inv);
@@ -191,9 +191,14 @@ Mat7 Sim3::adj() const
 {
     Mat7 res(Mat7::Zero());
     Mat3 tx = hat3( this->t() );
-    res.topLeftCorner<3,3>() << sR();
-    res.bottomRightCorner<3,3>() << sR();
-    res.bottomLeftCorner<3,3>() << tx*sR();
+    matData_t s = this->s();
+    Mat3 sR = this->sR();
+    Mat3 R = sR/s;
+    res.topLeftCorner<3,3>() << R;
+    res.block<3,3>(3,0) << tx*R;
+    res.block<3,3>(3,3) << sR;
+    res.block<3,1>(3,6) << -this->t();
+    res(6,6) = 1.0;
     return res;
 }
 
