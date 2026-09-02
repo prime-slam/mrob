@@ -33,6 +33,8 @@
 namespace mrob{
 
 /**
+ * EF Alternating, block diagonal hessian (center means for the plane estimation)
+ *
  * This is a copy of EF Plane for comparison
  * Eigen factor Plane is a vertex that complies with the Fgraph standards
  * and inherits from base EigenFactor.hpp

@@ -43,7 +43,7 @@ class NodeSim3 : public Node
     /**
      * Initialization directly on SE3 a matrix
      */
-    NodeSim3(const SE3 &initial_x, Node::nodeMode mode = STANDARD);
+    NodeSim3(const Sim3 &initial_x, Node::nodeMode mode = STANDARD);
     ~NodeSim3() = default;
     /**
      * Left update operation corresponds to

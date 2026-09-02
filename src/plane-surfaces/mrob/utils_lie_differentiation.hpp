@@ -60,6 +60,11 @@ Mat6 pi_t_x_hessian_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
 */
 Mat<6,4> pi_t_times_lie_generatives(const Mat41 &pi);
 
+// counterparts of the previous function for sim3 (dof 7)
+Mat<4,7> gradient_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
+Mat7 pi_t_x_hessian_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi);
+Mat<7,4> pi_t_times_lie_generatives_sim3(const Mat41 &pi);
+
 }
 
 

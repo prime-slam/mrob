@@ -332,7 +332,7 @@ Mat<4,7> mrob::gradient_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
     Mat<4,7> jacobian;
     Mat4 dQ;
 
-    jacobian.topLefCorner<4,6>() = gradient_Q_x_pi(Q,pi);
+    jacobian.topLeftCorner<4,6>() = gradient_Q_x_pi(Q,pi);
     // dQ / d xi(6) = [q1
     //                 q2
     //                 q3
@@ -424,4 +424,18 @@ Mat7 mrob::pi_t_x_hessian_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
     hessian(6,6) = pi.dot(dQ_x_pi);
 
     return hessian;
+}
+
+
+
+Mat<7,4> mrob::pi_t_times_lie_generatives_sim3(const Mat41 &pi)
+{
+    Mat<7,4> gradient = Mat<7,4>::Zero();
+    gradient.topLeftCorner<6,4>() = pi_t_times_lie_generatives(pi);
+
+    // iter  6  =
+    // [1. 2. 3. 0.]
+    gradient.row(6) << pi(0), pi(1), pi(2), 0;
+
+    return gradient;
 }

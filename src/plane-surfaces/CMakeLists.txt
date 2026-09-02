@@ -19,6 +19,7 @@ SET(sources
     factors/EigenFactorPlaneDense.cpp
     factors/EigenFactorPlaneDenseHomog.cpp
     factors/EigenFactorPlaneCenter2.cpp
+    factors/EigenFactorPlaneCenterSim3.cpp
 )
 
 
@@ -40,6 +41,7 @@ SET(headers
     mrob/factors/EigenFactorDense.hpp
     mrob/factors/EigenFactorDenseHomog.hpp
     mrob/factors/EigenFactorPlaneCenter2.hpp
+    mrob/factors/EigenFactorPlaneCenterSim3.hpp
 )
 
 # create library
