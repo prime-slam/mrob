@@ -5,6 +5,7 @@
 SET(sources
     factors/factorCameraProj3dPoint.cpp
     factors/factorCameraProj3dLine.cpp
+    factors/factorCameraProj3dPointSim3.cpp
     #factors/nodeCameraPinHole.cpp
 )
 
@@ -12,6 +13,7 @@ SET(sources
 SET(headers
     mrob/factors/factorCameraProj3dPoint.hpp
     mrob/factors/factorCameraProj3dLine.hpp
+    mrob/factors/factorCameraProj3dPointSim3.hpp
     #mrob/factors/nodeCameraPinHole.hpp
 )
 

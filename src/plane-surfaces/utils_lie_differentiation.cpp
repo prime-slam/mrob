@@ -325,3 +325,117 @@ Mat<6,4> mrob::pi_t_times_lie_generatives(const Mat41 &pi)
     return gradient;
 
 }
+
+
+Mat<4,7> mrob::gradient_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
+{
+    Mat<4,7> jacobian;
+    Mat4 dQ;
+
+    jacobian.topLeftCorner<4,6>() = gradient_Q_x_pi(Q,pi);
+    // dQ / d xi(6) = [q1
+    //                 q2
+    //                 q3
+    //                 0]
+    dQ.setZero();
+    dQ.row(0) << Q.row(0);
+    dQ.row(1) << Q.row(1);
+    dQ.row(2) << Q.row(2);
+    dQ += dQ.transpose().eval();
+    jacobian.col(6) = dQ*pi;
+
+    return jacobian;
+}
+
+Mat7 mrob::pi_t_x_hessian_sim3_Q_x_pi(const Mat4 &Q, const Mat41 &pi)
+{
+    Mat7 hessian = Mat7::Zero();
+    Mat41 dQ_x_pi;
+
+    hessian.topLeftCorner<6,6>() = pi_t_x_hessian_Q_x_pi(Q,pi);
+
+    // iter  0 ,  6  =
+    //[[ 0.  0.  0.  0.]
+    //[ 0.  0. -2.  0.]
+    //[ 0.  2.  0.  0.]
+    //[ 0.  0.  0.  0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(1) = -2.0*Q.row(2).dot(pi);
+    dQ_x_pi(2) = 2.0*Q.row(1).dot(pi);
+    hessian(0,6) = pi.dot(dQ_x_pi);
+
+
+    //iter  1 ,  6  =
+    //[[ 0.  0.  2.  0.]
+    //[ 0.  0.  0.  0.]
+    // [-2.  0.  0.  0.]
+    // [ 0.  0.  0.  0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(0) = 2.0*Q.row(2).dot(pi);
+    dQ_x_pi(2) = -2.0*Q.row(0).dot(pi);
+    hessian(1,6) = pi.dot(dQ_x_pi);
+
+    // iter  2 ,  6  =
+    // [[ 0. -2.  0.  0.]
+    // [ 2.  0.  0.  0.]
+    // [ 0.  0.  0.  0.]
+    // [ 0.  0.  0.  0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(0) = -2.0*Q.row(1).dot(pi);
+    dQ_x_pi(1) =  2.0*Q.row(0).dot(pi);
+    hessian(2,6) = pi.dot(dQ_x_pi);
+
+    // iter  3 ,  6  =
+    // [[0. 0. 0. 1.]
+    // [0. 0. 0. 0.]
+    // [0. 0. 0. 0.]
+    // [0. 0. 0. 0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(0) = Q.row(3).dot(pi);
+    hessian(3,6) = pi.dot(dQ_x_pi);
+
+    // iter  4 ,  6  =
+    // [[0. 0. 0. 0.]
+    // [0. 0. 0. 1.]
+    // [0. 0. 0. 0.]
+    // [0. 0. 0. 0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(1) = Q.row(3).dot(pi);
+    hessian(4,6) = pi.dot(dQ_x_pi);
+
+    // iter  5 ,  6  =
+    // [[0. 0. 0. 0.]
+    // [0. 0. 0. 0.]
+    // [0. 0. 0. 1.]
+    // [0. 0. 0. 0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(2) = Q.row(3).dot(pi);
+    hessian(5,6) = pi.dot(dQ_x_pi);
+
+    // iter  6 ,  6  =
+    // [[2. 0. 0. 0.]
+    // [0. 2. 0. 0.]
+    // [0. 0. 2. 0.]
+    // [0. 0. 0. 0.]]
+    dQ_x_pi.setZero();
+    dQ_x_pi(0) = 2.0*Q.row(0).dot(pi);
+    dQ_x_pi(1) = 2.0*Q.row(1).dot(pi);
+    dQ_x_pi(2) = 2.0*Q.row(2).dot(pi);
+    hessian(6,6) = pi.dot(dQ_x_pi);
+
+    return hessian;
+}
+
+
+
+Mat<7,4> mrob::pi_t_times_lie_generatives_sim3(const Mat41 &pi)
+{
+    Mat<7,4> gradient = Mat<7,4>::Zero();
+    gradient.topLeftCorner<6,4>() = pi_t_times_lie_generatives(pi);
+
+    // iter  6  =
+    // [1. 2. 3. 0.]
+    gradient.row(6) << pi(0), pi(1), pi(2), 0;
+
+    return gradient;
+}
