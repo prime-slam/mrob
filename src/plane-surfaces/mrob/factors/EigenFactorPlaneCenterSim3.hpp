@@ -13,17 +13,16 @@
  * limitations under the License.
  *
  *
- * EigenFactorPlaneCenter.hpp
+ * EigenFactorPlaneCenterSim3.hpp
  *
- *  Created on: Oct 7 2022
- *              Sept 12 2023
+ *  Created on: Sept 1 2026
  *      Author: Gonzalo Ferrer
  *              g.ferrer@skoltech.ru
  *              Mobile Robotics Lab.
  */
 
-#ifndef EIGENFACTORPLANECENTER_HPP_
-#define EIGENFACTORPLANECENTER_HPP_
+#ifndef EIGENFACTORPLANECENTERSIM3_HPP_
+#define EIGENFACTORPLANECENTERSIM3_HPP_
 
 
 #include "mrob/factor.hpp"
@@ -34,7 +33,7 @@ namespace mrob{
 
 /**
  * EF Alternating, block diagonal hessian (center means for the plane estimation)
- *
+ * 
  * This is a copy of EF Plane for comparison
  * Eigen factor Plane is a vertex that complies with the Fgraph standards
  * and inherits from base EigenFactor.hpp
@@ -51,16 +50,19 @@ namespace mrob{
  * but we need extra methods and variables to keep track of the neighbours
  *
  * This class assumes that matrices S = sum p*p' are calculated before since they are directly inputs
- * XXX should we store all points?
+ * 
+ * This class optimizes a trajectoy of Sim3 trajecotires, where scale of the point cloud my VARY at each pose.
+ * The class should be a exact copy of the SE3 counterpart, and only the gradients and Hessian change, since there
+ * is an extra generative matrix G_7. All formulation holds thanks to the abstraction in formulating derivatives.
  */
-class EigenFactorPlaneCenter: public EigenFactorPlaneBase{
+class EigenFactorPlaneCenterSim3: public EigenFactorPlaneBase{
 public:
     /**
      * Creates an Eigen Factor plane. The minimum requirements are 1 pose, which is not required
      * at this stage, but will be introduced when we add points/Q matrix.
      */
-    EigenFactorPlaneCenter(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
-    ~EigenFactorPlaneCenter() = default;
+    EigenFactorPlaneCenterSim3(Factor::robustFactorType robust_type = Factor::robustFactorType::QUADRATIC);
+    ~EigenFactorPlaneCenterSim3() = default;
     /**
      * Jacobians are not evaluated, just the residuals.
      * This function is calculating the current plane estimation
@@ -87,6 +89,17 @@ protected:
     Mat4 accumulatedCenterQ_;//Q matrix of accumulated values for the incremental update of the error.
     Mat41 planeEstimationUnit_;
     Mat4 Tcenter_;
+
+    /**
+     * The Jacobian of the plane error, the poses involved.
+     * Stores the map according to the nodes indexes/identifiers.
+     */
+    std::deque<Mat71, Eigen::aligned_allocator<Mat71>> J_;
+    /**
+     * Hessian matrix, dense since it connects all poses from where plane was observed.
+     * We store the block diagonal terms, according to the indexes of the nodes
+     */
+    std::deque<Mat7, Eigen::aligned_allocator<Mat7>> H_;
 
 
 };

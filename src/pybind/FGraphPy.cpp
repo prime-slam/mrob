@@ -56,6 +56,10 @@
 #include "mrob/factors/factorCameraProj3dPoint.hpp"
 #include "mrob/factors/factorCameraProj3dLine.hpp"
 
+#include "mrob/factors/nodeSim3.hpp"
+#include "mrob/factors/factorCameraProj3dPointSim3.hpp"
+#include "mrob/factors/EigenFactorPlaneCenterSim3.hpp"
+
 //#include <Eigen/Geometry>
 
 namespace py = pybind11;
@@ -359,6 +363,35 @@ public:
         return f->get_id();
     }
 
+
+    // Sim3 factors
+    // --------------------------------------------------
+    // add_node_sim3, this is the default pose for many factors, instead of pose3d
+    factor_id_t add_node_sim3(const Sim3 &x, mrob::Node::nodeMode mode)
+    {
+        std::shared_ptr<mrob::Node> n(new mrob::NodeSim3(x,mode));
+        this->add_node(n);
+        return n->get_id();
+    }
+
+    factor_id_t add_factor_camera_proj_3d_point_sim3(const py::EigenDRef<const Mat21> obs, uint_t nodePoseId,
+        uint_t nodeLandmarkId, const py::EigenDRef<const Mat41> camera_k,
+        const py::EigenDRef<const Mat2> obsInvCov)
+    {
+        auto n1 = this->get_node(nodePoseId);
+        auto n2 = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::FactorCameraProj3dPointSim3(obs,n1,n2,camera_k,obsInvCov,robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_eigen_factor_plane_alternating_sim3()
+    {
+        std::shared_ptr<mrob::EigenFactor> f(new mrob::EigenFactorPlaneCenterSim3(robust_type_));
+        this->add_eigen_factor(f);
+        return f->get_id();
+    }
+
 private:
     mrob::Factor::robustFactorType robust_type_;
 };
@@ -592,6 +625,20 @@ void init_FGraph(py::module &m)
                     py::arg("nodePoint2"),
                     py::arg("camera_k"),
                     py::arg("obsInvCov"))
+            // -----------------------------------------------------------
+            // Sim factors and nodes
+            .def("add_node_sim3", &FGraphPy::add_node_sim3,
+                "Input are scales poses in 3D",
+                py::arg("x"),
+                py::arg("mode") = Node::nodeMode::STANDARD)
+            .def("add_factor_camera_proj_3d_point_sim3", &FGraphPy::add_factor_camera_proj_3d_point_sim3,
+                "\n Factor for the reprojection error from a point in the image plane by a Sim3 camera pose",
+                py::arg("obs"),
+                py::arg("nodePoseId"),
+                py::arg("nodeLandmarkId"),
+                py::arg("camera_k"),
+                py::arg("obsInvCov"))
+            .def("add_eigen_factor_plane_alternating_sim3", &FGraphPy::add_eigen_factor_plane_alternating_sim3)
             ;
 
 }
