@@ -35,6 +35,11 @@ NodeSim3::NodeSim3(const Mat4 &initial_x, Node::nodeMode mode) :
     //assert(initial_x.cols() == 1 && "NodeSim3:: Incorrect dimension on initial state cols" );
 }
 
+NodeSim3::NodeSim3(const Sim3 &initial_x, Node::nodeMode mode) :
+        Node(7, mode), state_(initial_x), auxiliaryState_(initial_x)
+{
+}
+
 void NodeSim3::update(VectRefConst &dx)
 {
     Mat71 dxf = dx;

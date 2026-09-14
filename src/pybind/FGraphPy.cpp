@@ -44,6 +44,7 @@
 
 #include "mrob/factors/factor1Pose1Plane4d.hpp"
 #include "mrob/factors/factor1LandmarkPoint2Plane4d.hpp"
+#include "mrob/factors/factor1Pose1LandmarkPoint2PlaneSim3.hpp"
 #include "mrob/factors/nodePlane4d.hpp"
 #include "mrob/factors/BaregEFPlane.hpp"
 #include "mrob/factors/PiFactorPlane.hpp"
@@ -245,6 +246,16 @@ public:
         auto n1 = this->get_node(nodeLandmarkId);
         auto ef = this->get_eigen_factor(planeEigenId);
         std::shared_ptr<mrob::Factor> f(new mrob::Factor1LandmarkPoint2Plane4d(n1, ef, obsInf, robust_type_));
+        this->add_factor(f);
+        return f->get_id();
+    }
+
+    factor_id_t add_factor_1pose_1landmark_point2plane_sim3(const py::EigenDRef<const Mat41> obsPlaneLocal,
+                uint_t nodePoseId, uint_t nodeLandmarkId, const py::EigenDRef<const Mat1> obsInf)
+    {
+        auto n1 = this->get_node(nodePoseId);
+        auto n2 = this->get_node(nodeLandmarkId);
+        std::shared_ptr<mrob::Factor> f(new mrob::Factor1Pose1LandmarkPoint2PlaneSim3(obsPlaneLocal, n1, n2, obsInf, robust_type_));
         this->add_factor(f);
         return f->get_id();
     }
@@ -579,6 +590,13 @@ void init_FGraph(py::module &m)
                             py::arg("nodeLandmarkId"),
                             py::arg("planeEigenId"),
                             py::arg("obsInf"))
+            .def("add_factor_1pose_1landmark_point2plane_sim3", &FGraphPy::add_factor_1pose_1landmark_point2plane_sim3,
+                "Point-to-plane of a world landmark in a Sim3 camera frame. "
+                "obsPlaneLocal is [n', d]' in the camera; scale of the pose is in the Jacobian.",
+                py::arg("obsPlaneLocal"),
+                py::arg("nodePoseId"),
+                py::arg("nodeLandmarkId"),
+                py::arg("obsInf"))
             // pi-factor, a variant of the EF estimating explicitly the plane 4d
             .def("add_pi_factor_plane_4d", &FGraphPy::add_pi_factor_plane_4d,
                             "Factor observing the accumulated points of a plane(matrix S) from the current pose.",

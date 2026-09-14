@@ -83,6 +83,24 @@ void EigenFactorPlaneCenterSim3::evaluate_chi2()
     //std::cout << ", error lambda = " << planeError_ << ", error projected plane = " << chi2_ << std::endl;
 }
 
+MatRefConst EigenFactorPlaneCenterSim3::get_jacobian(mrob::factor_id_t id) const
+{
+    assert(reverseNodeIds_.count(id) && "EigenFactorPlaneCenterSim3::get_jacobian: element not found");
+    uint_t localId = reverseNodeIds_.at(id);
+    return J_.at(localId);
+}
+
+bool EigenFactorPlaneCenterSim3::get_hessian(MatRef H, mrob::factor_id_t id, mrob::factor_id_t id_j) const
+{
+    if (id != id_j)
+        return false;
+    if (reverseNodeIds_.count(id) == 0)
+        return false;
+    uint_t localId = reverseNodeIds_.at(id);
+    H = H_.at(localId);
+    return true;
+}
+
 
 void EigenFactorPlaneCenterSim3::estimate_plane()
 {

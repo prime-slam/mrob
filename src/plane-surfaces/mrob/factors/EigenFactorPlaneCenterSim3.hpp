@@ -78,6 +78,8 @@ public:
      */
     void evaluate_chi2() override;
 
+    MatRefConst get_jacobian(mrob::factor_id_t id = 0) const override;
+    bool get_hessian(MatRef H, mrob::factor_id_t id_i = 0, mrob::factor_id_t id_j = 0) const override;
 
 protected:
     /**

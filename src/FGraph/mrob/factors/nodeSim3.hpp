@@ -37,7 +37,8 @@ class NodeSim3 : public Node
      * For initialization, requires an initial estimation of the state.
      * For 3D poses we use a transformation matrix 4x4
      * 
-     * Note that the dimensionality of this node is 6, that is the DOF
+     * Note that the dimensionality of this node is 7, that is the DOF
+     * (rotation, translation, and log-scale).
      */
     NodeSim3(const Mat4 &initial_x, Node::nodeMode mode = STANDARD);
     /**

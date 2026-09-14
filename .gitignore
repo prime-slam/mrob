@@ -12,6 +12,7 @@
 .settings/
 build/
 cppbuild/
+cppbuild_py312/
 lib/
 bin/
 cmake-build*
