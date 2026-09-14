@@ -31,6 +31,7 @@
 #include "mrob/SE3cov.hpp"
 #include "mrob/SE3vel.hpp"
 #include "mrob/SE3tc.hpp"
+#include "mrob/Sim3.hpp"
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 //#include <pybind11/stl.h>
@@ -313,5 +314,47 @@ void init_geometry(py::module &m) {
         .def("__str__", &SE3tc::toString, "Generates string representation of the SE3vel object for print() output")
         .def("__repr__", &SE3tc::toString, "Generates string representation of the SE3vel object for console output");
     m.def("inv_left_jacobian_tc", &mrob::inv_left_jacobian_tc, "Returns the inverse left Jacobian from the 10-vector xi = [phi, pho, v, t]", py::return_value_policy::copy);
+
+
+    py::class_<Sim3>(m, "Sim3")
+        .def(py::init<>(),
+                "Default construct a new Sim3 object",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat4>(),
+                "Construct a new Sim3 object from a 4x4 matrix",
+                py::return_value_policy::copy)
+        .def(py::init<const Mat71 &>(),
+                "Given a vector xi in R^7, creates a tranformation with the exponential mapping. Order is [rot, tran, sigma]",
+                py::return_value_policy::copy)
+        .def(py::init<const Sim3 &>(),
+                "Copy constructor from Sim3",
+                py::return_value_policy::copy)
+        .def("t", &Sim3::t,
+                "returns translataion",
+                py::return_value_policy::copy)
+        .def("s", &Sim3::s,
+                "returns scale",
+                py::return_value_policy::copy)
+        .def("T", &Sim3::T,
+                "Outputs a 4x4 array with the transformation and velocity",
+                py::return_value_policy::copy)
+        .def("sR",&Sim3::sR,
+                "Outputs the scaled Rotation array 3x3 component of the transformation",
+                py::return_value_policy::copy)
+        .def("Ln", &Sim3::ln,
+                "Logarithm + vee operator, returns 7D coordinates of the tangent space around the identity",
+                py::return_value_policy::copy)
+        .def("adj", &Sim3::adj,
+                "Outputs the adjoint of T a 7x7 matrix",
+                py::return_value_policy::copy)
+        .def("inv", &Sim3::inv,
+                "Outputs the inverse of T",
+                py::return_value_policy::copy)
+        .def("print", &Sim3::print,
+                "Prints current state of pose.")
+        .def("__mul__", &Sim3::operator*, py::is_operator())
+        .def("__str__", &Sim3::toString, "Generates string representation of the SE3vel object for print() output")
+        .def("__repr__", &Sim3::toString, "Generates string representation of the SE3vel object for console output");
+
 }
 
