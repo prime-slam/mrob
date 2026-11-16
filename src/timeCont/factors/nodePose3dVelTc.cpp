@@ -31,11 +31,13 @@ using namespace mrob;
 NodePose3dVelTc::NodePose3dVelTc(const Mat5 &initial_x, Node::nodeMode mode) :
         Node(9,mode), state_(initial_x), auxiliaryState_(initial_x)
 {
+    set_time_stamp(initial_x(4,3)); 
 }
 
 NodePose3dVelTc::NodePose3dVelTc(const SE3tc &initial_x, Node::nodeMode mode) :
-		 Node(9, mode), state_(initial_x), auxiliaryState_(initial_x)
+		Node(9, mode), state_(initial_x), auxiliaryState_(initial_x)
 {
+        set_time_stamp(initial_x.time()); 
 }
 
 

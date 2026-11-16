@@ -34,7 +34,12 @@ namespace mrob{
 
 /**
  * factor 2 poses 3d twsit matching creates a high dimension interpolation between poses of constant omega and acceleration
- * and matches it with IMU observations.
+ * and matches it with IMU observations (window means of gyro and gravity-compensated acceleration).
+ *
+ *      r = Ln_9( (T2^{-1} T1) U ),    U = Exp( omega dt, 0, acc dt, dt )
+ *
+ * Origin must have the smaller node id (ordering is enforced in the constructor).
+ * With gyro/accelerometer biases and gravity as estimated nodes use Factor2Poses3dTwistMatchingBiasGravity.
  */
 
 class Factor2Poses3dTwistMatching : public Factor
@@ -66,7 +71,8 @@ class Factor2Poses3dTwistMatching : public Factor
     // being [0]->J_origin and [1]->J_target
     // declared here but initialized on child classes
     Mat61 obs_; // obs = [omega, acc]
-    Mat91 r_; //and residuals [omega, vel, acc]
+    Mat91 r_; //and residuals [rotation, position, velocity] (right-error, see evaluate_jacobians)
+    Mat101 xi_dT_; // Ln(dT) with dT = (T2^{-1} T1) U, kept for the Jacobians
     Mat9 W_;//inverse of observation covariance (information matrix)
     Mat<9,18> J_;//Joint Jacobian
     double delta_t_;

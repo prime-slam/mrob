@@ -94,9 +94,9 @@ Mat3 SE3tc::R() const
     return T_.topLeftCorner<3,3>();
 }
 
-Mat5 SE3tc::T(void) const
+const Eigen::Ref<const Mat5> SE3tc::T(void) const
 {
-    return this->T_;
+    return T_;
 }
 
 Mat4 SE3tc::T_SE3(void) const
@@ -415,5 +415,24 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
     return result;
 }
 
+
+Mat<10,10> mrob::inv_right_jacobian_tc(const Mat101 &xi)
+{
+    // Jr(xi) = Jl(-xi). The identity holds for ALL ten coordinates, including the time
+    // coordinate, because -xi is the logarithm of the group inverse (which has time -t).
+    return inv_left_jacobian_tc(-xi);
+}
+
+Mat<10,10> mrob::left_jacobian_tc(const Mat101 &xi)
+{
+    const Mat<10,10> inv = inv_left_jacobian_tc(xi);
+    return inv.inverse();
+}
+
+Mat<10,10> mrob::right_jacobian_tc(const Mat101 &xi)
+{
+    const Mat<10,10> inv = inv_right_jacobian_tc(xi);
+    return inv.inverse();
+}
 
 

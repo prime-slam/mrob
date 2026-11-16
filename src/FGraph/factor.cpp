@@ -22,6 +22,7 @@
  */
 
 
+#include <cmath>
 #include "mrob/factor.hpp"
 
 using namespace mrob;
@@ -89,6 +90,26 @@ matData_t Factor::evaluate_robust_weight(matData_t u, matData_t threshold)
     return robust_weight_;
 }
 
+matData_t Factor::evaluate_robust_cost(matData_t threshold) const
+{
+    const matData_t u2 = chi2_;
+    const matData_t u = std::sqrt(u2);
+    switch(robust_type_)
+    {
+        case HUBER:
+            return (u < threshold) ? u2 : 2.0*threshold*u - threshold*threshold;
+        case CAUCHY:
+            return std::log(1.0 + u2);
+        case MCCLURE:
+            return u2/(1.0 + u2);
+        case RANSAC:
+            return (u < threshold) ? u2 : threshold*threshold;
+        case QUADRATIC:
+        default:
+            return u2;
+    }
+}
+
 EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
         Factor(0,0,factor_type, potNumberNodes)
 {
@@ -97,33 +118,34 @@ EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
 }
 
 
-std::vector<uint_t> mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
-                    const std::vector<uint_t>& sizes_vector,
-                    std::vector<uint_t>& jacobian_indexes)
-{
-    // Create a vector of indices {0, 1, 2, ..., n-1}
-    std::vector<uint_t> indices(id_vector.size());
-    for (uint_t i = 0; i < id_vector.size(); ++i)
-    {
-        indices[i] = i;
-    }
+void mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+    const std::vector<uint_t>& sizes_vector,
+    std::vector<uint_t>& original_to_ordered_index,
+    std::vector<uint_t>& jacobian_indexes){
 
-    std::stable_sort(indices.begin(), indices.end(),
+    // Create a vector of indices {0, 1, 2, ..., n-1}
+    original_to_ordered_index.clear();
+    original_to_ordered_index = std::vector<uint_t>(id_vector.size());
+    for (uint_t i = 0; i < id_vector.size(); ++i){
+        original_to_ordered_index[i] = i;
+        }
+
+    // Sort using the id_vector values
+    std::stable_sort(original_to_ordered_index.begin(), original_to_ordered_index.end(),
         [&id_vector](uint_t a, uint_t b) {
             return id_vector[a] < id_vector[b];
         });
-
-
-    std::vector<uint_t> order(id_vector.size());
     uint_t matrix_index = 0;
     jacobian_indexes.clear();
     jacobian_indexes = std::vector<uint_t>(id_vector.size());
-    for (uint_t pos = 0; pos < indices.size(); ++pos)
+    for (uint_t pos : original_to_ordered_index)
     {
-        order[indices[pos]] = pos;
-        jacobian_indexes[indices[pos]] = matrix_index;
+        // Column offset of the node originally at position `pos`: accumulated dimensions of the nodes
+        // with smaller id. The dimension to accumulate is the one of THIS node (sizes_vector[pos]),
+        // not the one of the i-th original node (the two differ when sizes are not all equal).
+        jacobian_indexes[pos] = matrix_index;
         matrix_index += sizes_vector[pos];
     }
 
-    return order;
+    return;
 }

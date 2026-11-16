@@ -22,6 +22,7 @@
  */
 
 #include "mrob/SE3.hpp"
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <memory>

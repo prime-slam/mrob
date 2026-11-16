@@ -46,9 +46,8 @@ class NodePose3dVelTc : public Node
     NodePose3dVelTc(const SE3tc &initial_x, Node::nodeMode mode = STANDARD);
     ~NodePose3dVelTc() = default;
     /**
-     * Left update operation corresponds to
-     * T'=exp(dxi^)*T, time of the update set to zero.
-     * x'=vee(ln(T'))
+     * Right update operation (perturbation in the body/local frame):
+     * T' = T * Exp(dxi^), dxi is 9-D (phi, rho, nu), time of the update is zero.
      */
     void update(VectRefConst &dx) override;
     void update_from_auxiliary(VectRefConst &dx) override;
@@ -57,7 +56,7 @@ class NodePose3dVelTc : public Node
     MatRefConst get_state() const override {return state_.T();};
     MatRefConst get_auxiliary_state() const override {return auxiliaryState_.T();};
     void print() const override;
-
+    Mat5 get_state_test() const {return state_.T();};
     void set_time_stamp(double t) override;
 
   protected:

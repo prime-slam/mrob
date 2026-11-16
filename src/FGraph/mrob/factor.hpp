@@ -166,6 +166,16 @@ public:
     virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
 
     /**
+     * Value of the robust cost rho(u) of the current chi2 (u = sqrt(chi2)), the objective that the
+     * iteratively re-weighted LSQ with evaluate_robust_weight() minimises:
+     *  QUADRATIC: u^2;   HUBER: u^2 (u<th), 2 th u - th^2 (u>=th);   CAUCHY: log(1+u^2);
+     *  MCCLURE: u^2/(1+u^2);   RANSAC: min(u^2, th^2).
+     * The LM trust-region test must use this value, otherwise an IRLS step that rightly ignores
+     * outliers is rejected because it increases the plain chi2.
+     */
+    matData_t evaluate_robust_cost(matData_t threshold = 1.0) const;
+
+    /**
      * Return the mask if the Robust factor used:
      *  - False if the function was not used (inlier)
      *  - True if the threshold was exceed and the function was applied (outlier)
@@ -259,19 +269,20 @@ public:
 
 
 /**
- * factor get Jacobian  index for uno9rdered nodes (different than supposed order in the factor)
+ * factor get Jacobian  index for unordered nodes (different than supposed order in the factor)
  * 
- * This function, give a vector of node id and its corresponding size
- * returns:
- *    -id_vector: the order index of the vector given;
- *    -jacobian_indexes: index position in the Jacobian matrix for each of the elements in the same order (by reference)
+ * This function, given a vector of node id and its corresponding size
+ * outputs:
+ *    -original_to_ordered_index: the order index mapping (original index -> sorted position)
+ *    -jacobian_indexes: index position in the Jacobian matrix for each original element (by reference)
  * 
  * This method is used to organize the different nodes in the factors and provide an ordered solution of the gradients
  * as is used in fgraph_solve
  */
-std::vector<uint_t> getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
-            const std::vector<uint_t>& sizes_vector, std::vector<uint_t>& jacobian_indexes);
+ void getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
+    const std::vector<uint_t>& sizes_vector,
+    std::vector<uint_t>& original_to_ordered_index,
+    std::vector<uint_t>& jacobian_indexes);
 
 }
-
 #endif /* FACTOR_HPP_ */

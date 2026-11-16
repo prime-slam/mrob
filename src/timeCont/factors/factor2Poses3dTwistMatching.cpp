@@ -62,20 +62,24 @@ void Factor2Poses3dTwistMatching::evaluate_residuals()
     // constructor: omega, acc, dt
     SE3tc T_imu_integration = SE3tc(obs_.head(3),obs_.tail(3),delta_t_);
 
+    // dT = G U, G = T2^{-1} T1 (time -dt), U = Exp(xi_u) (time dt). The time of dT is zero by construction.
     T_target_inv_origin_ = Tx_target_inv_ * Tx_origin;
     SE3tc dT =  T_target_inv_origin_ * T_imu_integration;
-    r_ = dT.vel().Ln();//this is just zeroing time (it should be by construction)
-    //std::cout << "residuals \n" << r_ << std::endl;
+    xi_dT_ = dT.Ln();
+    r_ = xi_dT_.head(9);
 }
 void Factor2Poses3dTwistMatching::evaluate_jacobians()
 {
-    // it assumes you already have evaluated residuals
-    Mat<10,10> inverse_jacobian;
-    Mat101 xi_dt(Mat101::Zero());
-    xi_dt << T_target_inv_origin_.Ln(); //time not zero
-    inverse_jacobian = inv_left_jacobian_tc(xi_dt);
-    Mat9 clip_inverse_jacobian;
-    clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
+    // it assumes you already have evaluated residuals.
+    //
+    // Under right perturbations T_i -> T_i Exp(delta_i) (time of the update = 0):
+    //   origin: dT' = G Exp(delta_1) U = dT Exp(Ad_{U^-1} delta_1)  =>  r' = r + Jr^{-1}(r) Ad_{U^-1} delta_1
+    //   target: dT' = Exp(-delta_2) dT = dT Exp(-Ad_{dT^-1} delta_2) =>  r' = r - Jr^{-1}(r) Ad_{dT^-1} delta_2
+    // and with Jr^{-1}(r) = Jl^{-1}(r) Ad_{dT}  (and Ad_{dT} Ad_{U^-1} = Ad_G):
+    //   J1 =  Jl^{-1}(r) Ad_G,      J2 = -Jl^{-1}(r)
+    // where Jl^{-1} is evaluated at the RESIDUAL r = Ln(dT) (time 0), not at Ln(G).
+    const Mat<10,10> inverse_jacobian = inv_left_jacobian_tc(xi_dT_);
+    const Mat9 clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
     J_.topLeftCorner<9,9>() =  clip_inverse_jacobian * T_target_inv_origin_.adj_vel();
     J_.topRightCorner<9,9>() =  - clip_inverse_jacobian;
 }

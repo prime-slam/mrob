@@ -35,14 +35,25 @@ namespace mrob{
 
 /**
  * factor 2 poses 3d twist matching creates a high dimension interpolation between poses of constant omega and acceleration
- * and matches it with IMU observations.
+ * and matches it with IMU observations (window means of the raw gyro and accelerometer).
  * 
- * Node origin: Initial Pose
- * Node target: Final Pose
- * Node bias acc (landmark is a 3D vector)
- * Node bias gyr (landmark is a 3D vector)
- * Node gravity
- * 
+ * Node origin: Initial Pose            (SE3tc,  dim 9)
+ * Node target: Final Pose              (SE3tc,  dim 9)
+ * Node bias acc (R^3)                  (dim 3)
+ * Node bias gyr (R^3)                  (dim 3)
+ * Node gravity (NodeGravity3d, S^2)    (dim 2)
+ *
+ * Model. With  xi_u = ( (w_m - b_g) dt, 0, (a_m - b_a) dt, dt ),  U = Exp(xi_u)  and the (up-vector) gravity expressed in
+ * the start frame  g_l = R_1^T g,  the gravity acts as a separate start-frame element W (not inside U):
+ *
+ *      W = [ I   1/2 g_l dt^2   -g_l dt ]       dT = (T_2^{-1} T_1) W U  (time 0),      r = Ln_9(dT)
+ *          [ 0        1            0    ]
+ *          [ 0        0            1    ]
+ *
+ * Putting gravity inside the exponential (as in the previous implementation) rotates it by J(phi) and creates a
+ * fake acceleration of order |w| dt |g| which a bias then has to absorb.
+ *
+ * Jacobians (exact, for right perturbations T Exp(delta) with time of the update 0): see evaluate_jacobians().
  */
 
 class Factor2Poses3dTwistMatchingBiasGravity : public Factor
@@ -76,19 +87,25 @@ class Factor2Poses3dTwistMatchingBiasGravity : public Factor
 
   protected:
     // The Jacobians' correspondant nodes are ordered on the vector<Node>
-    // being [0]->J_origin and [1]->J_target
-    // declared here but initialized on child classes
+    // (sorted by node id, see jacobian_node_index_)
     Mat61 obs_; // obs = [omega, acc]
     Mat91 r_; //and residuals
-    Mat101 xi_target_inv_origin_;
     Mat9 W_;//inverse of observation covariance (information matrix)
-    Mat<9,27> J_;//Joint Jacobian 9+9+3+3+3
+    Mat<9,26> J_;//Joint Jacobian 9+9+3+3+2
     double delta_t_;
-    Mat31 omega_;
 
-    SE3tc T_target_inv_origin_;
+    SE3tc T_target_inv_origin_;   // G = T2^{-1} T1   (time -dt)
+    SE3tc T_imu_integration_;     // U
+    Mat101 xi_imu_integration_;   // xi_u
+    Mat101 xi_dT_;                // Ln(dT), dT = G W U
+    Mat31 gravity_;               // gravity vector (world frame, up convention)
+    Mat31 gravity_local_;         // g_l = R1^T g
+    Mat3 R_origin_T_;             // R1^T (cached for Jacobians)
 
     std::vector<uint_t> jacobian_node_index_;
+    // Map from original position ([origin,target,bias_acc,bias_gyro,gravity])
+    // to the sorted position inside neighbourNodes_ (sorted by node id).
+    std::vector<uint_t> original_to_sorted_index_;
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen
