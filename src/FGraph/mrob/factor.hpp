@@ -166,6 +166,16 @@ public:
     virtual matData_t evaluate_robust_weight(matData_t u = 0.0, matData_t threshold = 1.0);
 
     /**
+     * Value of the robust cost rho(u) of the current chi2 (u = sqrt(chi2)), the objective that the
+     * iteratively re-weighted LSQ with evaluate_robust_weight() minimises:
+     *  QUADRATIC: u^2;   HUBER: u^2 (u<th), 2 th u - th^2 (u>=th);   CAUCHY: log(1+u^2);
+     *  MCCLURE: u^2/(1+u^2);   RANSAC: min(u^2, th^2).
+     * The LM trust-region test must use this value, otherwise an IRLS step that rightly ignores
+     * outliers is rejected because it increases the plain chi2.
+     */
+    matData_t evaluate_robust_cost(matData_t threshold = 1.0) const;
+
+    /**
      * Return the mask if the Robust factor used:
      *  - False if the function was not used (inlier)
      *  - True if the threshold was exceed and the function was applied (outlier)

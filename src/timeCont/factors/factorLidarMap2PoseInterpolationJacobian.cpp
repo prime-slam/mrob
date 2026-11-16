@@ -53,7 +53,8 @@ void FactorLidarMap2PoseInterpolationJacobian::interpolate_pose(SE3tc &T_origin,
     matData_t t2 = T_target.time();
     thau_taw_ = (t_obs - t1)/(t2-t1);
 
-    xi_target_inv_origin_ = thau_taw_*(T_origin.inv()*T_target).Ln();
+    xi_full_target_inv_origin_ = (T_origin.inv() * T_target).Ln();
+    xi_target_inv_origin_ = thau_taw_ * xi_full_target_inv_origin_;
     T_taw_ = T_origin * SE3tc(xi_target_inv_origin_);
 }
 void FactorLidarMap2PoseInterpolationJacobian::evaluate_residuals()
@@ -74,17 +75,40 @@ void FactorLidarMap2PoseInterpolationJacobian::evaluate_residuals()
 
 void FactorLidarMap2PoseInterpolationJacobian::evaluate_jacobians()
 {
+    // Assumes the residuals have been evaluated at the current state.
+    //
+    // r = R_tau p + p_tau - m, with T_tau = T1 B, B = Exp(tau xi), xi = Ln(A), A = T1^{-1} T2.
+    // For T_tau -> T_tau Exp(delta_tau) (right perturbation):  dr/d delta_tau = J_p = [ -R_tau hat(p), R_tau, 0 ].
+    // The interpolated pose depends on both nodes through B and through xi = Ln(A):
+    //
+    //   target T2 -> T2 Exp(d2):  Ln(A') = xi + Jr^{-1}(xi) d2
+    //                             Exp(tau xi + tau Jr^{-1}(xi) d2) = B Exp(tau Jr(tau xi) Jr^{-1}(xi) d2)
+    //                             =>  delta_tau = tau Jr(tau xi) Jr^{-1}(xi) d2
+    //   origin T1 -> T1 Exp(d1):  A' = Exp(-d1) A  =>  Ln(A') = xi - Jl^{-1}(xi) d1
+    //                             T1' B' = T1 B Exp(Ad_{B^-1} d1) Exp(-tau Jr(tau xi) Jl^{-1}(xi) d1)
+    //                             =>  delta_tau = [ Ad_{B^-1} - tau Jr(tau xi) Jl^{-1}(xi) ] d1
+    // (tau = 0: M1 = I, M2 = 0.  tau = 1: M1 = 0, M2 = I.)
     J_.setZero();
-    Mat3 R_taw = T_taw_.R();
-    J_.block<3,3>(0,9) = -thau_taw_ * R_taw * hat3(point_obs_imu_frame_);
-    J_.block<3,3>(0,9+3) =  thau_taw_ * R_taw;
 
-    Mat<10,10> inverse_jacobian;
-    inverse_jacobian = inv_right_jacobian_tc(xi_target_inv_origin_);
-    Mat9 clip_inverse_jacobian;
-    clip_inverse_jacobian = inverse_jacobian.topLeftCorner<9,9>();
-    // This is approximating the left jacobian to be identity on the interpolation TODO
-    J_.block<3,9>(0,9) = J_.block<3,9>(0,9) * clip_inverse_jacobian;
+    const Mat3 R_taw = T_taw_.R();
+    const matData_t tau = thau_taw_;
+
+    Mat<3,9> J_point = Mat<3,9>::Zero();
+    J_point.block<3,3>(0,0) = -R_taw * hat3(point_obs_imu_frame_);
+    J_point.block<3,3>(0,3) =  R_taw;
+
+    const SE3tc B_tau = SE3tc(xi_target_inv_origin_);
+    const Mat<10,10> Ad_Binv = B_tau.inv().adj();
+    const Mat<10,10> Jr_tau  = right_jacobian_tc(xi_target_inv_origin_);          // Jr(tau xi)
+    const Mat<10,10> Jl_inv_xi = inv_left_jacobian_tc(xi_full_target_inv_origin_);  // Jl^{-1}(xi)
+    const Mat<10,10> Jr_inv_xi = inv_right_jacobian_tc(xi_full_target_inv_origin_); // Jr^{-1}(xi)
+
+    // The 10x10 products are formed first, and then restricted to the 9x9 time-free block.
+    const Mat<10,10> M1 = Ad_Binv - tau * (Jr_tau * Jl_inv_xi);
+    const Mat<10,10> M2 = tau * (Jr_tau * Jr_inv_xi);
+
+    J_.block<3,9>(0,0) = J_point * M1.topLeftCorner<9,9>();
+    J_.block<3,9>(0,9) = J_point * M2.topLeftCorner<9,9>();
 }
 
 

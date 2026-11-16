@@ -10,6 +10,8 @@ SET(factors_headers
     mrob/factors/nodeGravity3d.hpp
     mrob/factors/factorLidarMap2PoseInterpolation.hpp
     mrob/factors/factorLidarMap2PoseInterpolationJacobian.hpp
+    mrob/factors/factorLidarMapPlane2PoseInterpolationJacobian.hpp
+    mrob/factors/factorLidarMapChunk2PoseInterpolation.hpp
     mrob/factors/factorPriorInertial.hpp
 )
 
@@ -22,6 +24,8 @@ SET(factors_sources
     factors/nodeGravity3d.cpp
     factors/factorLidarMap2PoseInterpolation.cpp
     factors/factorLidarMap2PoseInterpolationJacobian.cpp
+    factors/factorLidarMapPlane2PoseInterpolationJacobian.cpp
+    factors/factorLidarMapChunk2PoseInterpolation.cpp
     factors/factorPriorInertial.cpp
 )
 

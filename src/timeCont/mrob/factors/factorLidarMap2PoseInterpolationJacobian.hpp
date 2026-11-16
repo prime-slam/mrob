@@ -71,6 +71,7 @@ public:
     SE3 T_offset_lidar_imu_; // offset from lidar to imu XXX: I think it is the other way, from IMU to LiDAR. Plase check
     matData_t thau_taw_; //Interpolation fraction. Keept for jacobian calculation
     Mat101 xi_target_inv_origin_;
+    Mat101 xi_full_target_inv_origin_;
     
     void interpolate_pose(SE3tc &T_origin, SE3tc &T_target,const matData_t &t_obs); // interpolate pose between two poses 
 

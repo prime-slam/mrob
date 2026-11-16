@@ -29,14 +29,33 @@
 
 namespace mrob{
 
+/**
+ * Orthonormal basis B (3x2) of the plane perpendicular to g, with [b1, b2, g/|g|] right handed.
+ * The choice is deterministic in g, so that nodes and factors that linearise at the same
+ * gravity vector use the same tangent coordinates.
+ */
+Mat<3,2> gravity_tangent_basis(const Mat31 &g);
+
+/**
+ * Gravity vector with fixed magnitude: a point on the sphere S^2 of radius |g| (2 DoF).
+ *
+ * The state is stored as the 3-vector g (world frame, "up" convention: specific force at rest = R^T g).
+ * The magnitude is set at construction and never changes: updates are rotations of g.
+ *
+ * Update (retraction), for dx in R^2:
+ *      g' = Exp( hat(B dx) ) g,       B = gravity_tangent_basis(g)  (3x2)
+ * and therefore
+ *      d g' / d dx = -hat(g) B                       (3x2)
+ * which is the matrix factors must multiply their derivative w.r.t. the 3-vector g by.
+ */
 class NodeGravity3d : public Node
 {
   public:
     /**
-     * For initialization, requires an initial estimation of the state.
+     * For initialization, requires an initial estimation of the state. Its norm is the (fixed)
+     * magnitude of the gravity vector for the lifetime of the node.
      */
     NodeGravity3d(const Mat31 &initial_x, Node::nodeMode mode = STANDARD);
-    //NodePose3d(const SE3 &initial_T);
     ~NodeGravity3d() = default;
 
     void update(VectRefConst &dx) override;
@@ -47,12 +66,15 @@ class NodeGravity3d : public Node
     MatRefConst get_auxiliary_state() const override {return auxiliaryState_;}
     void print() const override;
 
+    matData_t get_magnitude() const {return magnitude_;}
+
   protected:
     Mat31 state_;
     Mat31 auxiliaryState_;
+    matData_t magnitude_;
 
-    //new function to ensure the gravity vector stays in the magnitude 9.8
-    void regenerate(void);
+    // g <- Exp(hat(B(g) dx)) g, followed by a re-normalisation to remove numerical drift
+    static Mat31 retract(const Mat31 &g, const Mat21 &dx, matData_t magnitude);
 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW // as proposed by Eigen

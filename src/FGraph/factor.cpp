@@ -22,6 +22,7 @@
  */
 
 
+#include <cmath>
 #include "mrob/factor.hpp"
 
 using namespace mrob;
@@ -89,6 +90,26 @@ matData_t Factor::evaluate_robust_weight(matData_t u, matData_t threshold)
     return robust_weight_;
 }
 
+matData_t Factor::evaluate_robust_cost(matData_t threshold) const
+{
+    const matData_t u2 = chi2_;
+    const matData_t u = std::sqrt(u2);
+    switch(robust_type_)
+    {
+        case HUBER:
+            return (u < threshold) ? u2 : 2.0*threshold*u - threshold*threshold;
+        case CAUCHY:
+            return std::log(1.0 + u2);
+        case MCCLURE:
+            return u2/(1.0 + u2);
+        case RANSAC:
+            return (u < threshold) ? u2 : threshold*threshold;
+        case QUADRATIC:
+        default:
+            return u2;
+    }
+}
+
 EigenFactor::EigenFactor(robustFactorType factor_type, uint_t potNumberNodes):
         Factor(0,0,factor_type, potNumberNodes)
 {
@@ -114,14 +135,16 @@ void mrob::getJacobianIndexUnorderedNodes(const std::vector<uint_t>& id_vector,
         [&id_vector](uint_t a, uint_t b) {
             return id_vector[a] < id_vector[b];
         });
-    uint_t matrix_index = 0, i = 0;
+    uint_t matrix_index = 0;
     jacobian_indexes.clear();
     jacobian_indexes = std::vector<uint_t>(id_vector.size());
     for (uint_t pos : original_to_ordered_index)
     {
-        jacobian_indexes[pos] = matrix_index; //check for the firsts elements in the orderded list and accumulated dimensions.
-        matrix_index += sizes_vector[i];
-        i++;
+        // Column offset of the node originally at position `pos`: accumulated dimensions of the nodes
+        // with smaller id. The dimension to accumulate is the one of THIS node (sizes_vector[pos]),
+        // not the one of the i-th original node (the two differ when sizes are not all equal).
+        jacobian_indexes[pos] = matrix_index;
+        matrix_index += sizes_vector[pos];
     }
 
     return;

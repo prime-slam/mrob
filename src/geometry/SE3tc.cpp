@@ -418,21 +418,21 @@ Mat<10,10> mrob::inv_left_jacobian_tc(const Mat101 &xi)
 
 Mat<10,10> mrob::inv_right_jacobian_tc(const Mat101 &xi)
 {
-    Mat101 xi_negative = -xi;
-    xi_negative(9) = xi(9); // time is not negative, this is due to the constrain on the coordinates
-    return inv_left_jacobian_tc(xi_negative);
+    // Jr(xi) = Jl(-xi). The identity holds for ALL ten coordinates, including the time
+    // coordinate, because -xi is the logarithm of the group inverse (which has time -t).
+    return inv_left_jacobian_tc(-xi);
 }
 
 Mat<10,10> mrob::left_jacobian_tc(const Mat101 &xi)
 {
-    Mat<10,10> result(Mat<10,10>::Zero());
-    
-    return result;
+    const Mat<10,10> inv = inv_left_jacobian_tc(xi);
+    return inv.inverse();
 }
 
 Mat<10,10> mrob::right_jacobian_tc(const Mat101 &xi)
 {
-    Mat101 xi_negative = -xi;
-    xi_negative(9) = xi(9); // time is not negative, this is due to the constrain on the coordinates
-    return left_jacobian_tc(xi_negative);
+    const Mat<10,10> inv = inv_right_jacobian_tc(xi);
+    return inv.inverse();
 }
+
+

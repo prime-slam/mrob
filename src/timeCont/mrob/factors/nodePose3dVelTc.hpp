@@ -46,9 +46,8 @@ class NodePose3dVelTc : public Node
     NodePose3dVelTc(const SE3tc &initial_x, Node::nodeMode mode = STANDARD);
     ~NodePose3dVelTc() = default;
     /**
-     * Left update operation corresponds to
-     * T'=exp(dxi^)*T, time of the update set to zero.
-     * x'=vee(ln(T'))
+     * Right update operation (perturbation in the body/local frame):
+     * T' = T * Exp(dxi^), dxi is 9-D (phi, rho, nu), time of the update is zero.
      */
     void update(VectRefConst &dx) override;
     void update_from_auxiliary(VectRefConst &dx) override;

@@ -115,7 +115,7 @@
         std::cout << "\n6. Evaluating Jacobians for bias+gravity factor..." << std::endl;
         
         factorBiasGravity->evaluate_jacobians();
-        Mat<9,27> jacobian_bg = factorBiasGravity->get_jacobian(0);
+        Mat<9,26> jacobian_bg = factorBiasGravity->get_jacobian(0);
         
         std::cout << "Jacobian shape: " << jacobian_bg.rows() << "x" << jacobian_bg.cols() << std::endl;
         std::cout << "Jacobian norm: " << jacobian_bg.norm() << std::endl;

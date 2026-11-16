@@ -520,7 +520,8 @@ matData_t FGraphSolve::chi2(bool evaluateResidualsFlag)
             f->evaluate_residuals();
             f->evaluate_chi2();
         }
-        totalChi2 += f->get_chi2();
+        // robust cost (== chi2 for quadratic factors), consistent with the IRLS weights of build_adjacency()
+        totalChi2 += f->evaluate_robust_cost();
     }
 
     for (auto &ef : eigen_factors_)
