@@ -48,7 +48,7 @@ using Mat4 = Eigen::Matrix<matData_t, 4,4, Eigen::RowMajor>;
 using Mat5 = Eigen::Matrix<matData_t, 5,5, Eigen::RowMajor>;
 using Mat6 = Eigen::Matrix<matData_t, 6,6, Eigen::RowMajor>;
 using Mat9 = Eigen::Matrix<matData_t, 9,9, Eigen::RowMajor>;
-using Mat10 = Eigen::Matrix<matData_t, 9,9, Eigen::RowMajor>;
+using Mat10 = Eigen::Matrix<matData_t, 10,10, Eigen::RowMajor>;
 using MatX = Eigen::Matrix<matData_t, Eigen::Dynamic,Eigen::Dynamic, Eigen::RowMajor>;
 
 //Sparse Matrices

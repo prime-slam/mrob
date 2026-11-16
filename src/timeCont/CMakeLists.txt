@@ -13,6 +13,8 @@ SET(factors_headers
     mrob/factors/factorLidarMapPlane2PoseInterpolationJacobian.hpp
     mrob/factors/factorLidarMapChunk2PoseInterpolation.hpp
     mrob/factors/factorPriorInertial.hpp
+    mrob/factors/factor2Poses3dTwistMatchingBiasGravityAligned.hpp
+    mrob/factors/factorPriorInertialAligned.hpp
 )
 
 SET(factors_sources
@@ -27,6 +29,8 @@ SET(factors_sources
     factors/factorLidarMapPlane2PoseInterpolationJacobian.cpp
     factors/factorLidarMapChunk2PoseInterpolation.cpp
     factors/factorPriorInertial.cpp
+    factors/factor2Poses3dTwistMatchingBiasGravityAligned.cpp
+    factors/factorPriorInertialAligned.cpp
 )
 
 # create library
